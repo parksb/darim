@@ -1,12 +1,13 @@
 use chrono::{NaiveDateTime, Utc};
+use serde::{Serialize, Deserialize};
 
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct Post {
-  id: Option<i32>,
-  author: String,
-  content: String,
-  created_at: NaiveDateTime,
-  updated_at: NaiveDateTime,
+  pub id: Option<i32>,
+  pub author: String,
+  pub content: String,
+  pub created_at: NaiveDateTime,
+  pub updated_at: NaiveDateTime,
 }
 
 impl Post {

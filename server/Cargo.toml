@@ -12,3 +12,4 @@ actix-rt = "1"
 mysql = "18.1"
 chrono = "0.4"
 dotenv = "0.15"
+serde = { version = "1.0", features = ["derive"] }
