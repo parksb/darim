@@ -1,0 +1,9 @@
+CREATE TABLE posts (
+    id BIGINT(20) UNSIGNED AUTO_INCREMENT NOT NULL,
+    author TEXT NOT NULL,
+    content TEXT NOT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME,
+    PRIMARY KEY (id)
+) CHARACTER SET 'utf8mb4'
+  COLLATE 'utf8mb4_general_ci';

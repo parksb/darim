@@ -14,7 +14,7 @@ pub async fn posts() -> impl Responder {
 
 /// Create a post
 #[post("/posts")]
-pub async fn create_post(post: web::Json<models::post::CreatePostArgs>) -> impl Responder {
+pub async fn create_post(post: web::Json<models::post::NewPost>) -> impl Responder {
     let mut response = HashMap::new();
     response.insert("data", services::post::create(post.into_inner()).unwrap_or(false));
     HttpResponse::Ok().json(response)
@@ -22,7 +22,7 @@ pub async fn create_post(post: web::Json<models::post::CreatePostArgs>) -> impl 
 
 /// Delete a post
 #[delete("/posts/{id}")]
-pub async fn delete_post(id: web::Path<i32>) -> impl Responder {
+pub async fn delete_post(id: web::Path<u64>) -> impl Responder {
     let mut response = HashMap::new();
     response.insert("data", services::post::delete(id.into_inner()).unwrap_or(false));
     HttpResponse::Ok().json(response)

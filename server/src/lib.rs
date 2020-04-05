@@ -15,3 +15,8 @@ pub mod routes {
 pub mod services {
     pub mod post;
 }
+
+pub mod schema;
+
+#[macro_use]
+extern crate diesel;

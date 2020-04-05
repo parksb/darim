@@ -1,47 +1,31 @@
-use mysql::{Error, prelude::*};
-use chrono::NaiveDateTime;
+use diesel::{prelude::*, result::Error};
 
-use crate::models::{db_connection, post::Post, post::CreatePostArgs};
+use crate::schema::posts;
+use crate::models::{db_connection, post::*};
 
 pub fn get_list() -> Result<Vec<Post>, Error> {
-    let mut conn = db_connection::connect()?;
-    let mut post_list: Vec<Post> = vec!();
-
-    conn.query_map(
-        "SELECT id, author, content, created_at, updated_at FROM posts",
-        |(id, author, content, created_at, updated_at): (i32, String, String, NaiveDateTime, NaiveDateTime)| {
-            post_list.push(Post {
-                author,
-                content,
-                id: Some(id),
-                created_at: Some(created_at),
-                updated_at: Some(updated_at),
-            });
-        }
-    )?;
-
+    let conn = db_connection::connect();
+    let post_list: Vec<Post> = posts::table.load::<Post>(&conn)?;
     Ok(post_list)
 }
 
-pub fn create(args: CreatePostArgs) -> Result<bool, Error> {
-    let mut conn = db_connection::connect()?;
-    let post = Post::new(args.author, args.content);
+pub fn create(args: NewPost) -> Result<bool, Error> {
+    let conn = db_connection::connect();
 
-    conn.exec_drop(
-        "INSERT INTO posts (author, content, created_at, updated_at) VALUES (?, ?, ?, ?)",
-        (&post.author, &post.content, &post.created_at, &post.updated_at)
-    )?;
+    let post = NewPost { author: args.author, content: args.content };
+    diesel::insert_into(posts::table)
+        .values(post)
+        .execute(&conn)?;
 
     Ok(true)
 }
 
-pub fn delete(id: i32) -> Result<bool, Error> {
-    let mut conn = db_connection::connect()?;
+pub fn delete(id: u64) -> Result<bool, Error> {
+    let conn = db_connection::connect();
 
-    conn.exec_drop(
-        "DELETE FROM posts WHERE id = ?",
-        (id,),
-    )?;
+    let target_post = posts::table.find(id);
+    diesel::delete(target_post)
+        .execute(&conn)?;
 
     Ok(true)
 }

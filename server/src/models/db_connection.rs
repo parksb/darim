@@ -1,18 +1,8 @@
 use std::env;
-use mysql::{Pool, PooledConn, Error};
+use diesel::{mysql::MysqlConnection, prelude::*};
 
-pub fn connect() -> Result<PooledConn, Error> {
+pub fn connect() -> MysqlConnection {
     dotenv::dotenv().expect("Failed to read .env file");
-
-    let user = env::var("DB_USER").expect("db user not found");
-    let password = env::var("DB_PASSWORD").expect("db password not found");
-    let host = env::var("DB_HOST").expect("db host not found");
-    let name = env::var("DB_NAME").expect("db name not found");
-    let port = env::var("DB_PORT").expect("db port not found");
-
-    let db_url = format!("mysql://{}:{}@{}:{}/{}", user, password, host, port, name);
-    let pool = Pool::new(db_url)?;
-    let conn = pool.get_conn()?;
-
-    Ok(conn)
+    let db_url = env::var("DATABASE_URL").expect("DATABASE_URL not found");
+    MysqlConnection::establish(&db_url).expect("Failed to establish a db connection")
 }

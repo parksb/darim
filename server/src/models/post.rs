@@ -1,32 +1,21 @@
-use chrono::{NaiveDateTime, Utc};
+use chrono::NaiveDateTime;
 use serde::{Serialize, Deserialize};
+use diesel::Queryable;
 
-#[derive(Debug, Serialize, Deserialize)]
+use crate::schema::posts;
+
+#[derive(Debug, Serialize, Deserialize, Queryable)]
 pub struct Post {
-    pub id: Option<i32>,
+    pub id: u64,
     pub author: String,
     pub content: String,
-    pub created_at: Option<NaiveDateTime>,
+    pub created_at: NaiveDateTime,
     pub updated_at: Option<NaiveDateTime>,
 }
 
-impl Post {
-    pub fn new(
-        author: String,
-        content: String,
-    ) -> Self {
-        Self {
-            id: None,
-            author,
-            content,
-            created_at: Some(Utc::now().naive_utc()),
-            updated_at: Some(Utc::now().naive_utc()),
-        }
-    }
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-pub struct CreatePostArgs {
+#[derive(Serialize, Deserialize, Insertable)]
+#[table_name="posts"]
+pub struct NewPost {
     pub author: String,
     pub content: String,
 }
