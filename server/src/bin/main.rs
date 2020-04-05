@@ -1,7 +1,8 @@
-use actix_web::{get, App, HttpServer, Responder, HttpResponse};
+use actix_web::{get, post, App, HttpServer, Responder, HttpResponse, web};
 use std::collections::HashMap;
 
 use patic::services;
+use patic::models;
 
 /// Health Check
 #[get("/")]
@@ -18,6 +19,13 @@ async fn posts() -> impl Responder {
   HttpResponse::Ok().json(response)
 }
 
+/// Create a post
+#[post("/posts")]
+async fn create_post(post: web::Json<models::post::CreatePostArgs>) -> impl Responder {
+    let response = services::post::create(post.into_inner()).unwrap();
+    HttpResponse::Ok().json(response)
+}
+
 #[actix_rt::main]
 async fn main() -> std::io::Result<()> {
     let address = "127.0.0.1:8080";
@@ -25,6 +33,7 @@ async fn main() -> std::io::Result<()> {
     HttpServer::new(|| App::new()
         .service(health_check)
         .service(posts)
+        .service(create_post)
     ).bind(address)?
         .run()
         .await
