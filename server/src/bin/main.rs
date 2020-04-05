@@ -7,17 +7,17 @@ use patic::models;
 /// Health Check
 #[get("/")]
 async fn health_check() -> impl Responder {
-  let mut response = HashMap::new();
-  response.insert("version", format!("{}", env!("CARGO_PKG_VERSION")));
-  HttpResponse::Ok().json(response)
+    let mut response = HashMap::new();
+    response.insert("version", format!("{}", env!("CARGO_PKG_VERSION")));
+    HttpResponse::Ok().json(response)
 }
 
 /// List posts
 #[get("/posts")]
 async fn posts() -> impl Responder {
-  let mut response = HashMap::new();
-  response.insert("data", services::post::get_list().unwrap_or(vec!()));
-  HttpResponse::Ok().json(response)
+    let mut response = HashMap::new();
+    response.insert("data", services::post::get_list().unwrap_or(vec!()));
+    HttpResponse::Ok().json(response)
 }
 
 /// Create a post
