@@ -1,6 +1,5 @@
 use chrono::NaiveDateTime;
 use serde::{Serialize, Deserialize};
-use diesel::Queryable;
 
 use crate::schema::posts;
 
@@ -13,9 +12,29 @@ pub struct Post {
     pub updated_at: Option<NaiveDateTime>,
 }
 
-#[derive(Serialize, Deserialize, Insertable)]
+#[derive(Insertable)]
 #[table_name="posts"]
-pub struct NewPost {
+pub struct PostToCreate {
     pub author: String,
     pub content: String,
+}
+
+#[derive(AsChangeset)]
+#[table_name="posts"]
+pub struct PostToUpdate {
+    pub author: Option<String>,
+    pub content: Option<String>,
+    pub updated_at: Option<NaiveDateTime>,
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct CreateArgs {
+    pub author: String,
+    pub content: String,
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct UpdateArgs {
+    pub author: Option<String>,
+    pub content: Option<String>,
 }

@@ -21,6 +21,7 @@ async fn main() -> std::io::Result<()> {
         .service(routes::post::posts)
         .service(routes::post::create_post)
         .service(routes::post::delete_post)
+        .service(routes::post::update_post)
     ).bind(address)?
         .run()
         .await
