@@ -34,3 +34,14 @@ pub fn create(args: CreatePostArgs) -> Result<bool, Error> {
 
     Ok(true)
 }
+
+pub fn delete(id: i32) -> Result<bool, Error> {
+    let mut conn = db_connection::connect()?;
+
+    conn.exec_drop(
+        "DELETE FROM posts WHERE id = ?",
+        (id,),
+    )?;
+
+    Ok(true)
+}

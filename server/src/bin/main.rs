@@ -1,4 +1,4 @@
-use actix_web::{get, post, App, HttpServer, Responder, HttpResponse, web};
+use actix_web::{get, post, delete, App, HttpServer, Responder, HttpResponse, web};
 use std::collections::HashMap;
 
 use patic::services;
@@ -28,6 +28,14 @@ async fn create_post(post: web::Json<models::post::CreatePostArgs>) -> impl Resp
     HttpResponse::Ok().json(response)
 }
 
+/// Delete a post
+#[delete("/posts/{id}")]
+async fn delete_post(id: web::Path<i32>) -> impl Responder {
+    let mut response = HashMap::new();
+    response.insert("data", services::post::delete(id.into_inner()).unwrap_or(false));
+    HttpResponse::Ok().json(response)
+}
+
 #[actix_rt::main]
 async fn main() -> std::io::Result<()> {
     let address = "127.0.0.1:8080";
@@ -36,6 +44,7 @@ async fn main() -> std::io::Result<()> {
         .service(health_check)
         .service(posts)
         .service(create_post)
+        .service(delete_post)
     ).bind(address)?
         .run()
         .await
