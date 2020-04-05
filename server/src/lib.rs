@@ -6,6 +6,11 @@ pub mod models {
     pub mod post;
 }
 
+/// routes
+pub mod routes {
+    pub mod post;
+}
+
 /// services
 pub mod services {
     pub mod post;
