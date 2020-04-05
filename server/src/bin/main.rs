@@ -15,14 +15,16 @@ async fn health_check() -> impl Responder {
 /// List posts
 #[get("/posts")]
 async fn posts() -> impl Responder {
-  let response = services::post::get_list().unwrap();
+  let mut response = HashMap::new();
+  response.insert("data", services::post::get_list().unwrap_or(vec!()));
   HttpResponse::Ok().json(response)
 }
 
 /// Create a post
 #[post("/posts")]
 async fn create_post(post: web::Json<models::post::CreatePostArgs>) -> impl Responder {
-    let response = services::post::create(post.into_inner()).unwrap();
+    let mut response = HashMap::new();
+    response.insert("data", services::post::create(post.into_inner()).unwrap_or(false));
     HttpResponse::Ok().json(response)
 }
 
