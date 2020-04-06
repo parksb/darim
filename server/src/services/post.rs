@@ -1,37 +1,47 @@
-use diesel::{prelude::*, result::Error};
+use diesel::prelude::*;
 use chrono::Utc;
 
 use crate::schema::posts;
-use crate::models::{db_connection, post::*};
+use crate::models::{db_connection, error::ServiceError, post::*};
 
-pub fn get_list() -> Result<Vec<Post>, Error> {
+pub fn get_list() -> Result<Vec<Post>, ServiceError> {
     let conn = db_connection::connect();
     let post_list: Vec<Post> = posts::table.load::<Post>(&conn)?;
     Ok(post_list)
 }
 
-pub fn create(args: CreateArgs) -> Result<bool, Error> {
+pub fn create(args: CreateArgs) -> Result<bool, ServiceError> {
     let conn = db_connection::connect();
 
     let post = PostToCreate { author: args.author, content: args.content };
-    diesel::insert_into(posts::table)
+    let count = diesel::insert_into(posts::table)
         .values(post)
         .execute(&conn)?;
 
-    Ok(true)
+    if count < 1 {
+        println!("{}", ServiceError::QueryExecutionFailure);
+        Err(ServiceError::QueryExecutionFailure)
+    } else {
+        Ok(true)
+    }
 }
 
-pub fn delete(id: u64) -> Result<bool, Error> {
+pub fn delete(id: u64) -> Result<bool, ServiceError> {
     let conn = db_connection::connect();
 
     let target_post = posts::table.find(id);
-    diesel::delete(target_post)
+    let count = diesel::delete(target_post)
         .execute(&conn)?;
 
-    Ok(true)
+    if count < 1 {
+        println!("{}", ServiceError::NotFound(id));
+        Err(ServiceError::NotFound(id))
+    } else {
+        Ok(true)
+    }
 }
 
-pub fn update(id: u64, args: UpdateArgs) -> Result<bool, Error> {
+pub fn update(id: u64, args: UpdateArgs) -> Result<bool, ServiceError> {
     let conn = db_connection::connect();
 
     let post = PostToUpdate {
@@ -41,9 +51,14 @@ pub fn update(id: u64, args: UpdateArgs) -> Result<bool, Error> {
     };
 
     let target_post = posts::table.find(id);
-    diesel::update(target_post)
+    let count = diesel::update(target_post)
         .set(post)
         .execute(&conn)?;
 
-    Ok(true)
+    if count < 1 {
+        println!("{}", ServiceError::NotFound(id));
+        Err(ServiceError::NotFound(id))
+    } else {
+        Ok(true)
+    }
 }
