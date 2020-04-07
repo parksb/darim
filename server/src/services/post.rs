@@ -11,6 +11,11 @@ pub fn get_list() -> Result<Vec<Post>, ServiceError> {
 }
 
 pub fn create(args: CreateArgs) -> Result<bool, ServiceError> {
+    if args.author.is_empty() || args.content.is_empty() {
+        println!("{}", ServiceError::InvalidArgument);
+        return Err(ServiceError::InvalidArgument)
+    }
+
     let conn = db_connection::connect();
 
     let post = PostToCreate { author: args.author, content: args.content };
@@ -42,6 +47,25 @@ pub fn delete(id: u64) -> Result<bool, ServiceError> {
 }
 
 pub fn update(id: u64, args: UpdateArgs) -> Result<bool, ServiceError> {
+    if args.author.is_none() && args.content.is_none() {
+        println!("{}", ServiceError::InvalidArgument);
+        return Err(ServiceError::InvalidArgument)
+    }
+
+    if let Some(author) = &args.author {
+        if author.is_empty() {
+            println!("{}", ServiceError::InvalidArgument);
+            return Err(ServiceError::InvalidArgument)
+        }
+    }
+
+    if let Some(content) = &args.content {
+        if content.is_empty() {
+            println!("{}", ServiceError::InvalidArgument);
+            return Err(ServiceError::InvalidArgument)
+        }
+    }
+
     let conn = db_connection::connect();
 
     let post = PostToUpdate {

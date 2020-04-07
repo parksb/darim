@@ -9,6 +9,9 @@ pub enum ServiceError {
     #[error("data for id `{0}` not found")]
     NotFound(u64),
 
+    #[error("invalid argument supplied")]
+    InvalidArgument,
+
     #[error("query execution failure")]
     QueryExecutionFailure,
 }
