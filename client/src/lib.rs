@@ -1,6 +1,12 @@
 use seed::{*, prelude::*};
 use chrono::NaiveDateTime;
 
+mod components {
+    pub mod post_component;
+}
+
+use crate::components::post_component;
+
 struct Post {
     pub id: u64,
     pub author: String,
@@ -35,35 +41,13 @@ fn view(model: &Model) -> impl View<Msg> {
         St::MaxWidth => "500px";
         St::Margin => "auto";
     };
-    let post_container_style = style!{
-        St::Margin => "30px 0 30px 0";
-        St::PaddingLeft => "10px";
-        St::BorderLeft => "3px #ffce05 solid";
-    };
-    let post_info_style = style!{
-        St::Color => "#c0c0c0";
-    };
-    let post_content_style = style!{
-        St::Margin => "5px 0 0 0";
-    };
 
     div![
         &wrapper_container_style,
-        section![
-            h1!["Patic"],
-        ],
+        section![h1!["Patic"]],
         section![
             model.posts.iter().map(|post| {
-                article![
-                    &post_container_style,
-                    strong![format!("{} ", post.author)],
-                    small![
-                        &post_info_style,
-                        time![format!("{}", post.created_at)],
-                        span![if let Some(_) = post.updated_at { " (edited)" } else { "" }],
-                    ],
-                    p![&post_content_style, format!("{}", post.content)],
-                ]
+                post_component::view(&post.author, &post.content, post.created_at, post.updated_at)
             }),
         ],
     ]
