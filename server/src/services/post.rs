@@ -6,7 +6,8 @@ use crate::models::{db_connection, error::ServiceError, post::*};
 
 pub fn get_list() -> Result<Vec<Post>, ServiceError> {
     let conn = db_connection::connect();
-    let post_list: Vec<Post> = posts::table.load::<Post>(&conn)?;
+    let post_list: Vec<Post> = posts::table.order(posts::created_at.desc())
+        .load::<Post>(&conn)?;
     Ok(post_list)
 }
 
