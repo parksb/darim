@@ -9,8 +9,10 @@ pub fn view(new_post: NewPost) -> Node<Msg> {
         St::FontSize => "16px";
         St::MaxWidth => "100%";
         St::MinWidth => "100%";
-        St::Border => "1px #000 solid";
+        St::Border => 0;
+        St::BorderBottom => "1px #000 solid";
         St::Padding => 0;
+        St::MarginBottom => "10px";
     };
     let button_style = style!{
         St::FontSize => "14px";

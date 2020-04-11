@@ -17,6 +17,16 @@ pub fn view(
     let content_style = style!{
         St::Margin => "5px 0 0 0";
     };
+    let text_field_style = style!{
+        St::FontSize => "16px";
+        St::Border => 0;
+        St::Padding => 0;
+        St::BorderBottom => "1px #000 solid";
+    };
+    let author_text_field_style = style!{
+        St::FontWeight => "bold";
+        St::Margin => "0 0 5px 0";
+    };
 
     let is_post_to_be_updated = if let Some(id) = edited_post.id {
         id == post.id
@@ -28,6 +38,8 @@ pub fn view(
         &container_style,
         if is_post_to_be_updated {
             input![
+                &author_text_field_style,
+                &text_field_style,
                 attrs!{At::Value => edited_post.author.unwrap_or(post.author.to_string())},
                 input_ev(Ev::Input, Msg::EditedPostAuthor),
             ]
@@ -42,6 +54,7 @@ pub fn view(
         if is_post_to_be_updated {
             vec![
                 textarea![
+                    &text_field_style,
                     attrs!{
                         At::Value => edited_post.content.unwrap_or(post.content.to_string()),
                         At::Rows => 3
