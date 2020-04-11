@@ -5,6 +5,8 @@ use serde::{Serialize, Deserialize};
 mod api;
 mod components {
     pub mod post_component;
+    pub mod footer_component;
+    pub mod header_component;
     pub mod editor_component;
 }
 
@@ -84,8 +86,8 @@ fn view(model: &Model) -> impl View<Msg> {
 
     div![
         &wrapper_container_style,
-        section![h1!["Patic"]],
-        section![editor_component::view()],
+        header_component::view(),
+        editor_component::view(),
         section![
             model.posts.iter().map(|post| {
                 post_component::view(
@@ -97,6 +99,7 @@ fn view(model: &Model) -> impl View<Msg> {
                 )
             }),
         ],
+        footer_component::view(),
     ]
 }
 

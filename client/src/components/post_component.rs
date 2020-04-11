@@ -31,6 +31,6 @@ pub fn view(
             span![if let Some(_) = updated_at { " (edited)" } else { "" }],
         ],
         p![&content_style, format!("{}", content)],
-        button!["delete", ev(Ev::Click, move |_| Msg::Delete(id))]
+        button!["🗑", ev(Ev::Click, move |_| Msg::Delete(id))]
     ]
 }
