@@ -1,12 +1,15 @@
 use seed::{*, prelude::*};
 use chrono::NaiveDateTime;
 
-pub fn view<Ms: 'static>(
+use crate::Msg;
+
+pub fn view(
+    id: u64,
     author: &str,
     content: &str,
     created_at: NaiveDateTime,
     updated_at: Option<NaiveDateTime>,
-) -> Node<Ms> {
+) -> Node<Msg> {
     let container_style = style!{
         St::Margin => "30px 0 30px 0";
         St::PaddingLeft => "10px";
@@ -28,5 +31,6 @@ pub fn view<Ms: 'static>(
             span![if let Some(_) = updated_at { " (edited)" } else { "" }],
         ],
         p![&content_style, format!("{}", content)],
+        button!["delete", ev(Ev::Click, move |_| Msg::Delete(id))]
     ]
 }

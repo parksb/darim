@@ -2,6 +2,7 @@ use seed::{*, prelude::*};
 use chrono::NaiveDateTime;
 use serde::Deserialize;
 
+mod api;
 mod components {
     pub mod post_component;
     pub mod editor_component;
@@ -23,14 +24,22 @@ struct NewPost {
     pub content: Option<String>,
 }
 
-#[derive(Clone, Deserialize)]
-pub struct PostsResponse {
-    pub data: Vec<Post>,
-}
 
 struct Model {
     pub posts: Vec<Post>,
     pub new_post: NewPost,
+}
+
+#[derive(Clone)]
+pub enum Msg {
+    Create,
+    Delete(u64),
+
+    NewPostAuthor(String),
+    NewPostContent(String),
+
+    PostsFetched(fetch::ResponseDataResult<api::Response<Vec<Post>>>),
+    PostDeleted(fetch::ResponseDataResult<api::Response<bool>>),
 }
 
 impl Default for Model {
@@ -42,19 +51,8 @@ impl Default for Model {
     }
 }
 
-#[derive(Clone)]
-pub enum Msg {
-    Create,
-    NewPostAuthor(String),
-    NewPostContent(String),
-    PostsFetched(fetch::ResponseDataResult<PostsResponse>),
-}
-
 fn after_mount(_: Url, orders: &mut impl Orders<Msg>) -> AfterMount<Model> {
-    orders.perform_cmd(
-        fetch::Request::new("http://localhost:8080/posts")
-            .fetch_json_data(Msg::PostsFetched)
-    );
+    orders.perform_cmd(api::get_list());
     AfterMount::default()
 }
 
@@ -69,14 +67,16 @@ fn update(msg: Msg, model: &mut Model, orders: &mut impl Orders<Msg>) {
                 }
             }
         },
+        Msg::Delete(id) => { orders.perform_cmd(api::delete(id)); },
 
         Msg::NewPostAuthor(author) => model.new_post.author = Some(author),
         Msg::NewPostContent(content) => model.new_post.content = Some(content),
 
         Msg::PostsFetched(Ok(posts)) => model.posts = posts.data,
-        Msg::PostsFetched(Err(_)) => {
-            orders.skip();
-        },
+        Msg::PostsFetched(Err(_)) => { orders.skip(); },
+
+        Msg::PostDeleted(Ok(_)) => { orders.perform_cmd(api::get_list()); }
+        Msg::PostDeleted(Err(_)) => { orders.skip(); }
     }
 }
 
@@ -92,7 +92,13 @@ fn view(model: &Model) -> impl View<Msg> {
         section![editor_component::view()],
         section![
             model.posts.iter().map(|post| {
-                post_component::view(&post.author, &post.content, post.created_at, post.updated_at)
+                post_component::view(
+                    post.id,
+                    &post.author,
+                    &post.content,
+                    post.created_at,
+                    post.updated_at
+                )
             }),
         ],
     ]
