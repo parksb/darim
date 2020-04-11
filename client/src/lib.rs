@@ -98,22 +98,17 @@ fn update(msg: Msg, model: &mut Model, orders: &mut impl Orders<Msg>) {
         },
 
         Msg::PostsFetched(Ok(posts)) => model.posts = posts.data,
-        Msg::PostsFetched(Err(_)) => { orders.skip(); },
-
-        Msg::PostDeleted(Ok(_)) => { orders.perform_cmd(api::get_list()); }
-        Msg::PostDeleted(Err(_)) => { orders.skip(); }
-
+        Msg::PostDeleted(Ok(_)) => { orders.perform_cmd(api::get_list()); },
         Msg::PostCreated(Ok(_)) => {
             orders.perform_cmd(api::get_list());
             model.new_post = NewPost { author: None, content: None };
-        }
-        Msg::PostCreated(Err(_)) => { orders.skip(); }
-
+        },
         Msg::PostUpdated(Ok(_)) => {
             orders.perform_cmd(api::get_list());
             model.edited_post = EditedPost { id: None, author: None, content: None };
-        }
-        Msg::PostUpdated(Err(_)) => { orders.skip(); }
+        },
+
+        _ => { orders.skip(); },
     }
 }
 
