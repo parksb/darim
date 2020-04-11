@@ -73,7 +73,10 @@ fn update(msg: Msg, model: &mut Model, orders: &mut impl Orders<Msg>) {
         Msg::PostDeleted(Ok(_)) => { orders.perform_cmd(api::get_list()); }
         Msg::PostDeleted(Err(_)) => { orders.skip(); }
 
-        Msg::PostCreated(Ok(_)) => { orders.perform_cmd(api::get_list()); }
+        Msg::PostCreated(Ok(_)) => {
+            orders.perform_cmd(api::get_list());
+            model.new_post = NewPost { author: None, content: None };
+        }
         Msg::PostCreated(Err(_)) => { orders.skip(); }
     }
 }
@@ -87,7 +90,7 @@ fn view(model: &Model) -> impl View<Msg> {
     div![
         &wrapper_container_style,
         header_component::view(),
-        editor_component::view(),
+        editor_component::view(model.new_post.clone()),
         section![
             model.posts.iter().map(|post| {
                 post_component::view(

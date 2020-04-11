@@ -1,7 +1,7 @@
 use seed::{*, prelude::*};
-use crate::Msg;
+use crate::{Msg, NewPost};
 
-pub fn view() -> Node<Msg> {
+pub fn view(new_post: NewPost) -> Node<Msg> {
     let container_style = style!{
         St::Margin => "30px 0 30px 0";
     };
@@ -20,8 +20,8 @@ pub fn view() -> Node<Msg> {
 
     section![
         &container_style,
-        input![&text_field_style, attrs!{At::Placeholder => "name..."}, input_ev(Ev::Input, Msg::NewPostAuthor)],
-        textarea![&text_field_style, attrs!{At::Rows => 3, At::Placeholder => "content..."}, input_ev(Ev::Input, Msg::NewPostContent)],
+        input![&text_field_style, attrs!{At::Value => new_post.author.unwrap_or("".to_string()), At::Placeholder => "name..."}, input_ev(Ev::Input, Msg::NewPostAuthor)],
+        textarea![&text_field_style, attrs!{At::Value => new_post.content.unwrap_or("".to_string()), At::Rows => 3, At::Placeholder => "content..."}, input_ev(Ev::Input, Msg::NewPostContent)],
         button![&button_style, "submit🚀", ev(Ev::Click, |_| Msg::Create)],
     ]
 }
