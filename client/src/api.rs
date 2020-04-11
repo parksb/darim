@@ -1,7 +1,7 @@
 use seed::*;
 use serde::Deserialize;
 
-use crate::{Msg, NewPost};
+use crate::{Msg, NewPost, EditedPost};
 
 const BASE_URL: &str = "http://localhost:8080";
 
@@ -15,6 +15,20 @@ pub async fn create(new_post: NewPost) -> Result<Msg, Msg> {
         .method(Method::Post)
         .send_json(&new_post)
         .fetch_json_data(Msg::PostCreated)
+        .await
+}
+
+pub async fn update(edited_post: EditedPost) -> Result<Msg, Msg> {
+    fetch::Request::new(
+        format!(
+            "{}/posts/{}", BASE_URL, if let Some(id) = edited_post.id {
+            id.to_string()
+        } else {
+            String::from("")
+        })
+    ).method(Method::Patch)
+        .send_json(&edited_post)
+        .fetch_json_data(Msg::PostUpdated)
         .await
 }
 
