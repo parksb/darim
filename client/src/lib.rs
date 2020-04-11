@@ -1,6 +1,6 @@
 use seed::{*, prelude::*};
 use chrono::NaiveDateTime;
-use serde::Deserialize;
+use serde::{Serialize, Deserialize};
 
 mod api;
 mod components {
@@ -19,11 +19,11 @@ pub struct Post {
     pub updated_at: Option<NaiveDateTime>,
 }
 
-struct NewPost {
+#[derive(Clone, Serialize)]
+pub struct NewPost {
     pub author: Option<String>,
     pub content: Option<String>,
 }
-
 
 struct Model {
     pub posts: Vec<Post>,
@@ -40,6 +40,7 @@ pub enum Msg {
 
     PostsFetched(fetch::ResponseDataResult<api::Response<Vec<Post>>>),
     PostDeleted(fetch::ResponseDataResult<api::Response<bool>>),
+    PostCreated(fetch::ResponseDataResult<api::Response<bool>>),
 }
 
 impl Default for Model {
@@ -58,15 +59,7 @@ fn after_mount(_: Url, orders: &mut impl Orders<Msg>) -> AfterMount<Model> {
 
 fn update(msg: Msg, model: &mut Model, orders: &mut impl Orders<Msg>) {
     match msg {
-        Msg::Create => {
-            if let Some(author) = model.new_post.author.clone() {
-                if let Some(content) = model.new_post.content.clone() {
-                    if !author.is_empty() && !content.is_empty() {
-                        // create a new post
-                    }
-                }
-            }
-        },
+        Msg::Create => { orders.perform_cmd(api::create(model.new_post.clone())); },
         Msg::Delete(id) => { orders.perform_cmd(api::delete(id)); },
 
         Msg::NewPostAuthor(author) => model.new_post.author = Some(author),
@@ -77,6 +70,9 @@ fn update(msg: Msg, model: &mut Model, orders: &mut impl Orders<Msg>) {
 
         Msg::PostDeleted(Ok(_)) => { orders.perform_cmd(api::get_list()); }
         Msg::PostDeleted(Err(_)) => { orders.skip(); }
+
+        Msg::PostCreated(Ok(_)) => { orders.perform_cmd(api::get_list()); }
+        Msg::PostCreated(Err(_)) => { orders.skip(); }
     }
 }
 
