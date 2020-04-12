@@ -1,3 +1,4 @@
+use std::env;
 use actix_web::{get, App, HttpServer, Responder, HttpResponse};
 use actix_cors::Cors;
 use std::collections::HashMap;
@@ -12,15 +13,17 @@ async fn health_check() -> impl Responder {
     HttpResponse::Ok().json(response)
 }
 
-
 #[actix_rt::main]
 async fn main() -> std::io::Result<()> {
-    let address = "127.0.0.1:8080";
+    dotenv::dotenv().expect("Failed to read .env file");
 
-    HttpServer::new(|| App::new()
+    let address = env::var("ADDRESS").expect("ADDRESS not found");
+    let client_address = env::var("CLIENT_ADDRESS").expect("CLIENT_ADDRESS not found");
+
+    HttpServer::new(move || App::new()
         .wrap(
             Cors::new()
-                .allowed_origin("http://localhost:8000")
+                .allowed_origin(&client_address)
                 .finish()
         )
         .service(health_check)
