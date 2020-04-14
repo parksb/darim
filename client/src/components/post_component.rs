@@ -40,7 +40,7 @@ pub fn view(
             input![
                 &author_text_field_style,
                 &text_field_style,
-                attrs!{At::Value => edited_post.author.unwrap_or(post.author.to_string())},
+                attrs!{At::Value => edited_post.author.unwrap_or(post.author)},
                 input_ev(Ev::Input, Msg::EditedPostAuthor),
             ]
         } else {
@@ -49,15 +49,15 @@ pub fn view(
         small![
             &info_style,
             time![format!("{}", post.created_at)],
-            span![if let Some(_) = post.updated_at { " (edited)" } else { "" }],
+            span![if post.updated_at.is_some() { " (edited)" } else { "" }],
         ],
         if is_post_to_be_updated {
             vec![
                 textarea![
                     &text_field_style,
                     attrs!{
-                        At::Value => edited_post.content.unwrap_or(post.content.to_string()),
-                        At::Rows => 3
+                        At::Value => edited_post.content.unwrap_or(post.content),
+                        At::Rows => 3,
                     },
                     input_ev(Ev::Input, Msg::EditedPostContent),
                 ],

@@ -92,7 +92,7 @@ fn update(msg: Msg, model: &mut Model, orders: &mut impl Orders<Msg>) {
                 model.edited_post = EditedPost {
                     id: Some(id),
                     author: Some(target.author.clone()),
-                    content: Some(target.content.clone())
+                    content: Some(target.content.clone()),
                 };
             }
         },

@@ -22,8 +22,23 @@ pub fn view(new_post: NewPost) -> Node<Msg> {
 
     section![
         &container_style,
-        input![&text_field_style, attrs!{At::Value => new_post.author.unwrap_or("".to_string()), At::Placeholder => "name..."}, input_ev(Ev::Input, Msg::NewPostAuthor)],
-        textarea![&text_field_style, attrs!{At::Value => new_post.content.unwrap_or("".to_string()), At::Rows => 3, At::Placeholder => "content..."}, input_ev(Ev::Input, Msg::NewPostContent)],
+        input![
+            &text_field_style,
+            attrs!{
+                At::Value => new_post.author.unwrap_or_else(|| String::from("")),
+                At::Placeholder => "name...",
+            },
+            input_ev(Ev::Input, Msg::NewPostAuthor),
+        ],
+        textarea![
+            &text_field_style,
+            attrs!{
+                At::Value => new_post.content.unwrap_or_else(|| String::from("")),
+                At::Rows => 3,
+                At::Placeholder => "content...",
+            },
+            input_ev(Ev::Input, Msg::NewPostContent),
+        ],
         button![&button_style, "submit🚀", ev(Ev::Click, |_| Msg::Create)],
     ]
 }
