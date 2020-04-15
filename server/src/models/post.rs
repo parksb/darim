@@ -1,5 +1,5 @@
 use chrono::NaiveDateTime;
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 
 use crate::schema::posts;
 
@@ -13,14 +13,14 @@ pub struct Post {
 }
 
 #[derive(Insertable)]
-#[table_name="posts"]
+#[table_name = "posts"]
 pub struct PostToCreate {
     pub author: String,
     pub content: String,
 }
 
 #[derive(AsChangeset)]
-#[table_name="posts"]
+#[table_name = "posts"]
 pub struct PostToUpdate {
     pub author: Option<String>,
     pub content: Option<String>,

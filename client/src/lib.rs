@@ -1,13 +1,13 @@
-use seed::{*, prelude::*};
 use chrono::NaiveDateTime;
-use serde::{Serialize, Deserialize};
+use seed::{prelude::*, *};
+use serde::{Deserialize, Serialize};
 
 mod api;
 mod components {
-    pub mod post_component;
+    pub mod editor_component;
     pub mod footer_component;
     pub mod header_component;
-    pub mod editor_component;
+    pub mod post_component;
 }
 
 use crate::components::*;
@@ -63,8 +63,15 @@ impl Default for Model {
     fn default() -> Self {
         Self {
             posts: vec![],
-            new_post: NewPost { author: None, content: None },
-            edited_post: EditedPost { id: None, author: None, content: None },
+            new_post: NewPost {
+                author: None,
+                content: None,
+            },
+            edited_post: EditedPost {
+                id: None,
+                author: None,
+                content: None,
+            },
         }
     }
 }
@@ -76,10 +83,22 @@ fn after_mount(_: Url, orders: &mut impl Orders<Msg>) -> AfterMount<Model> {
 
 fn update(msg: Msg, model: &mut Model, orders: &mut impl Orders<Msg>) {
     match msg {
-        Msg::Create => { orders.perform_cmd(api::create(model.new_post.clone())); },
-        Msg::Update => { orders.perform_cmd(api::update(model.edited_post.clone())); },
-        Msg::UpdateCanceled => { model.edited_post = EditedPost { id: None, author: None, content: None }; },
-        Msg::Delete(id) => { orders.perform_cmd(api::delete(id)); },
+        Msg::Create => {
+            orders.perform_cmd(api::create(model.new_post.clone()));
+        }
+        Msg::Update => {
+            orders.perform_cmd(api::update(model.edited_post.clone()));
+        }
+        Msg::UpdateCanceled => {
+            model.edited_post = EditedPost {
+                id: None,
+                author: None,
+                content: None,
+            };
+        }
+        Msg::Delete(id) => {
+            orders.perform_cmd(api::delete(id));
+        }
 
         Msg::NewPostAuthor(author) => model.new_post.author = Some(author),
         Msg::NewPostContent(content) => model.new_post.content = Some(content),
@@ -95,25 +114,36 @@ fn update(msg: Msg, model: &mut Model, orders: &mut impl Orders<Msg>) {
                     content: Some(target.content.clone()),
                 };
             }
-        },
+        }
 
         Msg::PostsFetched(Ok(posts)) => model.posts = posts.data,
-        Msg::PostDeleted(Ok(_)) => { orders.perform_cmd(api::get_list()); },
+        Msg::PostDeleted(Ok(_)) => {
+            orders.perform_cmd(api::get_list());
+        }
         Msg::PostCreated(Ok(_)) => {
             orders.perform_cmd(api::get_list());
-            model.new_post = NewPost { author: None, content: None };
-        },
+            model.new_post = NewPost {
+                author: None,
+                content: None,
+            };
+        }
         Msg::PostUpdated(Ok(_)) => {
             orders.perform_cmd(api::get_list());
-            model.edited_post = EditedPost { id: None, author: None, content: None };
-        },
+            model.edited_post = EditedPost {
+                id: None,
+                author: None,
+                content: None,
+            };
+        }
 
-        _ => { orders.skip(); },
+        _ => {
+            orders.skip();
+        }
     }
 }
 
 fn view(model: &Model) -> impl View<Msg> {
-    let wrapper_container_style = style!{
+    let wrapper_container_style = style! {
         St::MaxWidth => "500px";
         St::Margin => "auto";
     };
@@ -122,15 +152,9 @@ fn view(model: &Model) -> impl View<Msg> {
         &wrapper_container_style,
         header_component::view(),
         editor_component::view(model.new_post.clone()),
-        section![
-            model.posts.iter().map(|post| {
-                post_component::view(
-                    post.id,
-                    post.clone(),
-                    model.edited_post.clone(),
-                )
-            }),
-        ],
+        section![model.posts.iter().map(|post| {
+            post_component::view(post.id, post.clone(), model.edited_post.clone())
+        })],
         footer_component::view(),
     ]
 }

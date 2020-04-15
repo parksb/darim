@@ -1,7 +1,7 @@
-use std::env;
-use actix_web::{get, App, HttpServer, Responder, HttpResponse};
 use actix_cors::Cors;
+use actix_web::{get, App, HttpResponse, HttpServer, Responder};
 use std::collections::HashMap;
+use std::env;
 
 use patic::routes;
 
@@ -20,18 +20,16 @@ async fn main() -> std::io::Result<()> {
     let address = env::var("ADDRESS").expect("ADDRESS not found");
     let client_address = env::var("CLIENT_ADDRESS").expect("CLIENT_ADDRESS not found");
 
-    HttpServer::new(move || App::new()
-        .wrap(
-            Cors::new()
-                .allowed_origin(&client_address)
-                .finish()
-        )
-        .service(health_check)
-        .service(routes::post::posts)
-        .service(routes::post::create_post)
-        .service(routes::post::delete_post)
-        .service(routes::post::update_post)
-    ).bind(address)?
-        .run()
-        .await
+    HttpServer::new(move || {
+        App::new()
+            .wrap(Cors::new().allowed_origin(&client_address).finish())
+            .service(health_check)
+            .service(routes::post::posts)
+            .service(routes::post::create_post)
+            .service(routes::post::delete_post)
+            .service(routes::post::update_post)
+    })
+    .bind(address)?
+    .run()
+    .await
 }

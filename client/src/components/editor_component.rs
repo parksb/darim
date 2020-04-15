@@ -1,11 +1,11 @@
-use seed::{*, prelude::*};
 use crate::{Msg, NewPost};
+use seed::{prelude::*, *};
 
 pub fn view(new_post: NewPost) -> Node<Msg> {
-    let container_style = style!{
+    let container_style = style! {
         St::Margin => "30px 0 30px 0";
     };
-    let text_field_style = style!{
+    let text_field_style = style! {
         St::FontSize => "16px";
         St::MaxWidth => "100%";
         St::MinWidth => "100%";
@@ -14,7 +14,7 @@ pub fn view(new_post: NewPost) -> Node<Msg> {
         St::Padding => 0;
         St::MarginBottom => "10px";
     };
-    let button_style = style!{
+    let button_style = style! {
         St::FontSize => "14px";
         St::Width => "100%";
         St::Height => "25px";
@@ -24,7 +24,7 @@ pub fn view(new_post: NewPost) -> Node<Msg> {
         &container_style,
         input![
             &text_field_style,
-            attrs!{
+            attrs! {
                 At::Value => new_post.author.unwrap_or_else(|| String::from("")),
                 At::Placeholder => "name...",
             },
@@ -32,7 +32,7 @@ pub fn view(new_post: NewPost) -> Node<Msg> {
         ],
         textarea![
             &text_field_style,
-            attrs!{
+            attrs! {
                 At::Value => new_post.content.unwrap_or_else(|| String::from("")),
                 At::Rows => 3,
                 At::Placeholder => "content...",

@@ -1,5 +1,5 @@
-use thiserror::Error;
 use diesel::result;
+use thiserror::Error;
 
 #[derive(Error, Debug)]
 pub enum ServiceError {

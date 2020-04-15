@@ -1,5 +1,5 @@
-use std::env;
 use diesel::{mysql::MysqlConnection, prelude::*};
+use std::env;
 
 pub fn connect() -> MysqlConnection {
     dotenv::dotenv().expect("Failed to read .env file");

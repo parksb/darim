@@ -1,29 +1,25 @@
-use seed::{*, prelude::*};
-use crate::{Msg, Post, EditedPost};
+use crate::{EditedPost, Msg, Post};
+use seed::{prelude::*, *};
 
-pub fn view(
-    id: u64,
-    post: Post,
-    edited_post: EditedPost,
-) -> Node<Msg> {
-    let container_style = style!{
+pub fn view(id: u64, post: Post, edited_post: EditedPost) -> Node<Msg> {
+    let container_style = style! {
         St::Margin => "30px 0 30px 0";
         St::PaddingLeft => "10px";
         St::BorderLeft => "3px #ffce05 solid";
     };
-    let info_style = style!{
+    let info_style = style! {
         St::Color => "#c0c0c0";
     };
-    let content_style = style!{
+    let content_style = style! {
         St::Margin => "5px 0 0 0";
     };
-    let text_field_style = style!{
+    let text_field_style = style! {
         St::FontSize => "16px";
         St::Border => 0;
         St::Padding => 0;
         St::BorderBottom => "1px #000 solid";
     };
-    let author_text_field_style = style!{
+    let author_text_field_style = style! {
         St::FontWeight => "bold";
         St::Margin => "0 0 5px 0";
     };
@@ -40,7 +36,7 @@ pub fn view(
             input![
                 &author_text_field_style,
                 &text_field_style,
-                attrs!{At::Value => edited_post.author.unwrap_or(post.author)},
+                attrs! {At::Value => edited_post.author.unwrap_or(post.author)},
                 input_ev(Ev::Input, Msg::EditedPostAuthor),
             ]
         } else {
@@ -48,14 +44,18 @@ pub fn view(
         },
         small![
             &info_style,
-            time![format!("{}", post.created_at)],
-            span![if post.updated_at.is_some() { " (edited)" } else { "" }],
+            time![format!(" {}", post.created_at)],
+            span![if post.updated_at.is_some() {
+                " (edited)"
+            } else {
+                ""
+            }],
         ],
         if is_post_to_be_updated {
             vec![
                 textarea![
                     &text_field_style,
-                    attrs!{
+                    attrs! {
                         At::Value => edited_post.content.unwrap_or(post.content),
                         At::Rows => 3,
                     },

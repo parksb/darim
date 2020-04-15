@@ -1,6 +1,6 @@
 # Patic Server
 
-* [flosse/rust-web-framework-comparison"](https://github.com/flosse/rust-web-framework-comparison)
+* [flosse/rust-web-framework-comparison](https://github.com/flosse/rust-web-framework-comparison)
 * [thecloudmaker/actix_tutorials](https://github.com/thecloudmaker/actix_tutorials)
 * [actix/examples](https://github.com/actix/examples)
 * [diesel.rs](http://diesel.rs/)
