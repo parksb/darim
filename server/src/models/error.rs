@@ -12,6 +12,9 @@ pub enum ServiceError {
     #[error("invalid argument supplied")]
     InvalidArgument,
 
+    #[error("duplicated key")]
+    DuplicatedKey,
+
     #[error("query execution failure")]
     QueryExecutionFailure,
 }
