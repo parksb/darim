@@ -13,7 +13,7 @@ pub fn get_list() -> Result<Vec<Post>, ServiceError> {
 }
 
 pub fn create(args: CreateArgs) -> Result<bool, ServiceError> {
-    if args.author.is_empty() || args.content.is_empty() {
+    if args.author.trim().is_empty() || args.content.trim().is_empty() {
         println!("{}", ServiceError::InvalidArgument);
         return Err(ServiceError::InvalidArgument);
     }
@@ -57,14 +57,14 @@ pub fn update(id: u64, args: UpdateArgs) -> Result<bool, ServiceError> {
     }
 
     if let Some(author) = &args.author {
-        if author.is_empty() {
+        if author.trim().is_empty() {
             println!("{}", ServiceError::InvalidArgument);
             return Err(ServiceError::InvalidArgument);
         }
     }
 
     if let Some(content) = &args.content {
-        if content.is_empty() {
+        if content.trim().is_empty() {
             println!("{}", ServiceError::InvalidArgument);
             return Err(ServiceError::InvalidArgument);
         }
