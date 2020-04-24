@@ -70,22 +70,10 @@ pub fn update(id: u64, args: UpdateArgs) -> Result<bool, ServiceError> {
         return Err(ServiceError::InvalidArgument);
     }
 
-    if let Some(name) = &args.name {
-        if name.trim().is_empty() {
-            println!("{}", ServiceError::InvalidArgument);
-            return Err(ServiceError::InvalidArgument);
-        }
-    }
-
-    if let Some(password) = &args.password {
-        if password.trim().is_empty() {
-            println!("{}", ServiceError::InvalidArgument);
-            return Err(ServiceError::InvalidArgument);
-        }
-    }
-
-    if let Some(avatar_url) = &args.avatar_url {
-        if avatar_url.trim().is_empty() {
+    if let (Some(name), Some(password), Some(avatar_url)) =
+        (&args.name, &args.password, &args.avatar_url)
+    {
+        if name.trim().is_empty() || password.trim().is_empty() || avatar_url.trim().is_empty() {
             println!("{}", ServiceError::InvalidArgument);
             return Err(ServiceError::InvalidArgument);
         }

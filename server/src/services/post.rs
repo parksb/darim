@@ -56,15 +56,8 @@ pub fn update(id: u64, args: UpdateArgs) -> Result<bool, ServiceError> {
         return Err(ServiceError::InvalidArgument);
     }
 
-    if let Some(author) = &args.author {
-        if author.trim().is_empty() {
-            println!("{}", ServiceError::InvalidArgument);
-            return Err(ServiceError::InvalidArgument);
-        }
-    }
-
-    if let Some(content) = &args.content {
-        if content.trim().is_empty() {
+    if let (Some(author), Some(content)) = (&args.author, &args.content) {
+        if author.trim().is_empty() || content.trim().is_empty() {
             println!("{}", ServiceError::InvalidArgument);
             return Err(ServiceError::InvalidArgument);
         }
