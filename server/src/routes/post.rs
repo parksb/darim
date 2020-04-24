@@ -56,3 +56,10 @@ pub async fn update_post(id: web::Path<u64>, post: web::Json<UpdateArgs>) -> imp
         _ => HttpResponse::InternalServerError().body("internal server error"),
     }
 }
+
+pub fn init_routes(cfg: &mut web::ServiceConfig) {
+    cfg.service(posts);
+    cfg.service(create_post);
+    cfg.service(delete_post);
+    cfg.service(update_post);
+}

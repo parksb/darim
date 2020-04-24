@@ -49,3 +49,9 @@ pub async fn update_user(id: web::Path<u64>, user: web::Json<UpdateArgs>) -> imp
         _ => HttpResponse::InternalServerError().body("internal server error"),
     }
 }
+
+pub fn init_routes(cfg: &mut web::ServiceConfig) {
+    cfg.service(create_user);
+    cfg.service(delete_user);
+    cfg.service(update_user);
+}
