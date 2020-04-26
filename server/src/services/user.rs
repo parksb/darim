@@ -11,6 +11,18 @@ fn get_hashed_password(original: String) -> String {
     password_hasher.result_str()
 }
 
+pub fn get_one(id: u64) -> Result<User, ServiceError> {
+    let conn = db_connection::connect();
+    let user = users::table.find(id).first::<User>(&conn)?;
+    Ok(user)
+}
+
+pub fn get_list() -> Result<Vec<User>, ServiceError> {
+    let conn = db_connection::connect();
+    let user_list = users::table.load::<User>(&conn)?;
+    Ok(user_list)
+}
+
 pub fn create(args: CreateArgs) -> Result<bool, ServiceError> {
     if args.name.trim().is_empty()
         || args.email.trim().is_empty()

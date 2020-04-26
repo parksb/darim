@@ -19,21 +19,27 @@ GET /posts
     "data": [
         {
             "id": 3,
-            "author": "park",
+            "user_id": 1,
+            "user_name": "park",
+            "user_avatar_url": "image.jpg",
             "content": "Lorem ipsum dolor sit amet",
             "created_at": "2020-04-11T16:31:09",
             "updated_at": null 
         },
         {
             "id": 2,
-            "author": "lee",
+            "user_id": 2,
+            "user_name": "lee",
+            "user_avatar_url": null,
             "content": "Lorem ipsum dolor sit amet",
             "created_at": "2020-04-10T07:43:03",
             "updated_at": "2020-04-11T16:07:41"
         },
         {
             "id": 1,
-            "author": "kim",
+            "user_id": 3,
+            "user_name": "kim",
+            "user_avatar_url": null,
             "content": "Lorem ipsum dolor sit amet",
             "created_at": "2020-04-07T13:16:06",
             "updated_at": null
@@ -52,7 +58,7 @@ POST /posts
 
 ```json
 {
-    "author": "park",
+    "user_id": 1,
     "content": "Lorem ipsum dolor sit amet"
 }
 ```
@@ -75,19 +81,6 @@ PATCH /posts/:id
 
 ```json
 {
-    "author": "park"
-}
-```
-
-```json
-{
-    "content": "Lorem ipsum dolor sit amet"
-}
-```
-
-```json
-{
-    "author": "park",
     "content": "Lorem ipsum dolor sit amet"
 }
 ```

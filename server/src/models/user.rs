@@ -9,9 +9,17 @@ pub struct User {
     pub name: String,
     pub email: String,
     pub password: String,
-    pub avatar_url: String,
+    pub avatar_url: Option<String>,
     pub created_at: NaiveDateTime,
     pub updated_at: Option<NaiveDateTime>,
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct UserToResponse {
+    pub id: u64,
+    pub name: String,
+    pub email: String,
+    pub avatar_url: Option<String>,
 }
 
 #[derive(Insertable)]

@@ -1,7 +1,7 @@
 table! {
     posts (id) {
         id -> Unsigned<Bigint>,
-        author -> Text,
+        user_id -> Unsigned<Bigint>,
         content -> Text,
         created_at -> Datetime,
         updated_at -> Nullable<Datetime>,
