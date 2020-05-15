@@ -2,6 +2,7 @@
 
 /// models
 pub mod models {
+    pub mod auth;
     pub mod db_connection;
     pub mod error;
     pub mod post;
@@ -10,12 +11,14 @@ pub mod models {
 
 /// routes
 pub mod routes {
+    pub mod auth;
     pub mod post;
     pub mod user;
 }
 
 /// services
 pub mod services {
+    pub mod auth;
     pub mod post;
     pub mod user;
 }

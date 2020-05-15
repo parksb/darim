@@ -9,6 +9,7 @@ edition = "2018"
 [dependencies]
 actix-web = "2"
 actix-cors = "0.2"
+actix-session = "0.3"
 actix-rt = "1"
 chrono = { version = "0.4", features = ["serde"] }
 dotenv = "0.15"
