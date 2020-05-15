@@ -1,5 +1,7 @@
 # Patic Server
 
+[![Server CI](https://github.com/ParkSB/patic/workflows/Server%20CI/badge.svg)](https://github.com/ParkSB/patic/actions?query=workflow%3A%22Server+CI%22)
+
 * [flosse/rust-web-framework-comparison](https://github.com/flosse/rust-web-framework-comparison)
 * [thecloudmaker/actix_tutorials](https://github.com/thecloudmaker/actix_tutorials)
 * [actix/examples](https://github.com/actix/examples)
