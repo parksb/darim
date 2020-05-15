@@ -25,6 +25,7 @@ pub mod services {
 
 pub mod utils {
     pub mod password_util;
+    pub mod session_util;
 }
 
 pub mod schema;
