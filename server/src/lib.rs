@@ -23,6 +23,10 @@ pub mod services {
     pub mod user;
 }
 
+pub mod utils {
+    pub mod password_util;
+}
+
 pub mod schema;
 
 #[macro_use]

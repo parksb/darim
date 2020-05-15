@@ -1,15 +1,9 @@
 use chrono::Utc;
-use crypto::{digest::Digest, sha3::Sha3};
 use diesel::prelude::*;
 
 use crate::models::{db_connection, error::ServiceError, user::*};
 use crate::schema::users;
-
-fn get_hashed_password(original: String) -> String {
-    let mut password_hasher = Sha3::sha3_512();
-    password_hasher.input_str(&original);
-    password_hasher.result_str()
-}
+use crate::utils::password_util;
 
 pub fn get_one(id: u64) -> Result<User, ServiceError> {
     let conn = db_connection::connect();
@@ -46,7 +40,7 @@ pub fn create(args: CreateArgs) -> Result<bool, ServiceError> {
     let user = UserToCreate {
         name: args.name,
         email: args.email,
-        password: get_hashed_password(args.password),
+        password: password_util::get_hashed_password(args.password),
         avatar_url: args.avatar_url,
     };
     let count = diesel::insert_into(users::table)
@@ -96,7 +90,7 @@ pub fn update(id: u64, args: UpdateArgs) -> Result<bool, ServiceError> {
     let user = UserToUpdate {
         name: args.name,
         password: if let Some(password) = args.password {
-            Some(get_hashed_password(password))
+            Some(password_util::get_hashed_password(password))
         } else {
             None
         },
