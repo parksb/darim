@@ -68,8 +68,8 @@ pub fn delete(id: u64) -> Result<bool, ServiceError> {
     let count = diesel::delete(target_post).execute(&conn)?;
 
     if count < 1 {
-        println!("{}", ServiceError::NotFound(id));
-        Err(ServiceError::NotFound(id))
+        println!("{}", ServiceError::NotFound(id.to_string()));
+        Err(ServiceError::NotFound(id.to_string()))
     } else {
         Ok(true)
     }
@@ -99,8 +99,8 @@ pub fn update(id: u64, args: UpdateArgs) -> Result<bool, ServiceError> {
     let count = diesel::update(target_post).set(post).execute(&conn)?;
 
     if count < 1 {
-        println!("{}", ServiceError::NotFound(id));
-        Err(ServiceError::NotFound(id))
+        println!("{}", ServiceError::NotFound(id.to_string()));
+        Err(ServiceError::NotFound(id.to_string()))
     } else {
         Ok(true)
     }
