@@ -7,11 +7,11 @@ use crate::schema::posts::dsl;
 use crate::services::user;
 
 fn check_has_permission(
-    post_id: &u64,
+    id: &u64,
     user_id: &u64,
     conn: &MysqlConnection,
 ) -> Result<bool, ServiceError> {
-    let post: Result<Post, Error> = dsl::posts.find(post_id).get_result::<Post>(conn);
+    let post: Result<Post, Error> = dsl::posts.find(id).get_result::<Post>(conn);
     match post {
         Ok(found_post) => {
             if &found_post.user_id != user_id {
@@ -23,8 +23,8 @@ fn check_has_permission(
         }
         Err(error) => match error {
             Error::NotFound => {
-                println!("{}", ServiceError::NotFound(post_id.to_string()));
-                Err(ServiceError::NotFound(post_id.to_string()))
+                println!("{}", ServiceError::NotFound(id.to_string()));
+                Err(ServiceError::NotFound(id.to_string()))
             }
             _ => {
                 println!("{}", ServiceError::QueryExecutionFailure);

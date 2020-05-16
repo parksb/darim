@@ -50,7 +50,6 @@ pub struct CreateArgs {
 
 #[derive(Serialize, Deserialize)]
 pub struct UpdateArgs {
-    pub user_id: String,
     pub name: Option<String>,
     pub password: Option<String>,
     pub avatar_url: Option<String>,
