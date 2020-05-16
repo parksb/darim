@@ -6,6 +6,34 @@ use crate::models::{db_connection, error::ServiceError, post::*};
 use crate::schema::posts::dsl;
 use crate::services::user;
 
+fn check_has_permission(
+    post_id: &u64,
+    user_id: &u64,
+    conn: &MysqlConnection,
+) -> Result<bool, ServiceError> {
+    let post: Result<Post, Error> = dsl::posts.find(post_id).get_result::<Post>(conn);
+    match post {
+        Ok(found_post) => {
+            if &found_post.user_id != user_id {
+                println!("{}", ServiceError::Unauthorized);
+                Err(ServiceError::Unauthorized)
+            } else {
+                Ok(true)
+            }
+        }
+        Err(error) => match error {
+            Error::NotFound => {
+                println!("{}", ServiceError::NotFound(post_id.to_string()));
+                Err(ServiceError::NotFound(post_id.to_string()))
+            }
+            _ => {
+                println!("{}", ServiceError::QueryExecutionFailure);
+                Err(ServiceError::QueryExecutionFailure)
+            }
+        },
+    }
+}
+
 pub fn get_list() -> Result<Vec<PostToShow>, ServiceError> {
     let conn = db_connection::connect();
     let post_list: Vec<Post> = dsl::posts
@@ -38,10 +66,15 @@ pub fn get_list() -> Result<Vec<PostToShow>, ServiceError> {
     Ok(post_to_show_list)
 }
 
-pub fn create(args: CreateArgs) -> Result<bool, ServiceError> {
+pub fn create(user_id: u64, args: CreateArgs) -> Result<bool, ServiceError> {
     if args.content.trim().is_empty() {
         println!("{}", ServiceError::InvalidArgument);
         return Err(ServiceError::InvalidArgument);
+    }
+
+    if user_id != args.user_id {
+        println!("{}", ServiceError::Unauthorized);
+        return Err(ServiceError::Unauthorized);
     }
 
     let conn = db_connection::connect();
@@ -62,8 +95,13 @@ pub fn create(args: CreateArgs) -> Result<bool, ServiceError> {
     }
 }
 
-pub fn delete(id: u64) -> Result<bool, ServiceError> {
+pub fn delete(id: u64, user_id: u64) -> Result<bool, ServiceError> {
     let conn = db_connection::connect();
+
+    let has_permission = check_has_permission(&id, &user_id, &conn);
+    if has_permission.is_err() {
+        return has_permission;
+    }
 
     let target_post = dsl::posts.find(id);
     let count = diesel::delete(target_post).execute(&conn)?;
@@ -76,7 +114,7 @@ pub fn delete(id: u64) -> Result<bool, ServiceError> {
     }
 }
 
-pub fn update(id: u64, args: UpdateArgs) -> Result<bool, ServiceError> {
+pub fn update(id: u64, user_id: u64, args: UpdateArgs) -> Result<bool, ServiceError> {
     if args.content.is_none() {
         println!("{}", ServiceError::InvalidArgument);
         return Err(ServiceError::InvalidArgument);
@@ -91,31 +129,19 @@ pub fn update(id: u64, args: UpdateArgs) -> Result<bool, ServiceError> {
 
     let conn = db_connection::connect();
 
+    let has_permission = check_has_permission(&id, &user_id, &conn);
+    if has_permission.is_err() {
+        return has_permission;
+    }
+
     let post = PostToUpdate {
         content: args.content,
         updated_at: Some(Utc::now().naive_utc()),
     };
 
-    let target_post_query = dsl::posts.find(id);
-    let target_post: Result<Post, Error> = target_post_query.get_result::<Post>(&conn);
-
-    if let Ok(found_target_post) = target_post {
-        if found_target_post.user_id != args.user_id {
-            return Err(ServiceError::Unauthorized);
-        }
-    } else {
-        if let Err(error) = target_post {
-            return match error {
-                Error::NotFound => {
-                    println!("{}", ServiceError::NotFound(id.to_string()));
-                    Err(ServiceError::NotFound(id.to_string()))
-                }
-                _ => Err(ServiceError::QueryExecutionFailure),
-            };
-        }
-    }
-
-    let count = diesel::update(target_post_query).set(post).execute(&conn)?;
+    let count = diesel::update(dsl::posts.find(id))
+        .set(post)
+        .execute(&conn)?;
 
     if count < 1 {
         println!("{}", ServiceError::QueryExecutionFailure);

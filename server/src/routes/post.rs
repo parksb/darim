@@ -19,10 +19,18 @@ pub async fn posts() -> impl Responder {
 
 /// Create a post
 #[post("/posts")]
-pub async fn create_post(post: web::Json<CreateArgs>) -> impl Responder {
-    let response = post::create(post.into_inner());
+pub async fn create_post(session: Session, post: web::Json<CreateArgs>) -> impl Responder {
+    let response = if let Some(user_session) = session_util::get_session(&session) {
+        post::create(user_session.user_id, post.into_inner())
+    } else {
+        Err(ServiceError::Unauthorized)
+    };
+
     match response {
         Ok(result) => HttpResponse::Ok().json(json!({ "data": result })),
+        Err(ServiceError::Unauthorized) => {
+            HttpResponse::Unauthorized().body(format!("{}", ServiceError::Unauthorized))
+        }
         Err(ServiceError::InvalidArgument) => {
             HttpResponse::BadRequest().body(format!("{}", ServiceError::InvalidArgument))
         }
@@ -32,10 +40,18 @@ pub async fn create_post(post: web::Json<CreateArgs>) -> impl Responder {
 
 /// Delete a post
 #[delete("/posts/{id}")]
-pub async fn delete_post(id: web::Path<u64>) -> impl Responder {
-    let response = post::delete(id.into_inner());
+pub async fn delete_post(session: Session, id: web::Path<u64>) -> impl Responder {
+    let response = if let Some(user_session) = session_util::get_session(&session) {
+        post::delete(id.into_inner(), user_session.user_id)
+    } else {
+        Err(ServiceError::Unauthorized)
+    };
+
     match response {
         Ok(result) => HttpResponse::Ok().json(json!({ "data": result })),
+        Err(ServiceError::Unauthorized) => {
+            HttpResponse::Unauthorized().body(format!("{}", ServiceError::Unauthorized))
+        }
         Err(ServiceError::NotFound(key)) => {
             HttpResponse::NotFound().body(format!("{}", ServiceError::NotFound(key)))
         }
@@ -50,8 +66,8 @@ pub async fn update_post(
     id: web::Path<u64>,
     args: web::Json<UpdateArgs>,
 ) -> impl Responder {
-    let response = if session_util::is_logged_in_user(&session, Some(&args.user_id)) {
-        post::update(id.into_inner(), args.into_inner())
+    let response = if let Some(user_session) = session_util::get_session(&session) {
+        post::update(id.into_inner(), user_session.user_id, args.into_inner())
     } else {
         Err(ServiceError::Unauthorized)
     };

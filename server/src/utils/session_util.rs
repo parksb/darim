@@ -1,3 +1,4 @@
+use crate::models::auth::UserSession;
 use actix_session::Session;
 
 pub fn set_session(
@@ -21,30 +22,23 @@ pub fn unset_session(session: Session) {
     session.clear();
 }
 
-pub fn is_logged_in_user(session: &Session, user_id: Option<&u64>) -> bool {
-    let user_id_in_session = session.get::<u64>("user_id");
-    let user_email_in_session = session.get::<String>("user_email");
-    let user_name_in_session = session.get::<String>("user_name");
+pub fn get_session(session: &Session) -> Option<UserSession> {
+    let user_id = session.get::<u64>("user_id");
+    let user_email = session.get::<String>("user_email");
+    let user_name = session.get::<String>("user_name");
 
-    if user_id_in_session.is_err()
-        || user_email_in_session.is_err()
-        || user_name_in_session.is_err()
+    if user_id.is_err() || user_email.is_err() || user_name.is_err() {
+        None
+    } else if (&user_id).as_ref().unwrap().is_some()
+        && (&user_email).as_ref().unwrap().is_some()
+        && (&user_name).as_ref().unwrap().is_some()
     {
-        false
-    } else if (&user_id_in_session).as_ref().unwrap().is_some()
-        && user_email_in_session.unwrap().is_some()
-        && user_name_in_session.unwrap().is_some()
-    {
-        if user_id.is_some() {
-            if &user_id_in_session.unwrap().unwrap() == user_id.unwrap() {
-                true
-            } else {
-                false
-            }
-        } else {
-            true
-        }
+        Some(UserSession {
+            user_id: user_id.unwrap().unwrap(),
+            user_email: user_email.unwrap().unwrap(),
+            user_name: user_name.unwrap().unwrap(),
+        })
     } else {
-        false
+        None
     }
 }
