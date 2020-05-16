@@ -8,6 +8,7 @@ pub struct LoginArgs {
 
 #[derive(Serialize, Deserialize)]
 pub struct UserSession {
+    pub user_id: u64,
     pub user_email: String,
     pub user_name: String,
 }

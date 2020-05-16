@@ -1,9 +1,11 @@
+use actix_session::Session;
 use actix_web::{delete, get, patch, post, web, HttpResponse, Responder};
 use serde_json::json;
 
 use crate::models::error::*;
 use crate::models::post::*;
 use crate::services::post;
+use crate::utils::session_util;
 
 /// List posts
 #[get("/posts")]
@@ -43,10 +45,22 @@ pub async fn delete_post(id: web::Path<u64>) -> impl Responder {
 
 /// Update a post
 #[patch("/posts/{id}")]
-pub async fn update_post(id: web::Path<u64>, post: web::Json<UpdateArgs>) -> impl Responder {
-    let response = post::update(id.into_inner(), post.into_inner());
+pub async fn update_post(
+    session: Session,
+    id: web::Path<u64>,
+    args: web::Json<UpdateArgs>,
+) -> impl Responder {
+    let response = if session_util::is_logged_in_user(&session, Some(&args.user_id)) {
+        post::update(id.into_inner(), args.into_inner())
+    } else {
+        Err(ServiceError::Unauthorized)
+    };
+
     match response {
         Ok(result) => HttpResponse::Ok().json(json!({ "data": result })),
+        Err(ServiceError::Unauthorized) => {
+            HttpResponse::Unauthorized().body(format!("{}", ServiceError::Unauthorized))
+        }
         Err(ServiceError::InvalidArgument) => {
             HttpResponse::BadRequest().body(format!("{}", ServiceError::InvalidArgument))
         }

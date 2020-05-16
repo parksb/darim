@@ -17,4 +17,7 @@ pub enum ServiceError {
 
     #[error("query execution failure")]
     QueryExecutionFailure,
+
+    #[error("unauthorized")]
+    Unauthorized,
 }

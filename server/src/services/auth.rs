@@ -18,6 +18,7 @@ pub fn login(args: LoginArgs) -> Result<UserSession, ServiceError> {
 
     let logged_in_user_session = match found_user {
         Ok(user) => UserSession {
+            user_id: user.id,
             user_email: user.email,
             user_name: user.name,
         },

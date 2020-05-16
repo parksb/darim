@@ -14,6 +14,7 @@ pub async fn login(session: Session, args: web::Json<LoginArgs>) -> impl Respond
         Ok(user_session) => {
             let result = session_util::set_session(
                 session,
+                &user_session.user_id,
                 &user_session.user_email,
                 &user_session.user_name,
             );
@@ -28,7 +29,7 @@ pub async fn login(session: Session, args: web::Json<LoginArgs>) -> impl Respond
 
 #[post("/auth/logout")]
 pub async fn logout(session: Session) -> impl Responder {
-    let is_logged_in = session_util::check_session(&session);
+    let is_logged_in = session_util::is_logged_in_user(&session, None);
     let result = if is_logged_in {
         session_util::unset_session(session);
         true
