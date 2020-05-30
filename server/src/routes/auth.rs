@@ -6,6 +6,33 @@ use crate::models::{auth::*, error::*};
 use crate::services::auth;
 use crate::utils::session_util;
 
+/// Login to set user session
+///
+/// # Request
+///
+/// ```text
+/// POST /auth/login
+/// ```
+///
+/// ## Parameters
+///
+/// * email - A unique email of the user.
+/// * password - A password of the user.
+///
+/// ```json
+/// {
+///     "email": "park@email.com",
+///     "password": "Ir5c7y8dS3",
+/// }
+/// ```
+///
+/// # Response
+///
+/// ```json
+/// {
+///     "data": true
+/// }
+/// ```
 #[post("/auth/login")]
 pub async fn login(session: Session, args: web::Json<LoginArgs>) -> impl Responder {
     let response = auth::login(args.into_inner());
@@ -27,6 +54,21 @@ pub async fn login(session: Session, args: web::Json<LoginArgs>) -> impl Respond
     }
 }
 
+/// Logout to unset user session
+///
+/// # Request
+///
+/// ```text
+/// POST /auth/logout
+/// ```
+///
+/// # Response
+///
+/// ```json
+/// {
+///     "data": true
+/// }
+/// ```
 #[post("/auth/logout")]
 pub async fn logout(session: Session) -> impl Responder {
     let is_logged_in = session_util::get_session(&session);

@@ -1,11 +1,13 @@
-# 🐦 Patic
+# 🏕 Darim
 
-[![Client CI](https://github.com/ParkSB/patic/workflows/Client%20CI/badge.svg)](https://github.com/ParkSB/patic/actions?query=workflow%3A%22Client+CI%22)
-[![Server CI](https://github.com/ParkSB/patic/workflows/Server%20CI/badge.svg)](https://github.com/ParkSB/patic/actions?query=workflow%3A%22Server+CI%22)
+[![Client CI](https://github.com/ParkSB/darim/workflows/Client%20CI/badge.svg)](https://github.com/ParkSB/darim/actions?query=workflow%3A%22Client+CI%22)
+[![Server CI](https://github.com/ParkSB/darim/workflows/Server%20CI/badge.svg)](https://github.com/ParkSB/darim/actions?query=workflow%3A%22Server+CI%22)
 
-A pure social networking service.
-
-![preview](https://user-images.githubusercontent.com/6410412/79059786-12893f80-7cb9-11ea-9d25-cc9074469e9e.png)
+A calendar-centered personal diary service.
 
 * [Client](client)
 * [Server](server)
+
+# License
+
+This project is distributed under the MIT License - see the LICENSE file for details.

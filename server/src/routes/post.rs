@@ -7,7 +7,36 @@ use crate::models::post::*;
 use crate::services::post;
 use crate::utils::session_util;
 
-/// List posts
+/// List posts written by logged-in user
+///
+/// # Request
+///
+/// ```text
+/// GET /posts
+/// ```
+///
+/// # Response
+///
+/// ```json
+/// {
+///     "data": [
+///         {
+///             "id": 1,
+///             "content": "Lorem ipsum dolor sit amet",
+///             "date": "2020-04-12T07:43:03",
+///             "created_at": "2020-04-13T16:31:09",
+///             "updated_at": null
+///         },
+///         {
+///             "id": 2,
+///             "content": "Lorem ipsum dolor sit amet",
+///             "date": "2020-04-10T07:43:03",
+///             "created_at": "2020-05-07T07:43:03",
+///             "updated_at": "2020-05-09T16:07:41"
+///         },
+///     ]
+/// }
+/// ```
 #[get("/posts")]
 pub async fn posts() -> impl Responder {
     let response = post::get_list();
@@ -18,6 +47,30 @@ pub async fn posts() -> impl Responder {
 }
 
 /// Create a post
+///
+/// # Request
+///
+/// ```text
+/// POST /posts
+/// ```
+///
+/// ## Parameters
+///
+/// * content - A content of the post.
+///
+/// ```json
+/// {
+///     "content": "Lorem ipsum dolor sit amet"
+/// }
+/// ```
+///
+/// # Response
+///
+/// ```json
+/// {
+///     "data": true
+/// }
+/// ```
 #[post("/posts")]
 pub async fn create_post(session: Session, post: web::Json<CreateArgs>) -> impl Responder {
     let response = if let Some(user_session) = session_util::get_session(&session) {
@@ -39,6 +92,20 @@ pub async fn create_post(session: Session, post: web::Json<CreateArgs>) -> impl 
 }
 
 /// Delete a post
+///
+/// # Request
+///
+/// ```text
+/// DELETE /posts/:id
+/// ```
+///
+/// # Response
+///
+/// ```json
+/// {
+///     "data": true
+/// }
+/// ```
 #[delete("/posts/{id}")]
 pub async fn delete_post(session: Session, id: web::Path<u64>) -> impl Responder {
     let response = if let Some(user_session) = session_util::get_session(&session) {
@@ -60,6 +127,30 @@ pub async fn delete_post(session: Session, id: web::Path<u64>) -> impl Responder
 }
 
 /// Update a post
+///
+/// # Request
+///
+/// ```text
+/// PATCH /posts/:id
+/// ```
+///
+/// ## Parameters
+///
+/// * content - A content of the post.
+///
+/// ```json
+/// {
+///     "content": "Lorem ipsum dolor sit amet"
+/// }
+/// ```
+///
+/// # Response
+///
+/// ```json
+/// {
+///     "data": true
+/// }
+/// ```
 #[patch("/posts/{id}")]
 pub async fn update_post(
     session: Session,

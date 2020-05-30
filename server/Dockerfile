@@ -1,6 +1,6 @@
 FROM rust:1.42
 
-WORKDIR /srv/patic
+WORKDIR /srv/darim
 COPY . .
 
 RUN cargo install diesel_cli
