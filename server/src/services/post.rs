@@ -4,7 +4,6 @@ use diesel::result::Error;
 
 use crate::models::{db_connection, error::ServiceError, post::*};
 use crate::schema::posts::dsl;
-use crate::services::user;
 
 fn check_has_permission(
     id: &u64,
@@ -34,54 +33,43 @@ fn check_has_permission(
     }
 }
 
-pub fn get_list() -> Result<Vec<PostToShow>, ServiceError> {
+pub fn get_list(user_id: u64) -> Result<Vec<PostToShow>, ServiceError> {
     let conn = db_connection::connect();
+
     let post_list: Vec<Post> = dsl::posts
+        .filter(dsl::user_id.eq(&user_id))
         .order(dsl::created_at.desc())
         .load::<Post>(&conn)?;
-
-    // FIXME: Change to join query
-    let post_to_show_list: Vec<PostToShow> = post_list
+    let post_to_show_list = post_list
         .iter()
-        .map(|post| -> Option<PostToShow> {
-            let found_author = user::get_one(post.user_id);
-            return if let Ok(author) = found_author {
-                Some(PostToShow {
-                    id: post.id,
-                    user_id: author.id,
-                    user_name: author.name,
-                    user_avatar_url: author.avatar_url,
-                    content: post.content.clone(),
-                    created_at: post.created_at,
-                    updated_at: post.updated_at,
-                })
-            } else {
-                None
-            };
+        .map(|post| -> PostToShow {
+            PostToShow {
+                id: post.id,
+                title: post.title.clone(),
+                content: post.content.clone(),
+                date: post.date,
+                created_at: post.created_at,
+                updated_at: post.updated_at,
+            }
         })
-        .filter(|post| post.is_some())
-        .map(|post| post.unwrap())
         .collect();
 
     Ok(post_to_show_list)
 }
 
 pub fn create(user_id: u64, args: CreateArgs) -> Result<bool, ServiceError> {
-    if args.content.trim().is_empty() {
+    if args.title.trim().is_empty() || args.content.trim().is_empty() {
         println!("{}", ServiceError::InvalidArgument);
         return Err(ServiceError::InvalidArgument);
-    }
-
-    if user_id != args.user_id {
-        println!("{}", ServiceError::Unauthorized);
-        return Err(ServiceError::Unauthorized);
     }
 
     let conn = db_connection::connect();
 
     let post = PostToCreate {
-        user_id: args.user_id,
+        user_id,
+        title: args.title,
         content: args.content,
+        date: args.date,
     };
     let count = diesel::insert_into(dsl::posts)
         .values(post)
@@ -115,13 +103,20 @@ pub fn delete(id: u64, user_id: u64) -> Result<bool, ServiceError> {
 }
 
 pub fn update(id: u64, user_id: u64, args: UpdateArgs) -> Result<bool, ServiceError> {
-    if args.content.is_none() {
+    if args.title.is_none() && args.content.is_none() && args.date.is_none() {
         println!("{}", ServiceError::InvalidArgument);
         return Err(ServiceError::InvalidArgument);
     }
 
     if let Some(content) = &args.content {
         if content.trim().is_empty() {
+            println!("{}", ServiceError::InvalidArgument);
+            return Err(ServiceError::InvalidArgument);
+        }
+    }
+
+    if let Some(title) = &args.title {
+        if title.trim().is_empty() {
             println!("{}", ServiceError::InvalidArgument);
             return Err(ServiceError::InvalidArgument);
         }
@@ -135,7 +130,9 @@ pub fn update(id: u64, user_id: u64, args: UpdateArgs) -> Result<bool, ServiceEr
     }
 
     let post = PostToUpdate {
+        title: args.title,
         content: args.content,
+        date: args.date,
         updated_at: Some(Utc::now().naive_utc()),
     };
 

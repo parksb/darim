@@ -4,7 +4,7 @@ use actix_web::{get, App, HttpResponse, HttpServer, Responder};
 use std::collections::HashMap;
 use std::env;
 
-use patic::routes;
+use darim::routes;
 
 /// Health Check
 #[get("/")]

@@ -2,6 +2,7 @@ table! {
     posts (id) {
         id -> Unsigned<Bigint>,
         user_id -> Unsigned<Bigint>,
+        title -> Text,
         content -> Text,
         date -> Datetime,
         created_at -> Datetime,

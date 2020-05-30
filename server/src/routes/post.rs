@@ -38,10 +38,18 @@ use crate::utils::session_util;
 /// }
 /// ```
 #[get("/posts")]
-pub async fn posts() -> impl Responder {
-    let response = post::get_list();
+pub async fn posts(session: Session) -> impl Responder {
+    let response = if let Some(user_session) = session_util::get_session(&session) {
+        post::get_list(user_session.user_id)
+    } else {
+        Err(ServiceError::Unauthorized)
+    };
+
     match response {
         Ok(result) => HttpResponse::Ok().json(json!({ "data": result })),
+        Err(ServiceError::Unauthorized) => {
+            HttpResponse::Unauthorized().body(format!("{}", ServiceError::Unauthorized))
+        }
         _ => HttpResponse::InternalServerError().body("internal server error"),
     }
 }
