@@ -3,6 +3,7 @@ table! {
         id -> Unsigned<Bigint>,
         user_id -> Unsigned<Bigint>,
         content -> Text,
+        date -> Datetime,
         created_at -> Datetime,
         updated_at -> Nullable<Datetime>,
     }
@@ -19,6 +20,8 @@ table! {
         updated_at -> Nullable<Datetime>,
     }
 }
+
+joinable!(posts -> users (user_id));
 
 allow_tables_to_appear_in_same_query!(
     posts,
