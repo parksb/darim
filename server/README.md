@@ -7,3 +7,36 @@
 * [actix/examples](https://github.com/actix/examples)
 * [diesel.rs](http://diesel.rs/)
 * [Yoshua Wuyts, "Error Handling Survey", 2019](https://blog.yoshuawuyts.com/error-handling-survey/)
+
+```
++----------------------------------+
+|  Server (main.rs)                |
++----------------------------------+
+              |
++----------------------------------+
+|  Routes                          |
++--------+--------+--------+-------+
+|  auth  |  post  |  user  |  ...  |
++--------+--------+--------+-------+
+     |        |        |
++----------------------------------+
+|  Services                        |
++--------+--------+--------+-------+
+|  auth  |  post  |  user  |  ...  |
++--------+--------+--------+-------+
+     |        |        |
++----------------------------------+
+|  Models                          |
++--------+--------+--------+-------+
+|  auth  |  post  |  user  |  ...  |
++--------+--------+--------+-------+
+     |        |        |
++----------------------------------+
+|  Database                        |
++----------------------------------+
+```
+
+* `main.rs` - An entry point of the application. It runs a http server.
+* Routes - A presentation layer that makes API public and passes request/response data to other layers.
+* Services - A business layer that processes the transaction.
+* Models - A data layer that can access the database and define data structures.
