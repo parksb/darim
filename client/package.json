@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "scripts": {
     "start": "parcel ./public/index.html",
-    "build": "parcel build ./public/index.html"
+    "build": "parcel build ./public/index.html",
+    "check": "tsc -p ./tsconfig.json --noEmit"
   },
   "author": "ParkSB <parkgds@gmail.com> (https://parksb.github.io/)",
   "license": "MIT",

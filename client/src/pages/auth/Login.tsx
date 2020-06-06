@@ -4,7 +4,7 @@ import styled from 'styled-components';
 
 import * as api from './api';
 import { TextField, Button, Section } from '../../components';
-import Session from '../../models';
+import { Session } from '../../models';
 
 interface Props {
   session_state: [Session | null, React.Dispatch<React.SetStateAction<Session | null>>]

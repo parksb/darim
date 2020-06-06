@@ -19,19 +19,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - run: cd client && cargo install cargo-make && cargo make check
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - run: cd client && cargo install cargo-make && cargo make test
+      - run: cd client && npm install && npm run check
   build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - run: cd client && cargo install cargo-make && cargo make build
-  clippy:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - run: cd client && cargo clippy --verbose
+      - run: cd client && npm install && npm run build
