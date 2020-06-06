@@ -36,6 +36,11 @@ class Http {
     const json_body = JSON.stringify(body);
     return Http.request(HttpMethods.POST, url, json_body);
   }
+
+  static patch<T, S>(url: string, body: T): Promise<S> {
+    const json_body = JSON.stringify(body);
+    return Http.request(HttpMethods.PATCH, url, json_body);
+  }
 }
 
 export default Http;
