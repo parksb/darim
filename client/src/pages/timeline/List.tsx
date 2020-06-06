@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
 
-import { Post } from '../../models';
 import * as api from './api';
 import Item from './Item';
+import { Post } from '../../models';
+import { Section } from "../../components";
 
 const List: React.FC = () => {
   const [posts, setPosts] = useState<Post[]>([]);
@@ -16,11 +17,11 @@ const List: React.FC = () => {
     load();
   }, []);
 
-  return <div>
+  return <Section>
     {posts.map((post: Post) => {
       return <Item key={post.id} post={post}/>
     })}
-  </div>
+  </Section>
 };
 
 export default List;

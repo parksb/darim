@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from "react-router-dom";
 import styled from 'styled-components';
 import dayjs from 'dayjs';
 
@@ -30,14 +31,22 @@ const HorizontalLine = styled.div`
   align-self: center;
 `;
 
+const StyledLink = styled(Link)`
+  display: flex;
+  text-decoration: none;
+  color: #000000;
+`;
+
 const Item: React.FC<Props> = ({ post }) => {
-  const { title, date } = post;
+  const { id, title, date } = post;
   const displayed_date = dayjs(date).format('YYYY / MM / DD');
 
   return <Card row>
-    <Date dateTime={date}>{displayed_date}</Date>
-    <HorizontalLine />
+    <StyledLink to={`/post/${id}`}>
+      <Date dateTime={date}>{displayed_date}</Date>
+      <HorizontalLine />
       <Title>{title}</Title>
+    </StyledLink>
   </Card>
 };
 
