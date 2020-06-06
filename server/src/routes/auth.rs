@@ -30,7 +30,11 @@ use crate::utils::session_util;
 ///
 /// ```json
 /// {
-///     "data": true
+///     "data": {
+///         "user_id": 0,
+///         "user_email": "park@email.com"
+///         "user_name": "park",
+///     }
 /// }
 /// ```
 #[post("/auth/login")]
@@ -45,7 +49,17 @@ pub async fn login(session: Session, args: web::Json<LoginArgs>) -> impl Respond
                 &user_session.user_email,
                 &user_session.user_name,
             );
-            HttpResponse::Ok().json(json!({ "data": result }))
+
+            if result {
+                let result = LoginResult {
+                    user_id: user_session.user_id,
+                    user_email: user_session.user_email,
+                    user_name: user_session.user_name,
+                };
+                HttpResponse::Ok().json(json!({ "data": result }))
+            } else {
+                HttpResponse::InternalServerError().body("internal server error")
+            }
         }
         Err(ServiceError::NotFound(key)) => {
             HttpResponse::NotFound().body(format!("{}", ServiceError::NotFound(key)))
