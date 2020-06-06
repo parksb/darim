@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
+import React, {useEffect, useState} from 'react';
 import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
 import styled from 'styled-components';
 
+import * as api from './api';
 import { Header } from '../components';
 import { Session } from '../models';
-
 import { Timeline } from './timeline';
 import { Login, Join } from './auth';
 
@@ -18,6 +18,15 @@ const Container = styled.div`
 
 const App: React.FC = () => {
   const [session, setSession] = useState<Session | null>(null);
+
+  const load = async () => {
+    const session = await api.fetchSession();
+    setSession(session);
+  };
+
+  useEffect(() => {
+    load();
+  }, []);
 
   return (
     <Router>
