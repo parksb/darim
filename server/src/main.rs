@@ -17,13 +17,11 @@ async fn health_check() -> impl Responder {
 #[actix_rt::main]
 async fn main() -> std::io::Result<()> {
     dotenv::dotenv().expect("Failed to read .env file");
-
     let address = env::var("ADDRESS").expect("ADDRESS not found");
-    let client_address = env::var("CLIENT_ADDRESS").expect("CLIENT_ADDRESS not found");
 
     HttpServer::new(move || {
         App::new()
-            .wrap(Cors::new().allowed_origin(&client_address).finish())
+            .wrap(Cors::new().supports_credentials().finish())
             .wrap(CookieSession::signed(&[0; 32]).secure(false))
             .service(health_check)
             .configure(routes::post::init_routes)
