@@ -7,6 +7,47 @@ use crate::models::post::*;
 use crate::services::post;
 use crate::utils::session_util;
 
+/// Get a post written by logged-in user
+///
+/// # Request
+///
+/// ```text
+/// GET /posts/:id
+/// ```
+///
+/// # Response
+///
+/// ```json
+/// {
+///     "data": [
+///         {
+///             "id": 1,
+///             "title": "Lorem ipsum",
+///             "content": "Lorem ipsum dolor sit amet",
+///             "date": "2020-04-12T07:43:03",
+///             "created_at": "2020-04-13T16:31:09",
+///             "updated_at": null
+///         },
+///     ]
+/// }
+/// ```
+#[get("/posts/{id}")]
+pub async fn get_post(session: Session, id: web::Path<u64>) -> impl Responder {
+    let response = if let Some(user_session) = session_util::get_session(&session) {
+        post::get(user_session.user_id, id.into_inner())
+    } else {
+        Err(ServiceError::Unauthorized)
+    };
+
+    match response {
+        Ok(result) => HttpResponse::Ok().json(json!({ "data": result })),
+        Err(ServiceError::Unauthorized) => {
+            HttpResponse::Unauthorized().body(format!("{}", ServiceError::Unauthorized))
+        }
+        _ => HttpResponse::InternalServerError().body("internal server error"),
+    }
+}
+
 /// List posts written by logged-in user
 ///
 /// # Request
@@ -22,6 +63,7 @@ use crate::utils::session_util;
 ///     "data": [
 ///         {
 ///             "id": 1,
+///             "title": "Lorem ipsum",
 ///             "content": "Lorem ipsum dolor sit amet",
 ///             "date": "2020-04-12T07:43:03",
 ///             "created_at": "2020-04-13T16:31:09",
@@ -29,6 +71,7 @@ use crate::utils::session_util;
 ///         },
 ///         {
 ///             "id": 2,
+///             "title": "Lorem ipsum",
 ///             "content": "Lorem ipsum dolor sit amet",
 ///             "date": "2020-04-10T07:43:03",
 ///             "created_at": "2020-05-07T07:43:03",
@@ -38,7 +81,7 @@ use crate::utils::session_util;
 /// }
 /// ```
 #[get("/posts")]
-pub async fn posts(session: Session) -> impl Responder {
+pub async fn get_posts(session: Session) -> impl Responder {
     let response = if let Some(user_session) = session_util::get_session(&session) {
         post::get_list(user_session.user_id)
     } else {
@@ -187,7 +230,8 @@ pub async fn update_post(
 }
 
 pub fn init_routes(cfg: &mut web::ServiceConfig) {
-    cfg.service(posts);
+    cfg.service(get_post);
+    cfg.service(get_posts);
     cfg.service(create_post);
     cfg.service(delete_post);
     cfg.service(update_post);

@@ -33,6 +33,44 @@ fn check_has_permission(
     }
 }
 
+pub fn get(user_id: u64, post_id: u64) -> Result<PostToShow, ServiceError> {
+    let conn = db_connection::connect();
+
+    let post: Result<Post, Error> = dsl::posts
+        .find(post_id)
+        .get_result::<Post>(&conn);
+
+    match post {
+        Ok(found_post) => {
+            if found_post.user_id != user_id {
+                println!("{}", ServiceError::Unauthorized);
+                Err(ServiceError::Unauthorized)
+            } else {
+                Ok(
+                    PostToShow {
+                        id: found_post.id,
+                        title: found_post.title,
+                        content: found_post.content,
+                        date: found_post.date,
+                        updated_at: found_post.updated_at,
+                        created_at: found_post.created_at,
+                    }
+                )
+            }
+        }
+        Err(error) => match error {
+            Error::NotFound => {
+                println!("{}", ServiceError::NotFound(post_id.to_string()));
+                Err(ServiceError::NotFound(post_id.to_string()))
+            }
+            _ => {
+                println!("{}", ServiceError::QueryExecutionFailure);
+                Err(ServiceError::QueryExecutionFailure)
+            }
+        },
+    }
+}
+
 pub fn get_list(user_id: u64) -> Result<Vec<PostToShow>, ServiceError> {
     let conn = db_connection::connect();
 
