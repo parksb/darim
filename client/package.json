@@ -1,0 +1,31 @@
+{
+  "name": "darim",
+  "version": "1.0.0",
+  "scripts": {
+    "start": "parcel ./public/index.html",
+    "build": "parcel build ./public/index.html"
+  },
+  "author": "ParkSB <parkgds@gmail.com> (https://parksb.github.io/)",
+  "license": "MIT",
+  "dependencies": {
+    "dayjs": "^1.8.28",
+    "react": "^16.13.1",
+    "react-dom": "^16.13.1",
+    "react-router-dom": "^5.2.0",
+    "react-scripts": "3.4.1",
+    "styled-components": "^5.1.1",
+    "typescript": "^3.7.5"
+  },
+  "devDependencies": {
+    "@types/node": "^12.12.42",
+    "@types/react": "^16.9.35",
+    "@types/react-dom": "^16.9.8",
+    "@types/react-router-dom": "^5.1.5",
+    "@types/styled-components": "^5.1.0",
+    "@typescript-eslint/eslint-plugin": "^3.1.0",
+    "@typescript-eslint/parser": "^3.1.0",
+    "eslint": "^7.2.0",
+    "eslint-plugin-react": "^7.20.0",
+    "parcel-bundler": "^1.12.4"
+  }
+}
