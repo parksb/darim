@@ -88,9 +88,24 @@ const Post: React.FC = () => {
   }, []);
 
   return <Container>
-    <TitleTextField placeholder='Title' value={title} onBlur={({ target: { value } }) => updatePost(value)} onChange={({ target: { value } }) => setTitle(value)} />
-    <DateField value={getFormattedDate(date)} onBlur={({ target: { value } }) => updatePost(null, value)} onChange={({ target: { value } }) => setDate(value)} />
-    <TextArea rows={30} placeholder='Content' value={content} onBlur={({ target: { value } }) => updatePost(null, null, value)} onChange={({ target: { value } }) => setContent(value)} />
+    <TitleTextField
+      placeholder='Title'
+      value={title}
+      onBlur={({ target: { value } }) => updatePost(value)}
+      onChange={({ target: { value } }) => setTitle(value)}
+    />
+    <DateField
+      value={getFormattedDate(date)}
+      onBlur={({ target: { value } }: { target: { value: string } }) => updatePost(null, value)}
+      onChange={({ target: { value } }: { target: { value: string } }) => setDate(value)}
+    />
+    <TextArea
+      rows={30}
+      placeholder='Content'
+      value={content}
+      onBlur={({ target: { value } }) => updatePost(null, null, value)}
+      onChange={({ target: { value } }) => setContent(value)}
+    />
   </Container>
 };
 
