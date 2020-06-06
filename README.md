@@ -5,6 +5,8 @@
 
 A calendar-centered personal diary service.
 
+![Preview](https://user-images.githubusercontent.com/6410412/83938984-22825300-a814-11ea-864e-48baf913dfd2.png)
+
 * [Client](client)
 * [Server](server)
 
