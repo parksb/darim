@@ -1,3 +1,5 @@
+import { SHA3 } from 'sha3';
+
 import Http from '../../utils/http';
 import { Session } from '../../models';
 
@@ -8,9 +10,11 @@ interface LoginBody {
 
 function login(email: string, password: string): Promise<Session> {
   const url = 'http://127.0.0.1:8080/auth/login';
+  const hashedPassword = new SHA3(512).update(password).digest('hex');
+
   const body: LoginBody = {
     email,
-    password,
+    password: hashedPassword,
   };
 
   return Http.post<LoginBody, Session>(url, body);
