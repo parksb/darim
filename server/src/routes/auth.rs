@@ -1,10 +1,40 @@
 use actix_session::Session;
-use actix_web::{post, web, HttpResponse, Responder};
+use actix_web::{get, post, web, HttpResponse, Responder};
 use serde_json::json;
 
 use crate::models::{auth::*, error::*};
 use crate::services::auth;
 use crate::utils::session_util;
+
+/// Get auth information as user session
+///
+/// # Request
+///
+/// ```text
+/// GET /auth
+/// ```
+///
+/// # Response
+///
+/// ```json
+/// {
+///     "data": {
+///         "user_id": 0,
+///         "user_email": "park@email.com"
+///         "user_name": "park",
+///     }
+/// }
+/// ```
+#[get("/auth")]
+pub async fn get_auth(session: Session) -> impl Responder {
+    let user_session = session_util::get_session(&session);
+
+    if let Some(response) = user_session {
+        HttpResponse::Ok().json(json!({ "data": response }))
+    } else {
+        HttpResponse::Unauthorized().body(format!("{}", ServiceError::Unauthorized))
+    }
+}
 
 /// Login to set user session
 ///
@@ -39,24 +69,19 @@ use crate::utils::session_util;
 /// ```
 #[post("/auth/login")]
 pub async fn login(session: Session, args: web::Json<LoginArgs>) -> impl Responder {
-    let response = auth::login(args.into_inner());
+    let user_session = auth::login(args.into_inner());
 
-    match response {
-        Ok(user_session) => {
-            let result = session_util::set_session(
+    match user_session {
+        Ok(response) => {
+            let is_succeed = session_util::set_session(
                 session,
-                &user_session.user_id,
-                &user_session.user_email,
-                &user_session.user_name,
+                &response.user_id,
+                &response.user_email,
+                &response.user_name,
             );
 
-            if result {
-                let result = LoginResult {
-                    user_id: user_session.user_id,
-                    user_email: user_session.user_email,
-                    user_name: user_session.user_name,
-                };
-                HttpResponse::Ok().json(json!({ "data": result }))
+            if is_succeed {
+                HttpResponse::Ok().json(json!({ "data": response }))
             } else {
                 HttpResponse::InternalServerError().body("internal server error")
             }
@@ -97,6 +122,7 @@ pub async fn logout(session: Session) -> impl Responder {
 }
 
 pub fn init_routes(cfg: &mut web::ServiceConfig) {
+    cfg.service(get_auth);
     cfg.service(login);
     cfg.service(logout);
 }
