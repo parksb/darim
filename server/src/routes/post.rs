@@ -111,7 +111,9 @@ pub async fn get_posts(session: Session) -> impl Responder {
 ///
 /// ```json
 /// {
+///     "title": "Lorem ipsum"
 ///     "content": "Lorem ipsum dolor sit amet"
+///     "date": "2020-06-07T07:43:03",
 /// }
 /// ```
 ///
@@ -119,7 +121,7 @@ pub async fn get_posts(session: Session) -> impl Responder {
 ///
 /// ```json
 /// {
-///     "data": true
+///     "data": 1
 /// }
 /// ```
 #[post("/posts")]

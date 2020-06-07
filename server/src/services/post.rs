@@ -95,7 +95,7 @@ pub fn get_list(user_id: u64) -> Result<Vec<PostToShow>, ServiceError> {
     Ok(post_to_show_list)
 }
 
-pub fn create(user_id: u64, args: CreateArgs) -> Result<bool, ServiceError> {
+pub fn create(user_id: u64, args: CreateArgs) -> Result<u64, ServiceError> {
     if args.title.trim().is_empty() || args.content.trim().is_empty() {
         println!("{}", ServiceError::InvalidArgument);
         return Err(ServiceError::InvalidArgument);
@@ -117,7 +117,12 @@ pub fn create(user_id: u64, args: CreateArgs) -> Result<bool, ServiceError> {
         println!("{}", ServiceError::QueryExecutionFailure);
         Err(ServiceError::QueryExecutionFailure)
     } else {
-        Ok(true)
+        let post_id_list: Vec<u64> = dsl::posts
+            .select(dsl::id)
+            .filter(dsl::user_id.eq(&user_id))
+            .get_results::<u64>(&conn)?;
+        let created_post_id = post_id_list[post_id_list.len() - 1];
+        Ok(created_post_id)
     }
 }
 
