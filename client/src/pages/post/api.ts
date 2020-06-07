@@ -13,7 +13,7 @@ interface UpdatePostBody {
   content?: string;
 }
 
-function createPost(title: string, date: string, content: string): Promise<boolean> {
+function createPost(title: string, date: string, content: string): Promise<number> {
   const url = 'http://127.0.0.1:8080/posts';
   const body: CreatePostBody = {
     title,
@@ -21,7 +21,7 @@ function createPost(title: string, date: string, content: string): Promise<boole
     content,
   };
 
-  return Http.post<CreatePostBody, boolean>(url, body);
+  return Http.post<CreatePostBody, number>(url, body);
 }
 
 function updatePost(id: number, title?: string, date?: string, content?: string): Promise<boolean> {
