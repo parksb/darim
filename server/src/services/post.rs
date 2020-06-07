@@ -1,25 +1,19 @@
-use chrono::Utc;
-use diesel::prelude::*;
+use crate::models::{error::ServiceError, post::*};
 use diesel::result::Error;
 
-use crate::models::{db_connection, error::ServiceError, post::*};
-use crate::schema::posts::dsl;
+pub fn get(user_id: u64, id: u64) -> Result<PostDTO, ServiceError> {
+    let post_repository = PostRepository::new();
+    let post = post_repository.find(user_id, id);
 
-fn check_has_permission(
-    id: &u64,
-    user_id: &u64,
-    conn: &MysqlConnection,
-) -> Result<bool, ServiceError> {
-    let post: Result<Post, Error> = dsl::posts.find(id).get_result::<Post>(conn);
     match post {
-        Ok(found_post) => {
-            if &found_post.user_id != user_id {
-                println!("{}", ServiceError::Unauthorized);
-                Err(ServiceError::Unauthorized)
-            } else {
-                Ok(true)
-            }
-        }
+        Ok(post) => Ok(PostDTO {
+            id: post.id,
+            title: post.title,
+            content: post.content,
+            date: post.date,
+            updated_at: post.updated_at,
+            created_at: post.created_at,
+        }),
         Err(error) => match error {
             Error::NotFound => {
                 println!("{}", ServiceError::NotFound(id.to_string()));
@@ -33,66 +27,30 @@ fn check_has_permission(
     }
 }
 
-pub fn get(user_id: u64, post_id: u64) -> Result<PostToShow, ServiceError> {
-    let conn = db_connection::connect();
+pub fn get_list(user_id: u64) -> Result<Vec<PostDTO>, ServiceError> {
+    let post_repository = PostRepository::new();
+    let post_list = post_repository.find_all(user_id);
 
-    let post: Result<Post, Error> = dsl::posts
-        .find(post_id)
-        .get_result::<Post>(&conn);
+    if let Ok(post_list) = post_list {
+        let post_to_show_list = post_list
+            .iter()
+            .map(|post| -> PostDTO {
+                PostDTO {
+                    id: post.id,
+                    title: post.title.clone(),
+                    content: post.content.clone(),
+                    date: post.date,
+                    created_at: post.created_at,
+                    updated_at: post.updated_at,
+                }
+            })
+            .collect();
 
-    match post {
-        Ok(found_post) => {
-            if found_post.user_id != user_id {
-                println!("{}", ServiceError::Unauthorized);
-                Err(ServiceError::Unauthorized)
-            } else {
-                Ok(
-                    PostToShow {
-                        id: found_post.id,
-                        title: found_post.title,
-                        content: found_post.content,
-                        date: found_post.date,
-                        updated_at: found_post.updated_at,
-                        created_at: found_post.created_at,
-                    }
-                )
-            }
-        }
-        Err(error) => match error {
-            Error::NotFound => {
-                println!("{}", ServiceError::NotFound(post_id.to_string()));
-                Err(ServiceError::NotFound(post_id.to_string()))
-            }
-            _ => {
-                println!("{}", ServiceError::QueryExecutionFailure);
-                Err(ServiceError::QueryExecutionFailure)
-            }
-        },
+        Ok(post_to_show_list)
+    } else {
+        println!("{}", ServiceError::QueryExecutionFailure);
+        Err(ServiceError::QueryExecutionFailure)
     }
-}
-
-pub fn get_list(user_id: u64) -> Result<Vec<PostToShow>, ServiceError> {
-    let conn = db_connection::connect();
-
-    let post_list: Vec<Post> = dsl::posts
-        .filter(dsl::user_id.eq(&user_id))
-        .order(dsl::created_at.desc())
-        .load::<Post>(&conn)?;
-    let post_to_show_list = post_list
-        .iter()
-        .map(|post| -> PostToShow {
-            PostToShow {
-                id: post.id,
-                title: post.title.clone(),
-                content: post.content.clone(),
-                date: post.date,
-                created_at: post.created_at,
-                updated_at: post.updated_at,
-            }
-        })
-        .collect();
-
-    Ok(post_to_show_list)
 }
 
 pub fn create(user_id: u64, args: CreateArgs) -> Result<u64, ServiceError> {
@@ -101,47 +59,42 @@ pub fn create(user_id: u64, args: CreateArgs) -> Result<u64, ServiceError> {
         return Err(ServiceError::InvalidArgument);
     }
 
-    let conn = db_connection::connect();
+    let post_repository = PostRepository::new();
+    let created_count = post_repository.create(user_id, &args.title, &args.content, &args.date);
 
-    let post = PostToCreate {
-        user_id,
-        title: args.title,
-        content: args.content,
-        date: args.date,
-    };
-    let count = diesel::insert_into(dsl::posts)
-        .values(post)
-        .execute(&conn)?;
-
-    if count < 1 {
+    if let Ok(created_count) = created_count {
+        if created_count > 0 {
+            if let Ok(post_list) = post_repository.find_all(user_id) {
+                let created_post = &post_list[post_list.len() - 1];
+                Ok(created_post.id)
+            } else {
+                println!("{}", ServiceError::QueryExecutionFailure);
+                Err(ServiceError::QueryExecutionFailure)
+            }
+        } else {
+            println!("{}", ServiceError::QueryExecutionFailure);
+            Err(ServiceError::QueryExecutionFailure)
+        }
+    } else {
         println!("{}", ServiceError::QueryExecutionFailure);
         Err(ServiceError::QueryExecutionFailure)
-    } else {
-        let post_id_list: Vec<u64> = dsl::posts
-            .select(dsl::id)
-            .filter(dsl::user_id.eq(&user_id))
-            .get_results::<u64>(&conn)?;
-        let created_post_id = post_id_list[post_id_list.len() - 1];
-        Ok(created_post_id)
     }
 }
 
 pub fn delete(id: u64, user_id: u64) -> Result<bool, ServiceError> {
-    let conn = db_connection::connect();
+    let post_repository = PostRepository::new();
+    let deleted_count = post_repository.delete(user_id, id);
 
-    let has_permission = check_has_permission(&id, &user_id, &conn);
-    if has_permission.is_err() {
-        return has_permission;
-    }
-
-    let target_post = dsl::posts.find(id);
-    let count = diesel::delete(target_post).execute(&conn)?;
-
-    if count < 1 {
-        println!("{}", ServiceError::NotFound(id.to_string()));
-        Err(ServiceError::NotFound(id.to_string()))
+    if let Ok(deleted_count) = deleted_count {
+        if deleted_count > 0 {
+            Ok(true)
+        } else {
+            println!("{}", ServiceError::NotFound(id.to_string()));
+            Err(ServiceError::NotFound(id.to_string()))
+        }
     } else {
-        Ok(true)
+        println!("{}", ServiceError::QueryExecutionFailure);
+        Err(ServiceError::QueryExecutionFailure)
     }
 }
 
@@ -165,28 +118,18 @@ pub fn update(id: u64, user_id: u64, args: UpdateArgs) -> Result<bool, ServiceEr
         }
     }
 
-    let conn = db_connection::connect();
+    let post_repository = PostRepository::new();
+    let updated_count = post_repository.update(user_id, id, &args.title, &args.content, &args.date);
 
-    let has_permission = check_has_permission(&id, &user_id, &conn);
-    if has_permission.is_err() {
-        return has_permission;
-    }
-
-    let post = PostToUpdate {
-        title: args.title,
-        content: args.content,
-        date: args.date,
-        updated_at: Some(Utc::now().naive_utc()),
-    };
-
-    let count = diesel::update(dsl::posts.find(id))
-        .set(post)
-        .execute(&conn)?;
-
-    if count < 1 {
+    if let Ok(updated_count) = updated_count {
+        if updated_count > 0 {
+            Ok(true)
+        } else {
+            println!("{}", ServiceError::NotFound(id.to_string()));
+            Err(ServiceError::NotFound(id.to_string()))
+        }
+    } else {
         println!("{}", ServiceError::QueryExecutionFailure);
         Err(ServiceError::QueryExecutionFailure)
-    } else {
-        Ok(true)
     }
 }

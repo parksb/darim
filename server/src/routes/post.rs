@@ -44,6 +44,9 @@ pub async fn get_post(session: Session, id: web::Path<u64>) -> impl Responder {
         Err(ServiceError::Unauthorized) => {
             HttpResponse::Unauthorized().body(format!("{}", ServiceError::Unauthorized))
         }
+        Err(ServiceError::NotFound(key)) => {
+            HttpResponse::NotFound().body(format!("{}", ServiceError::NotFound(key)))
+        }
         _ => HttpResponse::InternalServerError().body("internal server error"),
     }
 }
