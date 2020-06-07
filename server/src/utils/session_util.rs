@@ -1,6 +1,14 @@
 use crate::models::auth::UserSession;
 use actix_session::Session;
 
+/// Sets user session.
+///
+/// # Arguments
+///
+/// * `session` - An session object
+/// * `user_id` - A record id of the user account
+/// * `user_email` -  An email of the user account
+/// * `user_name` - A name of the user account
 pub fn set_session(
     session: Session,
     user_id: &u64,
@@ -18,10 +26,20 @@ pub fn set_session(
     };
 }
 
+/// Clears session.
+///
+/// # Arguments
+///
+/// * `session` - An session object
 pub fn unset_session(session: Session) {
     session.clear();
 }
 
+/// Returns user session.
+///
+/// # Arguments
+///
+/// * `session` - An session object
 pub fn get_session(session: &Session) -> Option<UserSession> {
     let user_id = session.get::<u64>("user_id");
     let user_email = session.get::<String>("user_email");
