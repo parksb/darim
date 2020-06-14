@@ -15,11 +15,6 @@ on:
       - '.github/workflows/**'
 
 jobs:
-  check:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - run: cd client && npm install && npm run check
   build:
     runs-on: ubuntu-latest
     steps:
