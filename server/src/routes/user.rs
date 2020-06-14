@@ -71,7 +71,12 @@ pub async fn create_user(user: web::Json<CreateArgs>) -> impl Responder {
 #[delete("/users/{id}")]
 pub async fn delete_user(session: Session, id: web::Path<u64>) -> impl Responder {
     let response = if let Some(user_session) = session_util::get_session(&session) {
-        user::delete(id.into_inner(), user_session.user_id)
+        let id_in_path = id.into_inner();
+        if id_in_path != user_session.user_id {
+            Err(ServiceError::Unauthorized)
+        } else {
+            user::delete(id_in_path)
+        }
     } else {
         Err(ServiceError::Unauthorized)
     };
@@ -124,7 +129,12 @@ pub async fn update_user(
     user: web::Json<UpdateArgs>,
 ) -> impl Responder {
     let response = if let Some(user_session) = session_util::get_session(&session) {
-        user::update(id.into_inner(), user_session.user_id, user.into_inner())
+        let id_in_path = id.into_inner();
+        if id_in_path != user_session.user_id {
+            Err(ServiceError::Unauthorized)
+        } else {
+            user::update(id_in_path, user.into_inner())
+        }
     } else {
         Err(ServiceError::Unauthorized)
     };

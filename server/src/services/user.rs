@@ -1,26 +1,23 @@
-use chrono::Utc;
-use diesel::prelude::*;
 use diesel::result::Error;
 
-use crate::models::{db_connection, error::ServiceError, user::*};
-use crate::schema::users::dsl;
+use crate::models::{error::ServiceError, user::*};
 use crate::utils::password_util;
 
-fn check_has_permission(
-    id: &u64,
-    user_id: &u64,
-    conn: &MysqlConnection,
-) -> Result<bool, ServiceError> {
-    let user: Result<User, Error> = dsl::users.find(id).get_result::<User>(conn);
+pub fn get_one(id: u64) -> Result<UserDTO, ServiceError> {
+    let user = {
+        let user_repository = UserRepository::new();
+        user_repository.find(id)
+    };
+
     match user {
-        Ok(found_user) => {
-            if &found_user.id != user_id {
-                println!("{}", ServiceError::Unauthorized);
-                Err(ServiceError::Unauthorized)
-            } else {
-                Ok(true)
-            }
-        }
+        Ok(user) => Ok(UserDTO {
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            avatar_url: user.avatar_url,
+            updated_at: user.updated_at,
+            created_at: user.created_at,
+        }),
         Err(error) => match error {
             Error::NotFound => {
                 println!("{}", ServiceError::NotFound(id.to_string()));
@@ -34,16 +31,32 @@ fn check_has_permission(
     }
 }
 
-pub fn get_one(id: u64) -> Result<User, ServiceError> {
-    let conn = db_connection::connect();
-    let user = dsl::users.find(id).first::<User>(&conn)?;
-    Ok(user)
-}
+pub fn get_list() -> Result<Vec<UserDTO>, ServiceError> {
+    let user_list = {
+        let user_repository = UserRepository::new();
+        user_repository.find_all()
+    };
 
-pub fn get_list() -> Result<Vec<User>, ServiceError> {
-    let conn = db_connection::connect();
-    let user_list = dsl::users.load::<User>(&conn)?;
-    Ok(user_list)
+    if let Ok(user_list) = user_list {
+        let user_to_show_list = user_list
+            .iter()
+            .map(|user| -> UserDTO {
+                UserDTO {
+                    id: user.id,
+                    name: user.name.clone(),
+                    email: user.email.clone(),
+                    avatar_url: user.avatar_url.clone(),
+                    created_at: user.created_at,
+                    updated_at: user.updated_at,
+                }
+            })
+            .collect();
+
+        Ok(user_to_show_list)
+    } else {
+        println!("{}", ServiceError::QueryExecutionFailure);
+        Err(ServiceError::QueryExecutionFailure)
+    }
 }
 
 pub fn create(args: CreateArgs) -> Result<bool, ServiceError> {
@@ -55,55 +68,45 @@ pub fn create(args: CreateArgs) -> Result<bool, ServiceError> {
         return Err(ServiceError::InvalidArgument);
     }
 
-    let conn = db_connection::connect();
-
-    let duplicated_email_count = dsl::users
-        .filter(dsl::email.eq(&args.email))
-        .count()
-        .execute(&conn)?;
-    if duplicated_email_count > 0 {
-        println!("{}", ServiceError::DuplicatedKey);
-        return Err(ServiceError::DuplicatedKey);
-    }
-
-    let user = UserToCreate {
-        name: args.name,
-        email: args.email,
-        password: password_util::get_hashed_password(args.password),
-        avatar_url: args.avatar_url,
+    let created_count = {
+        let user_repository = UserRepository::new();
+        let password = password_util::get_hashed_password(args.password);
+        user_repository.create(&args.name, &args.email, &password, &args.avatar_url)
     };
-    let count = diesel::insert_into(dsl::users)
-        .values(user)
-        .execute(&conn)?;
 
-    if count < 1 {
+    if let Ok(created_count) = created_count {
+        if created_count > 0 {
+            Ok(true)
+        } else {
+            println!("{}", ServiceError::QueryExecutionFailure);
+            Err(ServiceError::QueryExecutionFailure)
+        }
+    } else {
         println!("{}", ServiceError::QueryExecutionFailure);
         Err(ServiceError::QueryExecutionFailure)
-    } else {
-        Ok(true)
     }
 }
 
-pub fn delete(id: u64, user_id: u64) -> Result<bool, ServiceError> {
-    let conn = db_connection::connect();
+pub fn delete(id: u64) -> Result<bool, ServiceError> {
+    let deleted_count = {
+        let user_repository = UserRepository::new();
+        user_repository.delete(id)
+    };
 
-    let has_permission = check_has_permission(&id, &user_id, &conn);
-    if has_permission.is_err() {
-        return has_permission;
-    }
-
-    // Consider also logical deletion
-    let count = diesel::delete(dsl::users.find(id)).execute(&conn)?;
-
-    if count < 1 {
+    if let Ok(deleted_count) = deleted_count {
+        if deleted_count > 0 {
+            Ok(true)
+        } else {
+            println!("{}", ServiceError::QueryExecutionFailure);
+            Err(ServiceError::QueryExecutionFailure)
+        }
+    } else {
         println!("{}", ServiceError::QueryExecutionFailure);
         Err(ServiceError::QueryExecutionFailure)
-    } else {
-        Ok(true)
     }
 }
 
-pub fn update(id: u64, user_id: u64, args: UpdateArgs) -> Result<bool, ServiceError> {
+pub fn update(id: u64, args: UpdateArgs) -> Result<bool, ServiceError> {
     if args.name.is_none() && args.password.is_none() && args.avatar_url.is_none() {
         println!("{}", ServiceError::InvalidArgument);
         return Err(ServiceError::InvalidArgument);
@@ -118,32 +121,27 @@ pub fn update(id: u64, user_id: u64, args: UpdateArgs) -> Result<bool, ServiceEr
         }
     }
 
-    let conn = db_connection::connect();
+    let updated_count = {
+        let user_repository = UserRepository::new();
 
-    let has_permission = check_has_permission(&id, &user_id, &conn);
-    if has_permission.is_err() {
-        return has_permission;
-    }
-
-    let user = UserToUpdate {
-        name: args.name,
-        password: if let Some(password) = args.password {
+        let password = if let Some(password) = args.password {
             Some(password_util::get_hashed_password(password))
         } else {
             None
-        },
-        avatar_url: args.avatar_url,
-        updated_at: Some(Utc::now().naive_utc()),
+        };
+
+        user_repository.update(id, &args.name, &password, &args.avatar_url)
     };
 
-    let count = diesel::update(dsl::users.find(id))
-        .set(user)
-        .execute(&conn)?;
-
-    if count < 1 {
+    if let Ok(updated_count) = updated_count {
+        if updated_count > 0 {
+            Ok(true)
+        } else {
+            println!("{}", ServiceError::QueryExecutionFailure);
+            Err(ServiceError::QueryExecutionFailure)
+        }
+    } else {
         println!("{}", ServiceError::QueryExecutionFailure);
         Err(ServiceError::QueryExecutionFailure)
-    } else {
-        Ok(true)
     }
 }
