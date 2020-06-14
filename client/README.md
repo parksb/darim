@@ -7,11 +7,11 @@
 |  Client (index.html)             |
 +----------------------------------+
               |
-+----------------------------------+
-|  Pages                           |
-+--------+--------+--------+-------+
-|  auth  |  post  |  user  |  ...  |
-+--------+--------+--------+-------+
++----------------------------------+   +----------+
+|  Pages                           |   |  Models  |
++--------+--------+--------+-------+---+----------+
+|  auth  |  post  |  user  |  ...  |   |  Api     |
++--------+--------+--------+-------+   +----------+
      |        |        |
 +----------------------------------+
 |  Components                      |
@@ -19,5 +19,5 @@
 ```
 
 * `index.html` - An entry point of the application. It is built by parcel.
-* Pages - Pages represented by URL. Each page can have its own components and API fetchers.
+* Pages - Pages represented by URL. Each page can use general components and API fetchers.
 * Components - Reusable components used on multiple pages.
