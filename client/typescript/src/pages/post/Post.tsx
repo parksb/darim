@@ -7,6 +7,12 @@ import * as api from './api';
 import { Post } from '../../models';
 import { Section, TextField } from '../../components';
 
+enum SaveStatus {
+  FAILURE,
+  SUCCESS,
+  ONGOING,
+}
+
 const Container = styled(Section)`
   margin-bottom: 30px;
 `;
@@ -36,6 +42,19 @@ const DateField = styled(({ ...other }) => <input type='date' {...other} />)`
   border-bottom: 1px solid #000000;
 `;
 
+const SaveStatusText = styled.span`
+  margin-top: 5px;
+  align-self: center;
+  font-size: 12px;
+  color: #c0c0c0;
+`;
+
+const LinkLikeText = styled(SaveStatusText)`
+  margin-left: 3px;
+  cursor: pointer;
+  color: #7fcfff;
+`;
+
 const Post: React.FC = () => {
   const getFormattedDate = (date?: string, withTime: boolean = false) => {
     const format = withTime ? 'YYYY-MM-DDT00:00:00' : 'YYYY-MM-DD';
@@ -50,6 +69,8 @@ const Post: React.FC = () => {
   const [date, setDate] = useState(getFormattedDate());
   const [content, setContent] = useState('');
   const [originalPost, setOriginalPost] = useState<Post | null>(null);
+
+  const [saveStatus, setSaveStatus] = useState(SaveStatus.SUCCESS);
 
   const { id } = useParams();
 
@@ -73,10 +94,15 @@ const Post: React.FC = () => {
         newContent && newContent !== originalPost.content
       ) {
         const dateWithTime = getFormattedDate(date, true);
+
+        setSaveStatus(SaveStatus.ONGOING);
         const result = await api.updatePost(postId, title, dateWithTime, content);
 
-        if (!result) {
+        if (result) {
+          setSaveStatus(SaveStatus.SUCCESS);
+        } else {
           alert('Failed to save post');
+          setSaveStatus(SaveStatus.FAILURE);
         }
       }
     } else if (!postId) {
@@ -86,10 +112,23 @@ const Post: React.FC = () => {
 
         if (result) {
           setPostId(result);
+          setSaveStatus(SaveStatus.SUCCESS);
         } else {
           alert('Failed to save post');
+          setSaveStatus(SaveStatus.FAILURE);
         }
       }
+    }
+  };
+
+  const getSaveStatusText = (status: SaveStatus) => {
+    switch (status) {
+      case SaveStatus.FAILURE:
+        return '❌ Failed to save';
+      case SaveStatus.SUCCESS:
+        return '✅ Saved!';
+      case SaveStatus.ONGOING:
+        return 'Saving...';
     }
   };
 
@@ -119,6 +158,10 @@ const Post: React.FC = () => {
       onBlur={({ target: { value } }) => upsertPost(null, null, value)}
       onChange={({ target: { value } }) => setContent(value)}
     />
+    <Section row>
+      <SaveStatusText>{getSaveStatusText(saveStatus)}</SaveStatusText>
+      {saveStatus === SaveStatus.FAILURE && <LinkLikeText onClick={() => upsertPost(title, date, content)}>Retry</LinkLikeText>}
+    </Section>
   </Container>
 };
 
