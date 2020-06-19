@@ -9,7 +9,7 @@ interface LoginBody {
 }
 
 function login(email: string, password: string): Promise<Session> {
-  const url = 'http://127.0.0.1:8080/auth/login';
+  const url = `${Http.baseUrl}/auth/login`;
   const hashedPassword = new SHA3(512).update(password).digest('hex');
 
   const body: LoginBody = {

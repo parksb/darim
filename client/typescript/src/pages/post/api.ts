@@ -14,7 +14,7 @@ interface UpdatePostBody {
 }
 
 function createPost(title: string, date: string, content: string): Promise<number> {
-  const url = 'http://127.0.0.1:8080/posts';
+  const url = `${Http.baseUrl}/posts`;
   const body: CreatePostBody = {
     title,
     date,
@@ -29,7 +29,7 @@ function updatePost(id: number, title?: string, date?: string, content?: string)
     return Promise.resolve(false);
   }
 
-  const url = `http://127.0.0.1:8080/posts/${id}`;
+  const url = `${Http.baseUrl}/posts/${id}`;
   const body: UpdatePostBody = {
     title,
     date,
@@ -40,7 +40,7 @@ function updatePost(id: number, title?: string, date?: string, content?: string)
 }
 
 function fetchPost(id: number): Promise<Post> {
-  const url = `http://127.0.0.1:8080/posts/${id}`;
+  const url = `${Http.baseUrl}/posts/${id}`;
   return Http.get<Post>(url);
 }
 
