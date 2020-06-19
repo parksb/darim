@@ -1,22 +1,26 @@
-use diesel::{prelude::*, result::Error};
+use diesel::result::Error;
 
-use crate::models::{auth::*, db_connection, error::ServiceError, user::*};
-use crate::schema::users::dsl;
+use crate::models::{auth::*, error::ServiceError, user::*};
 use crate::utils::password_util;
 
 pub fn login(args: LoginArgs) -> Result<UserSession, ServiceError> {
-    let conn = db_connection::connect();
+    let user = {
+        let user_repository = UserRepository::new();
+        let password = user_repository.find_password_by_email(&args.email);
 
-    let hashed_password = password_util::get_hashed_password(args.password);
-    let found_user: Result<User, Error> = dsl::users
-        .filter(
-            dsl::email
-                .eq(&args.email)
-                .and(dsl::password.eq(hashed_password)),
-        )
-        .get_result::<User>(&conn);
+        match password {
+            Ok(password) => {
+                if password_util::check_password(&args.password, &password) {
+                    user_repository.find_by_email(&args.email)
+                } else {
+                    Err(Error::NotFound)
+                }
+            }
+            Err(error) => Err(error),
+        }
+    };
 
-    let logged_in_user_session = match found_user {
+    let logged_in_user_session = match user {
         Ok(user) => UserSession {
             user_id: user.id,
             user_email: user.email,
@@ -28,7 +32,10 @@ pub fn login(args: LoginArgs) -> Result<UserSession, ServiceError> {
                     println!("{}", ServiceError::NotFound(args.email.clone()));
                     Err(ServiceError::NotFound(args.email))
                 }
-                _ => Err(ServiceError::QueryExecutionFailure),
+                _ => {
+                    println!("{}", ServiceError::QueryExecutionFailure);
+                    Err(ServiceError::QueryExecutionFailure)
+                }
             }
         }
     };

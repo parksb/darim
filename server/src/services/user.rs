@@ -6,7 +6,7 @@ use crate::utils::password_util;
 pub fn get_one(id: u64) -> Result<UserDTO, ServiceError> {
     let user = {
         let user_repository = UserRepository::new();
-        user_repository.find(id)
+        user_repository.find_by_id(id)
     };
 
     match user {
@@ -70,7 +70,7 @@ pub fn create(args: CreateArgs) -> Result<bool, ServiceError> {
 
     let created_count = {
         let user_repository = UserRepository::new();
-        let password = password_util::get_hashed_password(args.password);
+        let password = password_util::get_hashed_password(&args.password);
         user_repository.create(&args.name, &args.email, &password, &args.avatar_url)
     };
 
@@ -125,7 +125,7 @@ pub fn update(id: u64, args: UpdateArgs) -> Result<bool, ServiceError> {
         let user_repository = UserRepository::new();
 
         let password = if let Some(password) = args.password {
-            Some(password_util::get_hashed_password(password))
+            Some(password_util::get_hashed_password(&password))
         } else {
             None
         };

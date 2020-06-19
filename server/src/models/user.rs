@@ -64,9 +64,24 @@ impl UserRepository {
         }
     }
 
-    pub fn find(&self, id: u64) -> Result<User, Error> {
+    pub fn find_by_id(&self, id: u64) -> Result<User, Error> {
         let user: User = dsl::users.find(id).get_result::<User>(&self.conn)?;
         Ok(user)
+    }
+
+    pub fn find_by_email(&self, email: &str) -> Result<User, Error> {
+        let user: User = dsl::users
+            .filter(dsl::email.eq(email))
+            .get_result::<User>(&self.conn)?;
+        Ok(user)
+    }
+
+    pub fn find_password_by_email(&self, email: &str) -> Result<String, Error> {
+        let password: String = dsl::users
+            .select(dsl::password)
+            .filter(dsl::email.eq(email))
+            .get_result::<String>(&self.conn)?;
+        Ok(password)
     }
 
     pub fn find_all(&self) -> Result<Vec<User>, Error> {
