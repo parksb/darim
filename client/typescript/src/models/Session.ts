@@ -1,7 +1,7 @@
 interface Session {
-  userId: String;
-  userEmail: String;
-  userName: String;
+  user_id: String;
+  user_email: String;
+  user_name: String;
 }
 
 export default Session;
