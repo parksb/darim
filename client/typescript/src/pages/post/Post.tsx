@@ -6,11 +6,18 @@ import dayjs from "dayjs";
 import * as api from './api';
 import { Post } from '../../models';
 import { Section, TextField } from '../../components';
+import Editor from "./Editor";
+import Preview from "./Preview";
 
 enum SaveStatus {
   FAILURE,
   SUCCESS,
   ONGOING,
+}
+
+enum ContentViewMode {
+  EDITOR,
+  PREVIEW,
 }
 
 const Container = styled(Section)`
@@ -20,18 +27,6 @@ const Container = styled(Section)`
 const TitleTextField = styled(TextField)`
   font-size: 24px;
   font-weight: bold;
-`;
-
-const TextArea = styled.textarea`
-  max-width: 100%;
-  margin-top: 30px;
-  padding: 5px;
-  font-family: sans-serif;
-  font-size: 16px;
-  border: 0;
-  border-bottom: 1px solid #000000;
-  resize: none;
-  line-height: 150%;
 `;
 
 const DateField = styled(({ ...other }) => <input type='date' {...other} />)`
@@ -52,7 +47,29 @@ const SaveStatusText = styled.span`
 const LinkLikeText = styled(SaveStatusText)`
   margin-left: 3px;
   cursor: pointer;
-  color: #7fcfff;
+  color: #6fbfff;
+
+  &:hover {
+    text-decoration: underline;
+  }
+`;
+
+const ContentViewModeSection = styled(Section)`
+  margin-top: 20px;
+  justify-content: space-between;
+`;
+
+const ContentViewModeForm = styled.form`
+  font-size: 12px;
+  align-self: flex-end;
+`;
+
+const Radio = styled(({ ...other }) => <input type='radio' {...other} />)`
+  margin: 0 3px 0 0;
+`;
+
+const PreviewRadio = styled(Radio)`
+  margin-left: 7px;
 `;
 
 const Post: React.FC = () => {
@@ -70,6 +87,7 @@ const Post: React.FC = () => {
   const [content, setContent] = useState('');
   const [originalPost, setOriginalPost] = useState<Post | null>(null);
 
+  const [contentViewMode, setContentViewMode] = useState(ContentViewMode.EDITOR);
   const [saveStatus, setSaveStatus] = useState(SaveStatus.SUCCESS);
 
   const { id } = useParams();
@@ -108,6 +126,8 @@ const Post: React.FC = () => {
     } else if (!postId) {
       if (title && date && content) {
         const dateWithTime = getFormattedDate(date, true);
+
+        setSaveStatus(SaveStatus.ONGOING);
         const result = await api.createPost(title, dateWithTime, content);
 
         if (result) {
@@ -135,7 +155,10 @@ const Post: React.FC = () => {
   useEffect(() => {
     if (id) {
       setPostId(id);
+      setContentViewMode(ContentViewMode.PREVIEW);
       load();
+    } else {
+      setSaveStatus(SaveStatus.FAILURE);
     }
   }, []);
 
@@ -151,17 +174,41 @@ const Post: React.FC = () => {
       onBlur={({ target: { value } }: { target: { value: string } }) => upsertPost(null, value)}
       onChange={({ target: { value } }: { target: { value: string } }) => setDate(value)}
     />
-    <TextArea
-      rows={30}
-      placeholder='Content'
-      value={content}
-      onBlur={({ target: { value } }) => upsertPost(null, null, value)}
-      onChange={({ target: { value } }) => setContent(value)}
-    />
-    <Section row>
-      <SaveStatusText>{getSaveStatusText(saveStatus)}</SaveStatusText>
-      {saveStatus === SaveStatus.FAILURE && <LinkLikeText onClick={() => upsertPost(title, date, content)}>Retry</LinkLikeText>}
-    </Section>
+    <ContentViewModeSection row>
+      <Section row>
+        <SaveStatusText>{getSaveStatusText(saveStatus)}</SaveStatusText>
+        {saveStatus === SaveStatus.FAILURE && <LinkLikeText onClick={() => upsertPost(title, date, content)}>Retry</LinkLikeText>}
+      </Section>
+      <ContentViewModeForm>
+        <label>
+          <Radio
+            name='content-view-mode'
+            value={ContentViewMode.EDITOR}
+            checked={contentViewMode === ContentViewMode.EDITOR}
+            onChange={() => setContentViewMode(ContentViewMode.EDITOR)}
+          />
+          Editor
+        </label>
+        <label>
+          <PreviewRadio
+            name='content-view-mode'
+            value={ContentViewMode.PREVIEW}
+            checked={contentViewMode === ContentViewMode.PREVIEW}
+            onChange={() => setContentViewMode(ContentViewMode.PREVIEW)}
+          />
+          Preview
+        </label>
+      </ContentViewModeForm>
+    </ContentViewModeSection>
+    {contentViewMode === ContentViewMode.EDITOR ? (
+      <Editor
+        content={content}
+        onBlur={({ target: { value } }) => upsertPost(null, null, value)}
+        onChange={({ target: { value } }) => setContent(value)}
+      />
+    ) : (
+      <Preview content={content} />
+    )}
   </Container>
 };
 
