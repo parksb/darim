@@ -75,7 +75,7 @@ impl PostRepository {
     pub fn find_all(&self, user_id: u64) -> Result<Vec<Post>, Error> {
         let post_list: Vec<Post> = dsl::posts
             .filter(dsl::user_id.eq(user_id))
-            .order(dsl::date.desc())
+            .order((dsl::date.desc(), dsl::id.desc()))
             .load::<Post>(&self.conn)?;
 
         Ok(post_list)
