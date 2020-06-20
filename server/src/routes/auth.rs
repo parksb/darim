@@ -22,6 +22,7 @@ use crate::utils::session_util;
 ///         "user_id": 0,
 ///         "user_email": "park@email.com"
 ///         "user_name": "park",
+///         "user_avatar_url": "avatar.jpg"
 ///     }
 /// }
 /// ```
@@ -75,9 +76,10 @@ pub async fn login(session: Session, args: web::Json<LoginArgs>) -> impl Respond
         Ok(response) => {
             let is_succeed = session_util::set_session(
                 session,
-                &response.user_id,
+                response.user_id,
                 &response.user_email,
                 &response.user_name,
+                &response.user_avatar_url,
             );
 
             if is_succeed {

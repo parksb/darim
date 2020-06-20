@@ -9,21 +9,28 @@ use actix_session::Session;
 /// * `user_id` - A record id of the user account
 /// * `user_email` -  An email of the user account
 /// * `user_name` - A name of the user account
+/// * `user_avatar_url` - A avatar image url of the user account
 pub fn set_session(
     session: Session,
-    user_id: &u64,
-    user_email: &String,
-    user_name: &String,
+    user_id: u64,
+    user_email: &str,
+    user_name: &str,
+    user_avatar_url: &Option<String>,
 ) -> bool {
     let is_set_user_id = session.set("user_id", user_id);
     let is_set_user_email = session.set("user_email", user_email);
     let is_set_user_name = session.set("user_name", user_name);
 
-    return if is_set_user_id.is_err() || is_set_user_email.is_err() || is_set_user_name.is_err() {
-        false
+    let is_set_user_avatar_url = if let Some(user_avatar_url) = user_avatar_url {
+        session.set("user_avatar_url", user_avatar_url)
     } else {
-        true
+        Ok(())
     };
+
+    !(is_set_user_id.is_err()
+        || is_set_user_email.is_err()
+        || is_set_user_name.is_err()
+        || is_set_user_avatar_url.is_err())
 }
 
 /// Clears session.
@@ -41,22 +48,46 @@ pub fn unset_session(session: Session) {
 ///
 /// * `session` - An session object
 pub fn get_session(session: &Session) -> Option<UserSession> {
-    let user_id = session.get::<u64>("user_id");
-    let user_email = session.get::<String>("user_email");
-    let user_name = session.get::<String>("user_name");
-
-    if user_id.is_err() || user_email.is_err() || user_name.is_err() {
-        None
-    } else if (&user_id).as_ref().unwrap().is_some()
-        && (&user_email).as_ref().unwrap().is_some()
-        && (&user_name).as_ref().unwrap().is_some()
-    {
-        Some(UserSession {
-            user_id: user_id.unwrap().unwrap(),
-            user_email: user_email.unwrap().unwrap(),
-            user_name: user_name.unwrap().unwrap(),
-        })
+    let user_id = if let Ok(id) = session.get::<u64>("user_id") {
+        if let Some(id) = id {
+            id
+        } else {
+            return None;
+        }
     } else {
-        None
-    }
+        return None;
+    };
+
+    let user_email = if let Ok(email) = session.get::<String>("user_email") {
+        if let Some(email) = email {
+            email
+        } else {
+            return None;
+        }
+    } else {
+        return None;
+    };
+
+    let user_name = if let Ok(name) = session.get::<String>("user_name") {
+        if let Some(name) = name {
+            name
+        } else {
+            return None;
+        }
+    } else {
+        return None;
+    };
+
+    let user_avatar_url = if let Ok(avatar_url) = session.get::<String>("user_avatar_url") {
+        avatar_url
+    } else {
+        return None;
+    };
+
+    Some(UserSession {
+        user_id,
+        user_email,
+        user_name,
+        user_avatar_url,
+    })
 }

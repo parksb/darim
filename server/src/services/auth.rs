@@ -25,6 +25,7 @@ pub fn login(args: LoginArgs) -> Result<UserSession, ServiceError> {
             user_id: user.id,
             user_email: user.email,
             user_name: user.name,
+            user_avatar_url: user.avatar_url,
         },
         Err(error) => {
             return match error {
