@@ -37,7 +37,7 @@ const StyledLink = styled(Link)`
   color: #000000;
 `;
 
-const Item: React.FC<Props> = ({ post }) => {
+const ListItem: React.FC<Props> = ({ post }) => {
   const { id, title, date } = post;
   const displayed_date = dayjs(date).format('YYYY / MM / DD');
 
@@ -50,4 +50,4 @@ const Item: React.FC<Props> = ({ post }) => {
   </Card>
 };
 
-export default Item;
+export default ListItem;

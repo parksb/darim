@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 
 import * as api from './api';
-import Item from './Item';
+import ListItem from './ListItem';
 import { Post } from '../../models';
 import { Section } from "../../components";
 
@@ -19,7 +19,7 @@ const List: React.FC = () => {
 
   return <Section>
     {posts.map((post: Post) => {
-      return <Item key={post.id} post={post}/>
+      return <ListItem key={post.id} post={post}/>
     })}
   </Section>
 };
