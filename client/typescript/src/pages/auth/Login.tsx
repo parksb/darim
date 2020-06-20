@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import styled from 'styled-components';
 
 import * as api from './api';
-import { TextField, Button, Section } from '../../components';
+import { TextField, Button, Section, LoadingDots } from '../../components';
 import { Session } from '../../models';
 
 interface Props {
@@ -27,22 +27,36 @@ const Login: React.FC<Props> = ({ session_state }) => {
   const [password, setPassword] = useState('');
   const [session, setSession] = session_state;
 
+  const [isSigning, setIsSigning] = useState(false);
+
   const login = async () => {
+    setIsSigning(true);
     const result = await api.login(email, password);
     if (result) {
+      setIsSigning(false);
       setSession(result);
     } else {
-      alert('로그인실패했습니다.');
+      setIsSigning(false);
+      alert('Failed to sign in');
     }
   };
 
   return <Container row>
-    <FullWidthTextField type='email' placeholder='Email' value={email} onChange={({ target: { value } }) => setEmail(value)} />
-    <FullWidthTextField type='password' placeholder='Password' value={password} onChange={({ target: { value } }) => setPassword(value)}/>
-    <Button onClick={login}>Sign in</Button>
-    <Link to='/join'>
-      <SignUpButton>Sign up ↗</SignUpButton>
-    </Link>
+    {!isSigning ? (
+      <>
+        <FullWidthTextField type='email' placeholder='Email' value={email} onChange={({ target: { value } }) => setEmail(value)} />
+        <FullWidthTextField type='password' placeholder='Password' value={password} onChange={({ target: { value } }) => setPassword(value)}/>
+        <Button onClick={login}>Sign in</Button>
+        <Link to='/join'>
+          <SignUpButton>Sign up ↗</SignUpButton>
+        </Link>
+      </>
+    ) : (
+      <>
+        Signing with secure encryption algorithm
+        <LoadingDots />
+      </>
+    )}
   </Container>
 };
 
