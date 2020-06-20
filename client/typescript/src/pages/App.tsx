@@ -32,7 +32,7 @@ const App: React.FC = () => {
   return (
     <Router>
       <Container>
-        <Header />
+        <Header session={session} />
         <Switch>
           <Route path='/join'>
             {!session ? <Join /> : <Redirect to="/" />}
