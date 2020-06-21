@@ -3,7 +3,7 @@ import dayjs from 'dayjs';
 import weekOfYear from 'dayjs/plugin/weekOfYear';
 import styled from 'styled-components';
 
-import * as api from './api';
+import * as api from '../../api/post';
 import { Post } from '../../models';
 import { Button, Section } from "../../components";
 import CalendarItem from "./CalendarItem";

@@ -1,7 +1,7 @@
 import { SHA3 } from 'sha3';
 
-import Http from '../../utils/http';
-import { Session } from '../../models';
+import Http from '../utils/http';
+import { Session } from '../models';
 
 interface LoginBody {
   email: string;

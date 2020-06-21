@@ -1,5 +1,5 @@
-import Http from '../../utils/http';
-import Post from "../../models/Post";
+import Http from '../utils/http';
+import Post from "../models/Post";
 
 interface CreatePostBody {
   title: string;
@@ -11,6 +11,11 @@ interface UpdatePostBody {
   title?: string;
   date?: string;
   content?: string;
+}
+
+function getPosts(): Promise<Post[]> {
+  const url = `${Http.baseUrl}/posts`;
+  return Http.get<Post[]>(url);
 }
 
 function createPost(title: string, date: string, content: string): Promise<number> {
@@ -44,4 +49,4 @@ function fetchPost(id: number): Promise<Post> {
   return Http.get<Post>(url);
 }
 
-export { createPost, updatePost, fetchPost };
+export { getPosts, createPost, updatePost, fetchPost };

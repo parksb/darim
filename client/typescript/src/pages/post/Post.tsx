@@ -3,7 +3,7 @@ import { useParams, useLocation } from "react-router-dom";
 import styled from 'styled-components';
 import dayjs from "dayjs";
 
-import * as api from './api';
+import * as api from '../../api/post';
 import { Post } from '../../models';
 import { Section, TextField } from '../../components';
 import Editor from "./Editor";

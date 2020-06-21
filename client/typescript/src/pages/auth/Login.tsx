@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import styled from 'styled-components';
 
-import * as api from './api';
+import * as api from '../../api/auth';
 import { TextField, Button, Section, LoadingDots } from '../../components';
 import { Session } from '../../models';
 
