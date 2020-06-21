@@ -41,20 +41,26 @@ const WeekDay = styled(Section)`
 const MonthControlContainer = styled(Section)`
   align-items: center;
   align-self: center;
-  margin-bottom: 10px;
+  margin-bottom: 30px;
 `;
 
 const MonthControlButton = styled(Button)`
   border: none;
-  height: 20px;
+  height: 30px;
+  width: 30px;
   padding: 0;
   margin: 0 15px 0 15px;
   font-weight: 700;
+  border-radius: 50%;
 
   &:hover {
-    background-color: #ffffff;
+    background-color: #ffce05;
     color: #000000;
   }
+`;
+
+const MonthText = styled.h2`
+  margin: 0;
 `;
 
 const Calendar: React.FC = () => {
@@ -113,7 +119,7 @@ const Calendar: React.FC = () => {
       <MonthControlButton onClick={() => setCursorDate(cursorDate.subtract(1, 'month'))}>
         ＜
       </MonthControlButton>
-      <h2>{cursorDate.format(cursorDate.year() === dayjs().year() ? 'MMMM' : 'YYYY MMMM')}</h2>
+      <MonthText>{cursorDate.format(cursorDate.year() === dayjs().year() ? 'MMMM' : 'YYYY MMMM')}</MonthText>
       <MonthControlButton onClick={() => setCursorDate(cursorDate.add(1, 'month'))}>
         ＞
       </MonthControlButton>
