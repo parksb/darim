@@ -2,12 +2,13 @@ import React, {useEffect, useState} from 'react';
 import { BrowserRouter as Router, Switch, Redirect, Route } from 'react-router-dom';
 import styled from 'styled-components';
 
-import * as api from './api';
+import * as api from '../api/auth';
 import { Header } from '../components';
 import { Session } from '../models';
 import { Timeline } from './timeline';
 import { Login, Join } from './auth';
 import { Post } from './post';
+import { Settings } from './settings';
 
 const Container = styled.div`
   max-width: 800px;
@@ -35,7 +36,7 @@ const App: React.FC = () => {
         <Header session={session} />
         <Switch>
           <Route path='/join'>
-            {!session ? <Join /> : <Redirect to="/" />}
+            {session ? <Redirect to="/" /> : <Join />}
           </Route>
           <Route path='/post/:id'>
             {session && <Post />}
@@ -43,11 +44,13 @@ const App: React.FC = () => {
           <Route path='/post'>
             {session && <Post />}
           </Route>
-          <Route path='/'>
-            {!session && <Login session_state={[session, setSession]} />}
-            {session && <Timeline />}
+          <Route path='/settings'>
+            {session ? <Settings sessionState={[session, setSession]} /> : <Redirect to='/' />}
           </Route>
-          <Redirect to="/" />
+          <Route path='/'>
+            {session ? <Timeline /> : <Login session_state={[session, setSession]} />}
+          </Route>
+          <Redirect to='/' />
         </Switch>
       </Container>
     </Router>

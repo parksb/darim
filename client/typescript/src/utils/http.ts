@@ -39,6 +39,10 @@ class Http {
     return Http.request(HttpMethods.POST, url, jsonBody);
   }
 
+  static postWithoutBody<T>(url: string): Promise<T> {
+    return Http.request(HttpMethods.POST, url);
+  }
+
   static patch<T, S>(url: string, body: T): Promise<S> {
     const jsonBody = JSON.stringify(body);
     return Http.request(HttpMethods.PATCH, url, jsonBody);

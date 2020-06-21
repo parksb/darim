@@ -8,6 +8,11 @@ interface LoginBody {
   password: string;
 }
 
+function fetchSession(): Promise<Session> {
+  const url = `${Http.baseUrl}/auth`;
+  return Http.get<Session>(url);
+}
+
 function login(email: string, password: string): Promise<Session> {
   const url = `${Http.baseUrl}/auth/login`;
   const hashedPassword = new SHA3(512).update(password).digest('hex');
@@ -20,4 +25,9 @@ function login(email: string, password: string): Promise<Session> {
   return Http.post<LoginBody, Session>(url, body);
 }
 
-export { login };
+function logout(): Promise<boolean> {
+  const url = `${Http.baseUrl}/auth/logout`;
+  return Http.postWithoutBody<boolean>(url);
+}
+
+export { fetchSession, login, logout };
