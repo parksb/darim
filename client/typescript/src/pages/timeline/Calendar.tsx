@@ -20,17 +20,28 @@ interface DateToPostsMap {
 const WeekLine = styled(Section)`
   flex: 1;
   max-width: 100%;
-  border-top: 1px solid black;
-  border-bottom: 1px solid black;
+  border-top: 1px solid #000000;
+  border-bottom: 1px solid #000000;
 
    &:nth-child(n+2) {
     border-top: 0;
   };
 `;
 
+const WeekDayLine = styled(Section)`
+  padding-bottom: 10px;
+`;
+
+const WeekDay = styled(Section)`
+  flex: 7;
+  text-align: center;
+  font-size: 12px;
+`;
+
 const Calendar: React.FC = () => {
   dayjs.extend(weekOfYear);
 
+  const weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
   const [postMap, setPostMap] = useState<DateToPostsMap>({});
   const [calendar, setCalendar] = useState<Week[]>([]);
 
@@ -74,15 +85,22 @@ const Calendar: React.FC = () => {
   }, []);
 
   return <Section>
-    {calendar.map((week) => {
-      return <WeekLine row>
-        {week.days.map((day) => {
-          const formattedDate = day.format('YYYY-MM-DD');
-          const posts = postMap[formattedDate];
-          return <CalendarItem key={formattedDate} day={day} posts={posts} />;
-        })}
-      </WeekLine>;
-    })}
+    <WeekDayLine row>
+      {weekDays.map((weekDay) => {
+        return <WeekDay>{weekDay}</WeekDay>
+      })}
+    </WeekDayLine>
+    <Section>
+      {calendar.map((week) => {
+        return <WeekLine row>
+          {week.days.map((day) => {
+            const formattedDate = day.format('YYYY-MM-DD');
+            const posts = postMap[formattedDate];
+            return <CalendarItem key={formattedDate} day={day} posts={posts} />;
+          })}
+        </WeekLine>;
+      })}
+    </Section>
   </Section>
 };
 
