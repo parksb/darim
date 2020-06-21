@@ -56,6 +56,7 @@ const LinkLikeText = styled(SaveStatusText)`
 
 const ContentViewModeSection = styled(Section)`
   margin-top: 20px;
+  margin-bottom: 15px;
   justify-content: space-between;
 `;
 

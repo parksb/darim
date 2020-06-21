@@ -59,10 +59,6 @@ const MonthControlButton = styled(Button)`
   }
 `;
 
-const MonthText = styled.h2`
-  margin: 0;
-`;
-
 const Calendar: React.FC = () => {
   dayjs.extend(weekOfYear);
 
@@ -119,7 +115,7 @@ const Calendar: React.FC = () => {
       <MonthControlButton onClick={() => setCursorDate(cursorDate.subtract(1, 'month'))}>
         ＜
       </MonthControlButton>
-      <MonthText>{cursorDate.format(cursorDate.year() === dayjs().year() ? 'MMMM' : 'YYYY MMMM')}</MonthText>
+      <h2>{cursorDate.format(cursorDate.year() === dayjs().year() ? 'MMMM' : 'YYYY MMMM')}</h2>
       <MonthControlButton onClick={() => setCursorDate(cursorDate.add(1, 'month'))}>
         ＞
       </MonthControlButton>

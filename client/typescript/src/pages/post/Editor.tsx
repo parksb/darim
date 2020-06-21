@@ -11,7 +11,6 @@ interface Props {
 const TextArea = styled(TextareaAutosize)`
   max-width: 100%;
   min-height: 500px;
-  margin-top: 15px;
   padding: 5px;
   font-family: sans-serif;
   font-size: 16px;

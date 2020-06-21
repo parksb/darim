@@ -15,7 +15,8 @@ const Card = styled(Section)`
 `;
 
 const Title = styled.h3`
-  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
 `;
 
 const Date = styled.time`

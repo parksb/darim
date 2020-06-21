@@ -17,6 +17,7 @@ const Content = styled.div`
   h1, h2, h3, h4, h5, h6 {
     margin-top: 30px;
     margin-bottom: 20px;
+    font-weight: 700;
   }
 
   h1 {
