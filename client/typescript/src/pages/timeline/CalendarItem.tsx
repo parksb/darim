@@ -9,6 +9,7 @@ import { Section } from "../../components";
 interface Props {
   posts?: Post[];
   day: dayjs.Dayjs;
+  cursorDate: dayjs.Dayjs;
 }
 
 const Container = styled(({ is_current_month, ...other }) => <Section {...other} />)`
@@ -53,11 +54,11 @@ const StyledLink = styled(Link)`
   }
 `;
 
-const CalendarItem: React.FC<Props> = ({ posts, day }) => {
+const CalendarItem: React.FC<Props> = ({ posts, day, cursorDate }) => {
   const displayed_date = day.date() === 1 ? day.format('MM / DD') : day.format('D');
   const is_today = day.format('YYYY-MM-DD') === dayjs().format('YYYY-MM-DD');
 
-  return <Container is_current_month={day.month() === dayjs().month()}>
+  return <Container is_current_month={day.month() === cursorDate.month()}>
     <Section>
       <Date dateTime={day.format('YYYY-MM-DD')}>
         {displayed_date}

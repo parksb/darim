@@ -5,7 +5,7 @@ import styled from 'styled-components';
 
 import * as api from './api';
 import { Post } from '../../models';
-import { Section } from "../../components";
+import { Button, Section } from "../../components";
 import CalendarItem from "./CalendarItem";
 
 interface Week {
@@ -38,18 +38,38 @@ const WeekDay = styled(Section)`
   font-size: 12px;
 `;
 
+const MonthControlContainer = styled(Section)`
+  align-items: center;
+  align-self: center;
+  margin-bottom: 10px;
+`;
+
+const MonthControlButton = styled(Button)`
+  border: none;
+  height: 20px;
+  padding: 0;
+  margin: 0 15px 0 15px;
+  font-weight: 700;
+
+  &:hover {
+    background-color: #ffffff;
+    color: #000000;
+  }
+`;
+
 const Calendar: React.FC = () => {
   dayjs.extend(weekOfYear);
 
   const weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
   const [postMap, setPostMap] = useState<DateToPostsMap>({});
   const [calendar, setCalendar] = useState<Week[]>([]);
+  const [cursorDate, setCursorDate] = useState(dayjs());
 
   const calculateCalendar = () => {
     const weeks: Week[] = [];
 
-    const startWeek = dayjs().startOf('month').week();
-    const endWeek = dayjs().endOf('month').week();
+    const startWeek = cursorDate.startOf('month').week();
+    const endWeek = cursorDate.endOf('month').week();
 
     for (let week = startWeek; week < endWeek; week += 1) {
       weeks.push({
@@ -84,7 +104,20 @@ const Calendar: React.FC = () => {
     calculateCalendar();
   }, []);
 
+  useEffect(() => {
+    calculateCalendar();
+  }, [cursorDate]);
+
   return <Section>
+    <MonthControlContainer row>
+      <MonthControlButton onClick={() => setCursorDate(cursorDate.subtract(1, 'month'))}>
+        ＜
+      </MonthControlButton>
+      <h2>{cursorDate.format(cursorDate.year() === dayjs().year() ? 'MMMM' : 'YYYY MMMM')}</h2>
+      <MonthControlButton onClick={() => setCursorDate(cursorDate.add(1, 'month'))}>
+        ＞
+      </MonthControlButton>
+    </MonthControlContainer>
     <WeekDayLine row>
       {weekDays.map((weekDay) => {
         return <WeekDay>{weekDay}</WeekDay>
@@ -96,7 +129,7 @@ const Calendar: React.FC = () => {
           {week.days.map((day) => {
             const formattedDate = day.format('YYYY-MM-DD');
             const posts = postMap[formattedDate];
-            return <CalendarItem key={formattedDate} day={day} posts={posts} />;
+            return <CalendarItem key={formattedDate} day={day} cursorDate={cursorDate} posts={posts} />;
           })}
         </WeekLine>;
       })}
