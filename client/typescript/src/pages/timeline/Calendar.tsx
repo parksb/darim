@@ -10,7 +10,11 @@ import CalendarItem from "./CalendarItem";
 
 interface Week {
   week: number;
-  days: dayjs.Dayjs[]
+  days: dayjs.Dayjs[];
+}
+
+interface DateToPostsMap {
+  [date: string]: Post[];
 }
 
 const WeekLine = styled(Section)`
@@ -27,7 +31,7 @@ const WeekLine = styled(Section)`
 const Calendar: React.FC = () => {
   dayjs.extend(weekOfYear);
 
-  const [posts, setPosts] = useState<Post[]>([]);
+  const [postMap, setPostMap] = useState<DateToPostsMap>({});
   const [calendar, setCalendar] = useState<Week[]>([]);
 
   const calculateCalendar = () => {
@@ -49,8 +53,19 @@ const Calendar: React.FC = () => {
   };
 
   const load = async () => {
-    const post_list = await api.getPosts();
-    setPosts(post_list);
+    const postList = await api.getPosts();
+    const dateToPostsMap: DateToPostsMap = {};
+
+    postList.forEach((post) => {
+      const postDate = dayjs(post.date).format('YYYY-MM-DD');
+      if (!dateToPostsMap[postDate]) {
+        dateToPostsMap[postDate] = [];
+      }
+
+      dateToPostsMap[postDate].push(post);
+    });
+
+    setPostMap(dateToPostsMap);
   };
 
   useEffect(() => {
@@ -62,7 +77,9 @@ const Calendar: React.FC = () => {
     {calendar.map((week) => {
       return <WeekLine row>
         {week.days.map((day) => {
-          return <CalendarItem day={day} />;
+          const formattedDate = day.format('YYYY-MM-DD');
+          const posts = postMap[formattedDate];
+          return <CalendarItem key={formattedDate} day={day} posts={posts} />;
         })}
       </WeekLine>;
     })}

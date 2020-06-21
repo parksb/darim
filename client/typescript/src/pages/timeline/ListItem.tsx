@@ -35,6 +35,10 @@ const StyledLink = styled(Link)`
   display: flex;
   text-decoration: none;
   color: #000000;
+
+   &:hover {
+    background-color: #ffce05;
+  }
 `;
 
 const ListItem: React.FC<Props> = ({ post }) => {
