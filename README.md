@@ -6,7 +6,7 @@
 * Darim: Diary Improved
 * A personal diary service that supports calendar view and markdown syntax.
 
-![Preview](https://user-images.githubusercontent.com/6410412/83938984-22825300-a814-11ea-864e-48baf913dfd2.png)
+![Preview](https://user-images.githubusercontent.com/6410412/85219561-e805e200-b3df-11ea-964e-e444f6ada7fa.png)
 
 ## Architecture
 
