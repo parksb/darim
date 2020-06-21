@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import { useParams } from "react-router-dom";
+import { useParams, useLocation } from "react-router-dom";
 import styled from 'styled-components';
 import dayjs from "dayjs";
 
@@ -81,16 +81,20 @@ const Post: React.FC = () => {
     return dayjs().format(format);
   };
 
+  const { id } = useParams();
+  const query = new URLSearchParams(useLocation().search);
+  const dateFromQuery = query.get('date');
+
   const [postId, setPostId] = useState<number | null>(null);
   const [title, setTitle] = useState('');
-  const [date, setDate] = useState(getFormattedDate());
+  const [date, setDate] = useState(getFormattedDate(dateFromQuery || undefined));
   const [content, setContent] = useState('');
   const [originalPost, setOriginalPost] = useState<Post | null>(null);
 
   const [contentViewMode, setContentViewMode] = useState(ContentViewMode.EDITOR);
   const [saveStatus, setSaveStatus] = useState(SaveStatus.SUCCESS);
 
-  const { id } = useParams();
+
 
   const load = async () => {
     const post = await api.fetchPost(id);

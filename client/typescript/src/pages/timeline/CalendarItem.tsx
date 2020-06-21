@@ -4,7 +4,7 @@ import styled from 'styled-components';
 import dayjs from 'dayjs';
 
 import { Post } from '../../models';
-import { Section } from "../../components";
+import { Button, Section } from "../../components";
 
 interface Props {
   posts?: Post[];
@@ -27,6 +27,14 @@ const Container = styled(({ is_current_month, ...other }) => <Section {...other}
     border-right: 0;
     border-left: 0;
   };
+
+  &:hover button {
+    display: block;
+  }
+`;
+
+const ItemHead = styled(Section)`
+  justify-content: space-between;
 `;
 
 const Date = styled.time`
@@ -45,7 +53,7 @@ const PostContainer = styled.div`
   line-height: 21px;
 `;
 
-const StyledLink = styled(Link)`
+const PostLink = styled(Link)`
   text-decoration: none;
   color: #000000;
 
@@ -54,23 +62,40 @@ const StyledLink = styled(Link)`
   }
 `;
 
+const NewPostButton = styled(Button)`
+  display: none;
+  border: 0;
+  border-radius: 50%;
+  background-color: transparent;
+`;
+
+const NewPostLink = styled(Link)`
+  text-decoration: none;
+  color: #000000;
+`;
+
 const CalendarItem: React.FC<Props> = ({ posts, day, cursorDate }) => {
   const displayed_date = day.date() === 1 ? day.format('MM / DD') : day.format('D');
   const is_today = day.format('YYYY-MM-DD') === dayjs().format('YYYY-MM-DD');
 
   return <Container is_current_month={day.month() === cursorDate.month()}>
     <Section>
-      <Date dateTime={day.format('YYYY-MM-DD')}>
-        {displayed_date}
-        {is_today && '📌'}
-      </Date>
+      <ItemHead row>
+        <Date dateTime={day.format('YYYY-MM-DD')}>
+          {displayed_date}
+          {is_today && '📌'}
+        </Date>
+        <NewPostLink to={`/post?date=${day.format('YYYY-MM-DD')}`}>
+          <NewPostButton>+</NewPostButton>
+        </NewPostLink>
+      </ItemHead>
       {posts && posts.map((post) => {
         return (
-          <StyledLink to={`/post/${post.id}`}>
+          <PostLink to={`/post/${post.id}`}>
             <PostContainer>
               {post.title}
             </PostContainer>
-          </StyledLink>
+          </PostLink>
         );
       })}
     </Section>
