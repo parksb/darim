@@ -19,7 +19,7 @@
     "sha3": "^2.1.2",
     "styled-components": "^5.1.1",
     "styled-reset": "^4.1.6",
-    "typescript": "^3.7.5"
+    "typescript": "^3.9.5"
   },
   "devDependencies": {
     "@types/markdown-it": "^10.0.1",
