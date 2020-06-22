@@ -71,14 +71,15 @@ const Calendar: React.FC = () => {
     const weeks: Week[] = [];
 
     const startWeek = cursorDate.startOf('month').week();
-    const endWeek = cursorDate.endOf('month').week();
+    let endWeek = cursorDate.endOf('month').week();
+    if (cursorDate.month() === 11) {
+      endWeek = cursorDate.endOf('month').subtract(7, 'day').week() + endWeek;
+    }
 
-    for (let week = startWeek; week < endWeek; week += 1) {
+    for (let week = startWeek; week <= endWeek; week += 1) {
       weeks.push({
         week,
-        days: Array(7).fill(0).map((n, i) => {
-          return dayjs().week(week).startOf('week').clone().add(n + i, 'day')
-        }),
+        days: Array(7).fill(0).map((n, i) => cursorDate.week(week).startOf('week').add(n + i, 'day')),
       });
     }
 
