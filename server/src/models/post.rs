@@ -44,16 +44,16 @@ pub struct PostDTO {
 #[derive(Insertable, AsChangeset)]
 #[table_name = "posts"]
 struct PostDAO {
-    pub id: Option<u64>,
-    pub user_id: Option<u64>,
-    pub title: Option<String>,
-    pub content: Option<String>,
-    pub date: Option<NaiveDateTime>,
-    pub updated_at: Option<NaiveDateTime>,
+    id: Option<u64>,
+    user_id: Option<u64>,
+    title: Option<String>,
+    content: Option<String>,
+    date: Option<NaiveDateTime>,
+    updated_at: Option<NaiveDateTime>,
 }
 
 pub struct PostRepository {
-    pub conn: MysqlConnection,
+    conn: MysqlConnection,
 }
 
 impl PostRepository {

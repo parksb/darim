@@ -44,17 +44,17 @@ pub struct UserDTO {
 
 #[derive(Insertable, AsChangeset)]
 #[table_name = "users"]
-pub struct UserDAO {
-    pub id: Option<u64>,
-    pub name: Option<String>,
-    pub email: Option<String>,
-    pub password: Option<String>,
-    pub avatar_url: Option<String>,
-    pub updated_at: Option<NaiveDateTime>,
+struct UserDAO {
+    id: Option<u64>,
+    name: Option<String>,
+    email: Option<String>,
+    password: Option<String>,
+    avatar_url: Option<String>,
+    updated_at: Option<NaiveDateTime>,
 }
 
 pub struct UserRepository {
-    pub conn: MysqlConnection,
+    conn: MysqlConnection,
 }
 
 impl UserRepository {
