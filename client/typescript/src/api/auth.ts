@@ -1,4 +1,4 @@
-import { SHA3 } from 'sha3';
+import SHA3 from 'crypto-js/sha3';
 
 import Http from '../utils/http';
 import { Session } from '../models';
@@ -15,7 +15,7 @@ function fetchSession(): Promise<Session> {
 
 function login(email: string, password: string): Promise<Session> {
   const url = `${Http.baseUrl}/auth/login`;
-  const hashedPassword = new SHA3(512).update(password).digest('hex');
+  const hashedPassword = SHA3(password, { outputLength: 512 }).toString();
 
   const body: LoginBody = {
     email,
