@@ -8,6 +8,13 @@ interface LoginBody {
   password: string;
 }
 
+interface SetSignUpTokenBody {
+  name: string;
+  email: string;
+  password: string;
+  avatar_url: string | null;
+}
+
 function fetchSession(): Promise<Session> {
   const url = `${Http.baseUrl}/auth`;
   return Http.get<Session>(url);
@@ -30,4 +37,18 @@ function logout(): Promise<boolean> {
   return Http.postWithoutBody<boolean>(url);
 }
 
-export { fetchSession, login, logout };
+function setSignUpToken(name: string, email: string, password: string, avatarUrl?: string): Promise<boolean> {
+  const url = `${Http.baseUrl}/auth/token`;
+  const hashedPassword = SHA3(password, { outputLength: 512 }).toString();
+
+  const body: SetSignUpTokenBody = {
+    name,
+    email,
+    password: hashedPassword,
+    avatar_url: avatarUrl || null,
+  };
+
+  return Http.post<SetSignUpTokenBody, boolean>(url, body);
+}
+
+export { fetchSession, login, logout, setSignUpToken };

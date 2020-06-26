@@ -6,7 +6,7 @@ import * as api from '../api/auth';
 import { Header } from '../components';
 import { Session } from '../models';
 import { Timeline } from './timeline';
-import { Login, Join } from './auth';
+import { Login, Join, Token } from './auth';
 import { Post } from './post';
 import { Settings } from './settings';
 
@@ -37,6 +37,9 @@ const App: React.FC = () => {
         <Switch>
           <Route path='/join'>
             {session ? <Redirect to="/" /> : <Join />}
+          </Route>
+          <Route path='/token/:key'>
+            {session ? <Redirect to="/" /> : <Token />}
           </Route>
           <Route path='/post/:id'>
             {session && <Post />}
