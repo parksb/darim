@@ -17,17 +17,13 @@ use crate::utils::session_util;
 ///
 /// ## Parameters
 ///
-/// * name - A name of the user.
-/// * email - A unique email of the user.
-/// * password - A password of the user.
-/// * avatar_url - An avatar image url of the user.
+/// * key - A key for token search
+/// * pin - A pin for verifying
 ///
 /// ```json
 /// {
-///     "name": "park",
-///     "email": "park@email.com",
-///     "password": "Ir5c7y8dS3",
-///     "avatar_url": "avatar.jpg"
+///     "key": "71I3Qz9u",
+///     "pin": "P9d82Jc5"
 /// }
 /// ```
 ///
@@ -39,8 +35,8 @@ use crate::utils::session_util;
 /// }
 /// ```
 #[post("/users")]
-pub async fn create_user(user: web::Json<CreateArgs>) -> impl Responder {
-    let response = user::create(user.into_inner());
+pub async fn create_user(args: web::Json<CreateArgs>) -> impl Responder {
+    let response = user::create(args.into_inner());
     match response {
         Ok(result) => HttpResponse::Ok().json(json!({ "data": result })),
         Err(ServiceError::InvalidArgument) => {
@@ -48,6 +44,9 @@ pub async fn create_user(user: web::Json<CreateArgs>) -> impl Responder {
         }
         Err(ServiceError::DuplicatedKey) => {
             HttpResponse::Conflict().body(format!("{}", ServiceError::DuplicatedKey))
+        }
+        Err(ServiceError::Unauthorized) => {
+            HttpResponse::Conflict().body(format!("{}", ServiceError::Unauthorized))
         }
         _ => HttpResponse::InternalServerError().body("internal server error"),
     }

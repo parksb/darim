@@ -37,6 +37,52 @@ pub async fn get_auth(session: Session) -> impl Responder {
     }
 }
 
+/// Set token to create user
+///
+/// # Request
+///
+/// ```text
+/// POST /auth/token
+/// ```
+///
+/// ## Parameters
+///
+/// * name - A name of the user.
+/// * email - A unique email of the user.
+/// * password - A password of the user.
+/// * avatar_url - An avatar image url of the user.
+///
+/// ```json
+/// {
+///     "name": "park",
+///     "email": "park@email.com",
+///     "password": "Ir5c7y8dS3",
+///     "avatar_url": "avatar.jpg"
+/// }
+/// ```
+///
+/// # Response
+///
+/// ```json
+/// {
+///     "data": true
+/// }
+/// ```
+#[post("/auth/token")]
+pub async fn set_sign_up_token(args: web::Json<SetSignUpTokenArgs>) -> impl Responder {
+    let response = auth::set_sign_up_token(args.into_inner());
+    match response {
+        Ok(result) => HttpResponse::Ok().json(json!({ "data": result })),
+        Err(ServiceError::InvalidArgument) => {
+            HttpResponse::BadRequest().body(format!("{}", ServiceError::InvalidArgument))
+        }
+        Err(ServiceError::DuplicatedKey) => {
+            HttpResponse::Conflict().body(format!("{}", ServiceError::DuplicatedKey))
+        }
+        _ => HttpResponse::InternalServerError().body("internal server error"),
+    }
+}
+
 /// Login to set user session
 ///
 /// # Request
@@ -124,6 +170,7 @@ pub async fn logout(session: Session) -> impl Responder {
 }
 
 pub fn init_routes(cfg: &mut web::ServiceConfig) {
+    cfg.service(set_sign_up_token);
     cfg.service(get_auth);
     cfg.service(login);
     cfg.service(logout);

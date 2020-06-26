@@ -12,6 +12,9 @@ pub enum ServiceError {
     #[error("invalid argument supplied")]
     InvalidArgument,
 
+    #[error("invalid format")]
+    InvalidFormat,
+
     #[error("duplicated key")]
     DuplicatedKey,
 

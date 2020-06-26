@@ -3,7 +3,7 @@ use diesel::prelude::*;
 use diesel::result::Error;
 use serde::{Deserialize, Serialize};
 
-use crate::models::db_connection;
+use crate::models::connection;
 use crate::schema::{users, users::dsl};
 
 #[derive(Debug, Serialize, Deserialize, Queryable)]
@@ -19,10 +19,8 @@ pub struct User {
 
 #[derive(Serialize, Deserialize)]
 pub struct CreateArgs {
-    pub name: String,
-    pub email: String,
-    pub password: String,
-    pub avatar_url: Option<String>,
+    pub key: String,
+    pub pin: String,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -60,7 +58,7 @@ pub struct UserRepository {
 impl UserRepository {
     pub fn new() -> Self {
         Self {
-            conn: db_connection::connect(),
+            conn: connection::connect_rdb(),
         }
     }
 

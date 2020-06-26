@@ -1,5 +1,6 @@
 use diesel::result::Error;
 
+use crate::models::auth::{Token, TokenRepository};
 use crate::models::{error::ServiceError, user::*};
 use crate::utils::password_util;
 
@@ -60,18 +61,40 @@ pub fn get_list() -> Result<Vec<UserDTO>, ServiceError> {
 }
 
 pub fn create(args: CreateArgs) -> Result<bool, ServiceError> {
-    if args.name.trim().is_empty()
-        || args.email.trim().is_empty()
-        || args.password.trim().is_empty()
-    {
-        println!("{}", ServiceError::InvalidArgument);
-        return Err(ServiceError::InvalidArgument);
-    }
+    let token: Token = {
+        let mut token_repository = TokenRepository::new();
+        let serialized_token = if let Ok(serialized_token) = token_repository.find(&args.key) {
+            serialized_token
+        } else {
+            println!("{}", ServiceError::NotFound(args.key.clone()));
+            return Err(ServiceError::NotFound(args.key));
+        };
+
+        let deserialized_token: Token =
+            if let Ok(deserialized_token) = serde_json::from_str(&serialized_token) {
+                deserialized_token
+            } else {
+                println!("{}", ServiceError::InvalidFormat);
+                return Err(ServiceError::InvalidFormat);
+            };
+
+        if args.pin == deserialized_token.pin {
+            let _ = token_repository.delete(&args.key);
+            deserialized_token
+        } else {
+            println!("{}", ServiceError::Unauthorized);
+            return Err(ServiceError::Unauthorized);
+        }
+    };
 
     let created_count = {
         let user_repository = UserRepository::new();
-        let password = password_util::get_hashed_password(&args.password);
-        user_repository.create(&args.name, &args.email, &password, &args.avatar_url)
+        user_repository.create(
+            &token.name,
+            &token.email,
+            &token.password,
+            &token.avatar_url,
+        )
     };
 
     if let Ok(created_count) = created_count {

@@ -3,7 +3,7 @@ use diesel::prelude::*;
 use diesel::result::Error;
 use serde::{Deserialize, Serialize};
 
-use crate::models::db_connection;
+use crate::models::connection;
 use crate::schema::{posts, posts::dsl};
 
 #[derive(Debug, Serialize, Deserialize, Queryable)]
@@ -59,7 +59,7 @@ pub struct PostRepository {
 impl PostRepository {
     pub fn new() -> Self {
         Self {
-            conn: db_connection::connect(),
+            conn: connection::connect_rdb(),
         }
     }
 

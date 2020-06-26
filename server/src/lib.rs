@@ -38,7 +38,7 @@ pub mod models {
     /// Model related to authentication.
     pub mod auth;
     /// Model related to Database connection.
-    pub mod db_connection;
+    pub mod connection;
     /// Model related to error.
     pub mod error;
     /// Model related to post.
