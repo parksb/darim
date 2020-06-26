@@ -65,7 +65,7 @@ const Calendar: React.FC = () => {
   const weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
   const [postMap, setPostMap] = useState<DateToPostsMap>({});
   const [calendar, setCalendar] = useState<Week[]>([]);
-  const [cursorDate, setCursorDate] = useState(dayjs());
+  const [cursorDate, setCursorDate] = useState(dayjs().date(1));
 
   const calculateCalendar = () => {
     const weeks: Week[] = [];
