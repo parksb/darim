@@ -95,8 +95,6 @@ const Post: React.FC = () => {
   const [contentViewMode, setContentViewMode] = useState(ContentViewMode.EDITOR);
   const [saveStatus, setSaveStatus] = useState(SaveStatus.SUCCESS);
 
-
-
   const load = async () => {
     const post = await api.fetchPost(id);
 
@@ -124,7 +122,6 @@ const Post: React.FC = () => {
         if (result) {
           setSaveStatus(SaveStatus.SUCCESS);
         } else {
-          alert('Failed to save post');
           setSaveStatus(SaveStatus.FAILURE);
         }
       }
@@ -139,7 +136,6 @@ const Post: React.FC = () => {
           setPostId(result);
           setSaveStatus(SaveStatus.SUCCESS);
         } else {
-          alert('Failed to save post');
           setSaveStatus(SaveStatus.FAILURE);
         }
       }

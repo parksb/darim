@@ -18,7 +18,7 @@ function getPosts(): Promise<Post[]> {
   return Http.get<Post[]>(url);
 }
 
-function createPost(title: string, date: string, content: string): Promise<number> {
+async function createPost(title: string, date: string, content: string): Promise<number | null> {
   const url = `${Http.baseUrl}/posts`;
   const body: CreatePostBody = {
     title,
@@ -26,10 +26,16 @@ function createPost(title: string, date: string, content: string): Promise<numbe
     content,
   };
 
-  return Http.post<CreatePostBody, number>(url, body);
+  try {
+    return await Http.post<CreatePostBody, number>(url, body);
+  } catch (e) {
+    alert('Failed to save post');
+  }
+
+  return null;
 }
 
-function updatePost(id: number, title?: string, date?: string, content?: string): Promise<boolean> {
+async function updatePost(id: number, title?: string, date?: string, content?: string): Promise<boolean | null> {
   if (!title && !date && !content) {
     return Promise.resolve(false);
   }
@@ -41,7 +47,13 @@ function updatePost(id: number, title?: string, date?: string, content?: string)
     content,
   };
 
-  return Http.patch<UpdatePostBody, boolean>(url, body);
+  try {
+    return await Http.patch<UpdatePostBody, boolean>(url, body);
+  } catch (e) {
+    alert('Failed to save post')
+  }
+
+  return null;
 }
 
 function fetchPost(id: number): Promise<Post> {

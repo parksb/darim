@@ -15,12 +15,17 @@ interface SetSignUpTokenBody {
   avatar_url: string | null;
 }
 
-function fetchSession(): Promise<Session> {
+async function fetchSession(): Promise<Session | null> {
   const url = `${Http.baseUrl}/auth`;
-  return Http.get<Session>(url);
+
+  try {
+    return await Http.get<Session>(url);
+  } catch (e) {
+    return null;
+  }
 }
 
-function login(email: string, password: string): Promise<Session> {
+async function login(email: string, password: string): Promise<Session | null> {
   const url = `${Http.baseUrl}/auth/login`;
   const hashedPassword = SHA3(password, { outputLength: 512 }).toString();
 
@@ -29,15 +34,32 @@ function login(email: string, password: string): Promise<Session> {
     password: hashedPassword,
   };
 
-  return Http.post<LoginBody, Session>(url, body);
+  try {
+    return await Http.post<LoginBody, Session>(url, body);
+  } catch (e) {
+    if (e.message === '404') {
+      alert('Incorrect username or password');
+    } else {
+      alert('Failed to sign in');
+    }
+  }
+
+  return null;
 }
 
-function logout(): Promise<boolean> {
+async function logout(): Promise<boolean | null> {
   const url = `${Http.baseUrl}/auth/logout`;
-  return Http.postWithoutBody<boolean>(url);
+
+  try {
+    return await Http.postWithoutBody<boolean>(url);
+  } catch (e) {
+    alert('Failed to sign out')
+  }
+
+  return null;
 }
 
-function setSignUpToken(name: string, email: string, password: string, avatarUrl?: string): Promise<boolean> {
+async function setSignUpToken(name: string, email: string, password: string, avatarUrl?: string): Promise<boolean | null> {
   const url = `${Http.baseUrl}/auth/token`;
   const hashedPassword = SHA3(password, { outputLength: 512 }).toString();
 
@@ -48,7 +70,13 @@ function setSignUpToken(name: string, email: string, password: string, avatarUrl
     avatar_url: avatarUrl || null,
   };
 
-  return Http.post<SetSignUpTokenBody, boolean>(url, body);
+  try {
+    return await Http.post<SetSignUpTokenBody, boolean>(url, body);
+  } catch (e) {
+    alert('Failed to set token');
+  }
+
+  return null;
 }
 
 export { fetchSession, login, logout, setSignUpToken };

@@ -26,6 +26,11 @@ class Http {
       body,
       credentials: 'include',
     });
+
+    if (rawResponse.status !== 200) {
+      throw new Error(rawResponse.status.toString());
+    }
+
     const response: ResponseData<T> = await rawResponse.json();
     return response.data;
   }

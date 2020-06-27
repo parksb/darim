@@ -5,7 +5,7 @@ interface CreateUserBody {
   pin: string;
 }
 
-function createUser(key: string, pin: string): Promise<boolean> {
+async function createUser(key: string, pin: string): Promise<boolean | null> {
   const url = `${Http.baseUrl}/users`;
 
   const body: CreateUserBody = {
@@ -13,7 +13,13 @@ function createUser(key: string, pin: string): Promise<boolean> {
     pin,
   };
 
-  return Http.post<CreateUserBody, boolean>(url, body);
+  try {
+    return await Http.post<CreateUserBody, boolean>(url, body);
+  } catch (e) {
+    alert('Failed to verify email');
+  }
+
+  return null;
 }
 
 export { createUser };

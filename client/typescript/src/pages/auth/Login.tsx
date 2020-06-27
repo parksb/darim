@@ -37,7 +37,6 @@ const Login: React.FC<Props> = ({ session_state }) => {
       setSession(result);
     } else {
       setIsSigning(false);
-      alert('Failed to sign in');
     }
   };
 

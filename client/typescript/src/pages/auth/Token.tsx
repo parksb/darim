@@ -24,8 +24,6 @@ const Token: React.FC = () => {
     if (result) {
       alert('Welcome :)\nPlease sign in to start writing!');
       setIsVerified(true);
-    } else {
-      alert('Failed to verify email');
     }
   };
 

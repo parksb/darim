@@ -60,8 +60,6 @@ const Settings: React.FC<Props> = ({ sessionState }) => {
     const result = await api.logout();
     if (result) {
       setSession(null);
-    } else {
-      alert('Failed to sign out');
     }
   };
 

@@ -38,7 +38,6 @@ const Join: React.FC = () => {
       setIsSetToken(true);
     } else {
       setIsSettingToken(false);
-      alert('Failed to set token');
     }
   };
 
