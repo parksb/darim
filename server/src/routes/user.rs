@@ -17,13 +17,15 @@ use crate::utils::session_util;
 ///
 /// ## Parameters
 ///
-/// * key - A key for token search
-/// * pin - A pin for verifying
+/// * user_public_key - A user's public key
+/// * token_key - A key for token search
+/// * token_pin - A pin for verifying
 ///
 /// ```json
 /// {
-///     "key": "71I3Qz9u",
-///     "pin": "P9d82Jc5"
+///     "user_public_key": "d63ee429"
+///     "token_key": "71I3Qz9u",
+///     "token_pin": "P9d82Jc5"
 /// }
 /// ```
 ///

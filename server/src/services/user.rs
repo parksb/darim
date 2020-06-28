@@ -1,6 +1,7 @@
 use diesel::result::Error;
 
 use crate::models::auth::{Token, TokenRepository};
+use crate::models::user_key::UserKeyRepository;
 use crate::models::{error::ServiceError, user::*};
 use crate::utils::password_util;
 
@@ -63,11 +64,12 @@ pub fn get_list() -> Result<Vec<UserDTO>, ServiceError> {
 pub fn create(args: CreateArgs) -> Result<bool, ServiceError> {
     let token: Token = {
         let mut token_repository = TokenRepository::new();
-        let serialized_token = if let Ok(serialized_token) = token_repository.find(&args.key) {
+        let serialized_token = if let Ok(serialized_token) = token_repository.find(&args.token_key)
+        {
             serialized_token
         } else {
-            println!("{}", ServiceError::NotFound(args.key.clone()));
-            return Err(ServiceError::NotFound(args.key));
+            println!("{}", ServiceError::NotFound(args.token_key.clone()));
+            return Err(ServiceError::NotFound(args.token_key));
         };
 
         let deserialized_token: Token =
@@ -78,8 +80,8 @@ pub fn create(args: CreateArgs) -> Result<bool, ServiceError> {
                 return Err(ServiceError::InvalidFormat);
             };
 
-        if args.pin == deserialized_token.pin {
-            let _ = token_repository.delete(&args.key);
+        if args.token_pin == deserialized_token.pin {
+            let _ = token_repository.delete(&args.token_key);
             deserialized_token
         } else {
             println!("{}", ServiceError::Unauthorized);
@@ -87,19 +89,39 @@ pub fn create(args: CreateArgs) -> Result<bool, ServiceError> {
         }
     };
 
-    let created_count = {
+    let (created_count, user) = {
         let user_repository = UserRepository::new();
-        user_repository.create(
+
+        let created_count = user_repository.create(
             &token.name,
             &token.email,
             &token.password,
             &token.avatar_url,
-        )
+        );
+        let user = user_repository.find_by_email(&token.email);
+
+        (created_count, user)
     };
 
-    if let Ok(created_count) = created_count {
+    // FIXME: Improve error handling.
+    if let (Ok(created_count), Ok(user)) = (created_count, user) {
         if created_count > 0 {
-            Ok(true)
+            let user_key_created_count = {
+                let user_key_repository = UserKeyRepository::new();
+                user_key_repository.create(user.id, &args.user_public_key)
+            };
+
+            if let Ok(user_key_created_count) = user_key_created_count {
+                if user_key_created_count > 0 {
+                    Ok(true)
+                } else {
+                    println!("{}", ServiceError::QueryExecutionFailure);
+                    Err(ServiceError::QueryExecutionFailure)
+                }
+            } else {
+                println!("{}", ServiceError::QueryExecutionFailure);
+                Err(ServiceError::QueryExecutionFailure)
+            }
         } else {
             println!("{}", ServiceError::QueryExecutionFailure);
             Err(ServiceError::QueryExecutionFailure)

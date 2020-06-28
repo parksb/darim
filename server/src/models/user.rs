@@ -19,8 +19,9 @@ pub struct User {
 
 #[derive(Serialize, Deserialize)]
 pub struct CreateArgs {
-    pub key: String,
-    pub pin: String,
+    pub user_public_key: String,
+    pub token_key: String,
+    pub token_pin: String,
 }
 
 #[derive(Serialize, Deserialize)]

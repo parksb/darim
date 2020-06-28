@@ -45,6 +45,8 @@ pub mod models {
     pub mod post;
     /// Model related to user.
     pub mod user;
+    /// Model related to user key.
+    pub mod user_key;
 }
 
 /// A presentation layer that makes API public and passes request/response data to other layers.
