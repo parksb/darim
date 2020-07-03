@@ -9,17 +9,20 @@ use actix_session::Session;
 /// * `user_id` - A record id of the user account
 /// * `user_email` -  An email of the user account
 /// * `user_name` - A name of the user account
+/// * `user_public_key` - A public key of the user account
 /// * `user_avatar_url` - A avatar image url of the user account
 pub fn set_session(
     session: Session,
     user_id: u64,
     user_email: &str,
     user_name: &str,
+    user_public_key: &str,
     user_avatar_url: &Option<String>,
 ) -> bool {
     let is_set_user_id = session.set("user_id", user_id);
     let is_set_user_email = session.set("user_email", user_email);
     let is_set_user_name = session.set("user_name", user_name);
+    let is_set_user_public_key = session.set("user_public_key", user_public_key);
 
     let is_set_user_avatar_url = if let Some(user_avatar_url) = user_avatar_url {
         session.set("user_avatar_url", user_avatar_url)
@@ -30,6 +33,7 @@ pub fn set_session(
     !(is_set_user_id.is_err()
         || is_set_user_email.is_err()
         || is_set_user_name.is_err()
+        || is_set_user_public_key.is_err()
         || is_set_user_avatar_url.is_err())
 }
 
@@ -78,6 +82,16 @@ pub fn get_session(session: &Session) -> Option<UserSession> {
         return None;
     };
 
+    let user_public_key = if let Ok(public_key) = session.get::<String>("user_public_key") {
+        if let Some(public_key) = public_key {
+            public_key
+        } else {
+            return None;
+        }
+    } else {
+        return None;
+    };
+
     let user_avatar_url = if let Ok(avatar_url) = session.get::<String>("user_avatar_url") {
         avatar_url
     } else {
@@ -88,6 +102,7 @@ pub fn get_session(session: &Session) -> Option<UserSession> {
         user_id,
         user_email,
         user_name,
+        user_public_key,
         user_avatar_url,
     })
 }

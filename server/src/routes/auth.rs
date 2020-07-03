@@ -125,6 +125,7 @@ pub async fn login(session: Session, args: web::Json<LoginArgs>) -> impl Respond
                 response.user_id,
                 &response.user_email,
                 &response.user_name,
+                &response.user_public_key,
                 &response.user_avatar_url,
             );
 

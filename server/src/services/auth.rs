@@ -1,6 +1,7 @@
 use diesel::result::Error;
 use rand::{distributions::Alphanumeric, thread_rng, Rng};
 
+use crate::models::user_key::UserKeyRepository;
 use crate::models::{auth::*, error::ServiceError, user::*};
 use crate::utils::password_util;
 
@@ -22,12 +23,27 @@ pub fn login(args: LoginArgs) -> Result<UserSession, ServiceError> {
     };
 
     let logged_in_user_session = match user {
-        Ok(user) => UserSession {
-            user_id: user.id,
-            user_email: user.email,
-            user_name: user.name,
-            user_avatar_url: user.avatar_url,
-        },
+        Ok(user) => {
+            let user_key = {
+                let user_repository = UserKeyRepository::new();
+                user_repository.find_by_user_id(user.id)
+            };
+
+            let user_public_key = if let Ok(user_key) = user_key {
+                user_key.public_key
+            } else {
+                println!("{}", ServiceError::NotFound(args.email.clone()));
+                return Err(ServiceError::NotFound(args.email));
+            };
+
+            UserSession {
+                user_id: user.id,
+                user_email: user.email,
+                user_name: user.name,
+                user_public_key,
+                user_avatar_url: user.avatar_url,
+            }
+        }
         Err(error) => {
             return match error {
                 Error::NotFound => {
