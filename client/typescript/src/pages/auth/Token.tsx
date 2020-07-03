@@ -47,7 +47,7 @@ const Token: React.FC = () => {
 
     const result = await api.createUser(publicKey, key, pin);
     if (result) {
-      localStorage.setItem(publicKey, encryptedPrivateKey);
+      localStorage.setItem('key', encryptedPrivateKey);
       setSecretKey(encryptedPrivateKey);
     }
   };

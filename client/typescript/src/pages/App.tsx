@@ -42,16 +42,16 @@ const App: React.FC = () => {
             {session ? <Redirect to="/" /> : <Token />}
           </Route>
           <Route path='/post/:id'>
-            {session && <Post />}
+            {session && <Post session={session} />}
           </Route>
           <Route path='/post'>
-            {session && <Post />}
+            {session && <Post session={session} />}
           </Route>
           <Route path='/settings'>
             {session ? <Settings sessionState={[session, setSession]} /> : <Redirect to='/' />}
           </Route>
           <Route path='/'>
-            {session ? <Timeline /> : <Login session_state={[session, setSession]} />}
+            {session ? <Timeline session={session} /> : <Login session_state={[session, setSession]} />}
           </Route>
           <Redirect to='/' />
         </Switch>

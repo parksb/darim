@@ -4,10 +4,14 @@ import styled from 'styled-components';
 import dayjs from "dayjs";
 
 import * as api from '../../api/post';
-import { Post } from '../../models';
+import { Post, Session } from '../../models';
 import { Section, TextField } from '../../components';
 import Editor from "./Editor";
 import Preview from "./Preview";
+
+interface Props {
+  session: Session | null;
+}
 
 enum SaveStatus {
   FAILURE,
@@ -73,7 +77,7 @@ const PreviewRadio = styled(Radio)`
   margin-left: 7px;
 `;
 
-const Post: React.FC = () => {
+const Post: React.FC<Props> = ({ session }) => {
   const getFormattedDate = (date?: string, withTime: boolean = false) => {
     const format = withTime ? 'YYYY-MM-DDT00:00:00' : 'YYYY-MM-DD';
     if (date) {
@@ -96,7 +100,7 @@ const Post: React.FC = () => {
   const [saveStatus, setSaveStatus] = useState(SaveStatus.SUCCESS);
 
   const load = async () => {
-    const post = await api.fetchPost(id);
+    const post = await api.fetchPost(id, session?.user_public_key || '');
 
     if (post) {
       const { title, content, date } = post;
@@ -117,7 +121,7 @@ const Post: React.FC = () => {
         const dateWithTime = getFormattedDate(date, true);
 
         setSaveStatus(SaveStatus.ONGOING);
-        const result = await api.updatePost(postId, title, dateWithTime, content);
+        const result = await api.updatePost(session?.user_public_key || '', postId, title, dateWithTime, content);
 
         if (result) {
           setSaveStatus(SaveStatus.SUCCESS);
@@ -130,7 +134,7 @@ const Post: React.FC = () => {
         const dateWithTime = getFormattedDate(date, true);
 
         setSaveStatus(SaveStatus.ONGOING);
-        const result = await api.createPost(title, dateWithTime, content);
+        const result = await api.createPost(session?.user_public_key || '', title, dateWithTime, content);
 
         if (result) {
           setPostId(result);

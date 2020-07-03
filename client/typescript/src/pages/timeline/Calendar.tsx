@@ -4,9 +4,13 @@ import weekOfYear from 'dayjs/plugin/weekOfYear';
 import styled from 'styled-components';
 
 import * as api from '../../api/post';
-import { Post } from '../../models';
+import { Post, Session } from '../../models';
 import { Button, Section } from "../../components";
 import CalendarItem from "./CalendarItem";
+
+interface Props {
+  session: Session | null;
+}
 
 interface Week {
   week: number;
@@ -59,7 +63,7 @@ const MonthControlButton = styled(Button)`
   }
 `;
 
-const Calendar: React.FC = () => {
+const Calendar: React.FC<Props> = ({ session }) => {
   dayjs.extend(weekOfYear);
 
   const weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -87,7 +91,7 @@ const Calendar: React.FC = () => {
   };
 
   const load = async () => {
-    const postList = await api.getPosts();
+    const postList = await api.fetchPosts(session?.user_public_key || '');
     const dateToPostsMap: DateToPostsMap = {};
 
     postList.forEach((post) => {
