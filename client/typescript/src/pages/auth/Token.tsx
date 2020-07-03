@@ -23,7 +23,14 @@ const InfoSection = styled(Section)`
 const KeySection = styled(Section)`
   padding: 15px;
   background-color: #f0f0f0;
-  margin: 20px 0 20px;
+`;
+
+const PublicKeySection = styled(KeySection)`
+  margin-top: 20px;
+`;
+
+const PrivateKeySection = styled(KeySection)`
+  margin: 10px 0 20px;
 `;
 
 const CopyButton = styled(Button)`
@@ -38,17 +45,19 @@ const Token: React.FC = () => {
   const { key } = useParams();
 
   const [pin, setPin] = useState('');
-  const [secretKey, setSecretKey] = useState('');
+  const [privateKey, setPrivateKey] = useState('');
+  const [publicKey, setPublicKey] = useState('');
 
   const verify = async () => {
-    const publicKey = CryptoJS.lib.WordArray.random(512 / 8).toString();
-    const privateKey = CryptoJS.lib.WordArray.random(512 / 8).toString();
-    const encryptedPrivateKey = CryptoJS.AES.encrypt(privateKey, publicKey).toString();
+    const generatedPublicKey = CryptoJS.lib.WordArray.random(512 / 8).toString();
+    const generatedPrivateKey = CryptoJS.lib.WordArray.random(512 / 8).toString();
+    const encryptedPrivateKey = CryptoJS.AES.encrypt(generatedPrivateKey, generatedPublicKey).toString();
 
-    const result = await api.createUser(publicKey, key, pin);
+    const result = await api.createUser(generatedPublicKey, key, pin);
     if (result) {
       localStorage.setItem('key', encryptedPrivateKey);
-      setSecretKey(encryptedPrivateKey);
+      setPrivateKey(encryptedPrivateKey);
+      setPublicKey(generatedPublicKey);
     }
   };
 
@@ -58,7 +67,7 @@ const Token: React.FC = () => {
   };
 
   return <Container>
-    {!secretKey ? (
+    {!privateKey ? (
       <Section row>
         <FullWidthTextField type='text' placeholder='Pin' value={pin} onChange={({ target: { value } }) => setPin(value)} />
         <Button onClick={verify}>Verify</Button>
@@ -66,16 +75,24 @@ const Token: React.FC = () => {
     ) : (
       <>
         <InfoSection>
-          👋 Welcome to Darim! This is your secret key that will be used to encrypt your posts:
-          <KeySection row>
-            <a download='darim-secret-key.txt' href={getDownloadURLOfTextFile(secretKey)}>
-              <Button>Download the key as file</Button>
+          👋 Welcome to Darim! This is your public key and secret key that will be used to encrypt your posts:
+          <PublicKeySection row>
+            <a download='darim-public-key.txt' href={getDownloadURLOfTextFile(privateKey)}>
+              <Button>Download the public key as file</Button>
             </a>
-            <CopyToClipboard text={secretKey}>
-              <CopyButton>Copy the key to clipboard</CopyButton>
+            <CopyToClipboard text={publicKey}>
+              <CopyButton>Copy the public key to clipboard</CopyButton>
             </CopyToClipboard>
-          </KeySection>
-          Don't lose your secret key. It is strongly recommended that you download the key file and store it in a secure place, or copy the key to somewhere else.
+          </PublicKeySection>
+          <PrivateKeySection row>
+            <a download='darim-secret-key.txt' href={getDownloadURLOfTextFile(publicKey)}>
+              <Button>Download the secret key as file</Button>
+            </a>
+            <CopyToClipboard text={privateKey}>
+              <CopyButton>Copy the secret key to clipboard</CopyButton>
+            </CopyToClipboard>
+          </PrivateKeySection>
+          Don't lose your public key and secret key. It is strongly recommended that you download the key files and store it in a secure place, or copy the keys to somewhere else.
           Also, NEVER let anyone know your secret key.
         </InfoSection>
         <Link to='/'>
