@@ -77,7 +77,7 @@ const Token: React.FC = () => {
         <InfoSection>
           👋 Welcome to Darim! This is your public key and secret key that will be used to encrypt your posts:
           <PublicKeySection row>
-            <a download='darim-public-key.txt' href={getDownloadURLOfTextFile(privateKey)}>
+            <a download='darim-public-key.txt' href={getDownloadURLOfTextFile(publicKey)}>
               <Button>Download the public key as file</Button>
             </a>
             <CopyToClipboard text={publicKey}>
@@ -85,7 +85,7 @@ const Token: React.FC = () => {
             </CopyToClipboard>
           </PublicKeySection>
           <PrivateKeySection row>
-            <a download='darim-secret-key.txt' href={getDownloadURLOfTextFile(publicKey)}>
+            <a download='darim-secret-key.txt' href={getDownloadURLOfTextFile(privateKey)}>
               <Button>Download the secret key as file</Button>
             </a>
             <CopyToClipboard text={privateKey}>
