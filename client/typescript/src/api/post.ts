@@ -1,7 +1,6 @@
-import * as CryptoJS from 'crypto-js';
-
 import Http from '../utils/http';
-import Post from "../models/Post";
+import Post from '../models/Post';
+import Secret from '../utils/secret';
 
 interface CreatePostBody {
   title: string;
@@ -16,53 +15,63 @@ interface UpdatePostBody {
 }
 
 async function fetchPosts(publicKey: string): Promise<Post[]> {
-  const url = `${Http.baseUrl}/posts`;
-  const posts = await Http.get<Post[]>(url);
+  if (!publicKey) {
+    return [];
+  }
 
-  if (publicKey) {
-    const encryptedPrivateKey = localStorage.getItem('key');
+  try {
+    const url = `${Http.baseUrl}/posts`;
+    const posts = await Http.get<Post[]>(url);
 
-    if (encryptedPrivateKey) {
-      const privateKey = CryptoJS.AES.decrypt(encryptedPrivateKey, publicKey).toString(CryptoJS.enc.Utf8);
+    const keyFromLocalStorage = Secret.getPrivateKeyFromLocalStorage();
+    const encryptedPrivateKey = Secret.parseUtf8ToString(keyFromLocalStorage);
+    const privateKey = Secret.decryptAES(encryptedPrivateKey, publicKey);
+
+    if (privateKey) {
       return posts.map((post) => {
         const { id, title, content, date, created_at, updated_at } = post;
         return {
           id,
-          title: CryptoJS.AES.decrypt(title, privateKey).toString(CryptoJS.enc.Utf8),
-          content: CryptoJS.AES.decrypt(content, privateKey).toString(CryptoJS.enc.Utf8),
+          title: Secret.decryptAES(title, privateKey),
+          content: Secret.decryptAES(content, privateKey),
           date,
           created_at,
           updated_at,
         }
       });
+    } else {
+      return [];
     }
+  } catch (e) {
+    return [];
   }
-
-  return [];
 }
 
 async function fetchPost(id: number, publicKey: string): Promise<Post | null> {
   const url = `${Http.baseUrl}/posts/${id}`;
   const post = await Http.get<Post>(url);
 
-  if (publicKey) {
-    const encryptedPrivateKey = localStorage.getItem('key');
+  try {
+    const keyFromLocalStorage = Secret.getPrivateKeyFromLocalStorage();
+    const encryptedPrivateKey = Secret.parseUtf8ToString(keyFromLocalStorage);
+    const privateKey = Secret.decryptAES(encryptedPrivateKey, publicKey);
 
-    if (encryptedPrivateKey) {
-      const privateKey = CryptoJS.AES.decrypt(encryptedPrivateKey, publicKey).toString(CryptoJS.enc.Utf8);
+    if (privateKey) {
       const { id, title, content, date, created_at, updated_at } = post;
       return {
         id,
-        title: CryptoJS.AES.decrypt(title, privateKey).toString(CryptoJS.enc.Utf8),
-        content: CryptoJS.AES.decrypt(content, privateKey).toString(CryptoJS.enc.Utf8),
+        title: Secret.decryptAES(title, privateKey),
+        content: Secret.decryptAES(content, privateKey),
         date,
         created_at,
         updated_at,
       };
+    } else {
+      return null;
     }
+  } catch (e) {
+    return null;
   }
-
-  return null;
 }
 
 async function createPost(publicKey: string, title: string, date: string, content: string): Promise<number | null> {
@@ -70,11 +79,13 @@ async function createPost(publicKey: string, title: string, date: string, conten
     return null;
   }
 
-  const encryptedPrivateKey = localStorage.getItem('key');
-  if (encryptedPrivateKey) {
-    const privateKey = CryptoJS.AES.decrypt(encryptedPrivateKey, publicKey).toString(CryptoJS.enc.Utf8);
-    const encryptedTitle = CryptoJS.AES.encrypt(title, privateKey).toString();
-    const encryptedContent = CryptoJS.AES.encrypt(content, privateKey).toString();
+  try {
+    const keyFromLocalStorage = Secret.getPrivateKeyFromLocalStorage();
+    const encryptedPrivateKey = Secret.parseUtf8ToString(keyFromLocalStorage);
+
+    const privateKey = Secret.decryptAES(encryptedPrivateKey, publicKey);
+    const encryptedTitle = Secret.encryptAES(title, privateKey);
+    const encryptedContent = Secret.encryptAES(content, privateKey);
 
     const url = `${Http.baseUrl}/posts`;
     const body: CreatePostBody = {
@@ -83,11 +94,9 @@ async function createPost(publicKey: string, title: string, date: string, conten
       content: encryptedContent,
     };
 
-    try {
-      return await Http.post<CreatePostBody, number>(url, body);
-    } catch (e) {
-      alert('Failed to save post');
-    }
+    return await Http.post<CreatePostBody, number>(url, body);
+  } catch (e) {
+    alert('Failed to save post');
   }
 
   return null;
@@ -98,11 +107,13 @@ async function updatePost(publicKey: string, id: number, title?: string, date?: 
     return false;
   }
 
-  const encryptedPrivateKey = localStorage.getItem('key');
-  if (encryptedPrivateKey) {
-    const privateKey = CryptoJS.AES.decrypt(encryptedPrivateKey, publicKey).toString(CryptoJS.enc.Utf8);
-    const encryptedTitle = title && CryptoJS.AES.encrypt(title, privateKey).toString();
-    const encryptedContent = content && CryptoJS.AES.encrypt(content, privateKey).toString();
+  try {
+    const keyFromLocalStorage = Secret.getPrivateKeyFromLocalStorage();
+    const encryptedPrivateKey = Secret.parseUtf8ToString(keyFromLocalStorage);
+
+    const privateKey = Secret.decryptAES(encryptedPrivateKey, publicKey);
+    const encryptedTitle = title && Secret.encryptAES(title, privateKey);
+    const encryptedContent = content && Secret.encryptAES(content, privateKey);
 
     const url = `${Http.baseUrl}/posts/${id}`;
     const body: UpdatePostBody = {
@@ -111,11 +122,9 @@ async function updatePost(publicKey: string, id: number, title?: string, date?: 
       content: encryptedContent,
     };
 
-    try {
-      return await Http.patch<UpdatePostBody, boolean>(url, body);
-    } catch (e) {
-      alert('Failed to save post')
-    }
+    return await Http.patch<UpdatePostBody, boolean>(url, body);
+  } catch (e) {
+    alert('Failed to save post')
   }
 
   return false;

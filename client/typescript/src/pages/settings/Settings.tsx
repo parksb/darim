@@ -1,9 +1,11 @@
 import React from 'react';
 import styled from 'styled-components';
+import { Switch, Route, Link, useRouteMatch } from "react-router-dom";
 
 import * as api from '../../api/auth';
 import { Button, Section } from '../../components';
 import { Session } from '../../models';
+import SecuritySettings from "./SecuritySettings";
 
 interface Props {
   sessionState: [Session, React.Dispatch<React.SetStateAction<Session | null>>]
@@ -53,8 +55,21 @@ const SettingsButton = styled(Button)`
   }
 `;
 
+const SecuritySettingsButton = styled(SettingsButton)`
+  border-left: 0;
+`;
+
+const ButtonLink = styled(Link)`
+  display: contents;
+`;
+
+const SettingsSection = styled(Section)`
+  margin-top: 30px;
+`;
+
 const Settings: React.FC<Props> = ({ sessionState }) => {
   const [session, setSession] = sessionState;
+  const { path, url } = useRouteMatch();
 
   const signOut = async () => {
     const result = await api.logout();
@@ -73,9 +88,16 @@ const Settings: React.FC<Props> = ({ sessionState }) => {
     </ProfileContainer>
     <SettingsButtonSection row>
       <SettingsButton>Profile settings</SettingsButton>
-      <SettingsButton>Security settings</SettingsButton>
-      <SettingsButton onClick={() => signOut()}>Sign out</SettingsButton>
+      <ButtonLink to={`${url}/security`}>
+        <SecuritySettingsButton>Security settings</SecuritySettingsButton>
+      </ButtonLink>
+      <SettingsButton onClick={() => signOut()}>Sign out ↗</SettingsButton>
     </SettingsButtonSection>
+    <SettingsSection>
+      <Switch>
+        <Route path={`${path}/security`} component={SecuritySettings} />
+      </Switch>
+    </SettingsSection>
   </Section>;
 };
 

@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import { Link, useParams } from "react-router-dom";
 import styled from 'styled-components';
-import * as CryptoJS from 'crypto-js';
 import CopyToClipboard from 'react-copy-to-clipboard';
 
 import * as api from '../../api/user';
 import { Button, TextField, Section } from '../../components';
+import Secret from "../../utils/secret";
 
 const Container = styled(Section)`
   margin-bottom: 30px;
@@ -49,13 +49,13 @@ const Token: React.FC = () => {
   const [publicKey, setPublicKey] = useState('');
 
   const verify = async () => {
-    const generatedPublicKey = CryptoJS.lib.WordArray.random(512 / 8).toString();
-    const generatedPrivateKey = CryptoJS.lib.WordArray.random(512 / 8).toString();
-    const encryptedPrivateKey = CryptoJS.AES.encrypt(generatedPrivateKey, generatedPublicKey).toString();
+    const generatedPublicKey = Secret.getRandomString();
+    const generatedPrivateKey = Secret.getRandomString();
+    const encryptedPrivateKey = Secret.encryptAES(generatedPrivateKey, generatedPublicKey);
 
     const result = await api.createUser(generatedPublicKey, key, pin);
     if (result) {
-      localStorage.setItem('key', encryptedPrivateKey);
+      Secret.setPrivateKeyToLocalStorage(encryptedPrivateKey);
       setPrivateKey(encryptedPrivateKey);
       setPublicKey(generatedPublicKey);
     }
