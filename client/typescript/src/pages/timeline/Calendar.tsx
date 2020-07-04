@@ -127,12 +127,12 @@ const Calendar: React.FC<Props> = ({ session }) => {
     </MonthControlContainer>
     <WeekDayLine row>
       {weekDays.map((weekDay) => {
-        return <WeekDay>{weekDay}</WeekDay>
+        return <WeekDay key={weekDay}>{weekDay}</WeekDay>
       })}
     </WeekDayLine>
     <Section>
       {calendar.map((week) => {
-        return <WeekLine row>
+        return <WeekLine key={week.week} row>
           {week.days.map((day) => {
             const formattedDate = day.format('YYYY-MM-DD');
             const posts = postMap[formattedDate];

@@ -91,7 +91,7 @@ const CalendarItem: React.FC<Props> = ({ posts, day, cursorDate }) => {
       </ItemHead>
       {posts && posts.map((post) => {
         return (
-          <PostLink to={`/post/${post.id}`}>
+          <PostLink key={post.id} to={`/post/${post.id}`}>
             <PostContainer>
               {post.title}
             </PostContainer>
