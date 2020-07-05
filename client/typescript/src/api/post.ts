@@ -30,15 +30,22 @@ async function fetchPosts(publicKey: string): Promise<Post[]> {
     if (privateKey) {
       return posts.map((post) => {
         const { id, title, content, date, created_at, updated_at } = post;
-        return {
-          id,
-          title: Secret.decryptAES(title, privateKey),
-          content: Secret.decryptAES(content, privateKey),
-          date,
-          created_at,
-          updated_at,
+        const decryptedTitle = Secret.decryptAES(title, privateKey);
+        const decryptedContent = Secret.decryptAES(content, privateKey);
+
+        if (decryptedTitle && decryptedContent) {
+          return {
+            id,
+            title: decryptedTitle,
+            content: decryptedContent,
+            date,
+            created_at,
+            updated_at,
+          } as Post;
         }
-      });
+
+        return null;
+      }).filter((post) => post !== null) as Post[];
     } else {
       return [];
     }
