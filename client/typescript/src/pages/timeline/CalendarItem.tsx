@@ -16,7 +16,6 @@ const Container = styled(({ is_current_month, ...other }) => <Section {...other}
   flex: 7;
   border-left: 1px solid #000000;
   border-right: 1px solid #000000;
-  height: 150px;
   background-color: ${props => props.is_current_month ? '#ffffff' : '#f5f5f5'};
   min-width: 0;
   overflow: scroll;

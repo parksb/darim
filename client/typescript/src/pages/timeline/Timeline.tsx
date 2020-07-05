@@ -22,7 +22,7 @@ const Timeline: React.FC<Props> = ({ session }) => {
     switch (mode) {
       case ViewMode.CALENDAR:
         return (
-          <Container fullWidth>
+          <Container fullWidth fullHeight>
             <Calendar session={session} />
           </Container>
         );
@@ -35,7 +35,7 @@ const Timeline: React.FC<Props> = ({ session }) => {
     }
   };
 
-  return <Container bottom={30} fullWidth>
+  return <Container fullWidth fullHeight>
     <TimelineHeader viewModeState={[viewMode, setViewMode]} />
     {viewTimelineBody(viewMode)}
   </Container>

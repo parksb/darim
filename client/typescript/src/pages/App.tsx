@@ -11,9 +11,13 @@ import { Post } from './post';
 import { Settings } from './settings';
 
 const Wrapper = styled(Container)`
-  padding: 30px 0 30px 0;
+  height: 100%;
   word-break: keep-all;
   font-family: sans-serif;
+`;
+
+const HeaderContainer = styled(Container)`
+  padding-top: 30px;
 `;
 
 const App: React.FC = () => {
@@ -31,9 +35,9 @@ const App: React.FC = () => {
   return (
     <Router>
       <Wrapper fullWidth>
-        <Container>
+        <HeaderContainer>
           <Header session={session} />
-        </Container>
+        </HeaderContainer>
         <Switch>
           <Route path='/join'>
             <Container>
