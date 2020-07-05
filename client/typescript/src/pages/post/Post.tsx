@@ -8,12 +8,14 @@ import { Post, Session } from '../../models';
 import { Section, TextField } from '../../components';
 import Editor from "./Editor";
 import Preview from "./Preview";
+import I18n from "../../utils/i18n";
 
 interface Props {
   session: Session | null;
 }
 
 enum SaveStatus {
+  NONE,
   FAILURE,
   SUCCESS,
   ONGOING,
@@ -78,6 +80,37 @@ const PreviewRadio = styled(Radio)`
 `;
 
 const Post: React.FC<Props> = ({ session }) => {
+  const i18n = new I18n({
+    title: {
+      'ko-KR': '제목',
+      'en-US': 'Title',
+    },
+    saveStatusOngoing: {
+      'ko-KR': '저장 중...',
+      'en-US': 'Saving...',
+    },
+    saveStatusSuccess: {
+      'ko-KR': '✅ 저장되었습니다!',
+      'en-US': '✅ Saved!',
+    },
+    saveStatusFailure: {
+      'ko-KR': '❌ 저장에 실패했습니다',
+      'en-US': '❌ Failed to save',
+    },
+    retry: {
+      'ko-KR': '재시도',
+      'en-US': 'Retry',
+    },
+    editor: {
+      'ko-KR': '에디터',
+      'en-US': 'Editor',
+    },
+    preview: {
+      'ko-KR': '미리보기',
+      'en-US': 'Preview',
+    },
+  });
+
   const getFormattedDate = (date?: string, withTime: boolean = false) => {
     const format = withTime ? 'YYYY-MM-DDT00:00:00' : 'YYYY-MM-DD';
     if (date) {
@@ -97,7 +130,7 @@ const Post: React.FC<Props> = ({ session }) => {
   const [originalPost, setOriginalPost] = useState<Post | null>(null);
 
   const [contentViewMode, setContentViewMode] = useState(ContentViewMode.EDITOR);
-  const [saveStatus, setSaveStatus] = useState(SaveStatus.SUCCESS);
+  const [saveStatus, setSaveStatus] = useState(SaveStatus.NONE);
 
   const load = async () => {
     const post = await api.fetchPost(id, session?.user_public_key || '');
@@ -149,11 +182,13 @@ const Post: React.FC<Props> = ({ session }) => {
   const getSaveStatusText = (status: SaveStatus) => {
     switch (status) {
       case SaveStatus.FAILURE:
-        return '❌ Failed to save';
+        return i18n.text('saveStatusFailure');
       case SaveStatus.SUCCESS:
-        return '✅ Saved!';
+        return i18n.text('saveStatusSuccess');
       case SaveStatus.ONGOING:
-        return 'Saving...';
+        return i18n.text('saveStatusOngoing');
+      default:
+        return '';
     }
   };
 
@@ -163,13 +198,13 @@ const Post: React.FC<Props> = ({ session }) => {
       setContentViewMode(ContentViewMode.PREVIEW);
       load();
     } else {
-      setSaveStatus(SaveStatus.FAILURE);
+      setSaveStatus(SaveStatus.NONE);
     }
   }, []);
 
   return <Container>
     <TitleTextField
-      placeholder='Title'
+      placeholder={i18n.text('title')}
       value={title}
       onBlur={({ target: { value } }) => upsertPost(value)}
       onChange={({ target: { value } }) => setTitle(value)}
@@ -182,7 +217,7 @@ const Post: React.FC<Props> = ({ session }) => {
     <ContentViewModeSection row>
       <Section row>
         <SaveStatusText>{getSaveStatusText(saveStatus)}</SaveStatusText>
-        {saveStatus === SaveStatus.FAILURE && <LinkLikeText onClick={() => upsertPost(title, date, content)}>Retry</LinkLikeText>}
+        {saveStatus === SaveStatus.FAILURE && <LinkLikeText onClick={() => upsertPost(title, date, content)}>{i18n.text('retry')}</LinkLikeText>}
       </Section>
       <ContentViewModeForm>
         <label>
@@ -192,7 +227,7 @@ const Post: React.FC<Props> = ({ session }) => {
             checked={contentViewMode === ContentViewMode.EDITOR}
             onChange={() => setContentViewMode(ContentViewMode.EDITOR)}
           />
-          Editor
+          {i18n.text('editor')}
         </label>
         <label>
           <PreviewRadio
@@ -201,7 +236,7 @@ const Post: React.FC<Props> = ({ session }) => {
             checked={contentViewMode === ContentViewMode.PREVIEW}
             onChange={() => setContentViewMode(ContentViewMode.PREVIEW)}
           />
-          Preview
+          {i18n.text('preview')}
         </label>
       </ContentViewModeForm>
     </ContentViewModeSection>

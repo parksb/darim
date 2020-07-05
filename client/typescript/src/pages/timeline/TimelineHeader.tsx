@@ -4,6 +4,7 @@ import styled from 'styled-components';
 
 import { Button, Section } from '../../components';
 import { ViewMode } from "./Timeline";
+import I18n from "../../utils/i18n";
 
 interface Props {
   viewModeState: [ViewMode, React.Dispatch<React.SetStateAction<ViewMode>>]
@@ -21,6 +22,17 @@ const Select = styled.select`
 const TimelineHeader: React.FC<Props> = ({ viewModeState }) => {
   const [viewMode, setViewMode] = viewModeState;
 
+  const i18n = new I18n({
+    listView: {
+      'ko-KR': '리스트 뷰',
+      'en-US': 'List view',
+    },
+    calendarView: {
+      'ko-KR': '캘린더 뷰',
+      'en-US': 'Calendar view',
+    }
+  });
+
   const convertStringToViewMode = (mode: string) => {
     switch (mode) {
       case '0':
@@ -37,8 +49,8 @@ const TimelineHeader: React.FC<Props> = ({ viewModeState }) => {
       <Button>New +</Button>
     </Link>
     <Select value={viewMode} onChange={({ target: { value }}) => setViewMode(convertStringToViewMode(value))}>
-      <option value={ViewMode.CALENDAR}>Calendar view</option>
-      <option value={ViewMode.LIST}>List view</option>
+      <option value={ViewMode.CALENDAR}>{i18n.text('calendarView')}</option>
+      <option value={ViewMode.LIST}>{i18n.text('listView')}</option>
     </Select>
   </Container>
 };

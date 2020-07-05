@@ -6,6 +6,7 @@ import CopyToClipboard from 'react-copy-to-clipboard';
 import * as api from '../../api/user';
 import { Button, TextField, Section } from '../../components';
 import Secret from "../../utils/secret";
+import I18n from "../../utils/i18n";
 
 const Container = styled(Section)`
   margin-bottom: 30px;
@@ -48,6 +49,45 @@ const Token: React.FC = () => {
   const [privateKey, setPrivateKey] = useState('');
   const [publicKey, setPublicKey] = useState('');
 
+  const i18n = new I18n({
+    info: {
+      'ko-KR': '👋 환영합니다! 글을 안전하게 암호화하기 위해 사용할 공개키와 비밀키를 준비했습니다:',
+      'en-US': '👋 Welcome to Darim! This is your public key and secret key that will be used to encrypt your posts:',
+    },
+    verify: {
+      'ko-KR': '인증 ↗',
+      'en-US': 'Verify ↗',
+    },
+    pin: {
+      'ko-KR': '인증키',
+      'en-US': 'Pin',
+    },
+    downloadPublicKey: {
+      'ko-KR': '공개키 파일 다운로드',
+      'en-US': 'Download the public key as file',
+    },
+    copyPublicKey: {
+      'ko-KR': '공개키 복사하기',
+      'en-US': 'Copy the public key to clipboard',
+    },
+    downloadPrivateKey: {
+      'ko-KR': '비밀키 파일 다운로드',
+      'en-US': 'Download the secret key as file',
+    },
+    copyPrivateKey: {
+      'ko-KR': '비밀키 복사하기',
+      'en-US': 'Copy the secret key to clipboard',
+    },
+    notice: {
+      'ko-KR': '공개키와 비밀키를 잃어버리지 마세요. 키 파일을 다운로드받아 안전한 곳에 두거나, 키를 복사해 다른 곳에 보관할 것을 강력히 권장합니다. 또한, 절대로 비밀키를 다른 사람에게 알려주지 마세요.',
+      'en-US': 'Don\'t lose your public key and secret key. It is strongly recommended that you download the key files and store it in a secure place, or copy the keys to somewhere else. Also, NEVER let anyone know your secret key.',
+    },
+    goToSignIn: {
+      'ko-KR': '로그인하러 가기 ↗',
+      'en-US': 'Go to sign in ↗',
+    },
+  });
+
   const verify = async () => {
     const generatedPublicKey = Secret.getRandomString();
     const generatedPrivateKey = Secret.getRandomString();
@@ -69,35 +109,34 @@ const Token: React.FC = () => {
   return <Container>
     {!privateKey ? (
       <Section row>
-        <FullWidthTextField type='text' placeholder='Pin' value={pin} onChange={({ target: { value } }) => setPin(value)} />
-        <Button onClick={verify}>Verify</Button>
+        <FullWidthTextField type='text' placeholder={i18n.text('pin')} value={pin} onChange={({ target: { value } }) => setPin(value)} />
+        <Button onClick={verify}>{i18n.text('verify')}</Button>
       </Section>
     ) : (
       <>
         <InfoSection>
-          👋 Welcome to Darim! This is your public key and secret key that will be used to encrypt your posts:
+
           <PublicKeySection row>
             <a download='darim-public-key.txt' href={getDownloadURLOfTextFile(publicKey)}>
-              <Button>Download the public key as file</Button>
+              <Button>{i18n.text('downloadPublicKey')}</Button>
             </a>
             <CopyToClipboard text={publicKey}>
-              <CopyButton>Copy the public key to clipboard</CopyButton>
+              <CopyButton>{i18n.text('copyPublicKey')}</CopyButton>
             </CopyToClipboard>
           </PublicKeySection>
           <PrivateKeySection row>
             <a download='darim-secret-key.txt' href={getDownloadURLOfTextFile(privateKey)}>
-              <Button>Download the secret key as file</Button>
+              <Button>{i18n.text('downloadPrivateKey')}</Button>
             </a>
             <CopyToClipboard text={privateKey}>
-              <CopyButton>Copy the secret key to clipboard</CopyButton>
+              <CopyButton>{i18n.text('copyPrivateKey')}</CopyButton>
             </CopyToClipboard>
           </PrivateKeySection>
-          Don't lose your public key and secret key. It is strongly recommended that you download the key files and store it in a secure place, or copy the keys to somewhere else.
-          Also, NEVER let anyone know your secret key.
+          {i18n.text('notice')}
         </InfoSection>
         <Link to='/'>
           <GoToSignInButton>
-            Go to sign in ↗
+            {i18n.text('goToSignIn')}
           </GoToSignInButton>
         </Link>
       </>

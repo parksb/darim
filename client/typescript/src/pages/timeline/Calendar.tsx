@@ -7,6 +7,7 @@ import * as api from '../../api/post';
 import { Post, Session } from '../../models';
 import { Button, Section } from "../../components";
 import CalendarItem from "./CalendarItem";
+import I18n from "../../utils/i18n";
 
 interface Props {
   session: Session | null;
@@ -66,10 +67,50 @@ const MonthControlButton = styled(Button)`
 const Calendar: React.FC<Props> = ({ session }) => {
   dayjs.extend(weekOfYear);
 
-  const weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
   const [postMap, setPostMap] = useState<DateToPostsMap>({});
   const [calendar, setCalendar] = useState<Week[]>([]);
   const [cursorDate, setCursorDate] = useState(dayjs().date(1));
+
+  const i18n = new I18n({
+    sunday: {
+      'ko-KR': '일',
+      'en-US': 'Sun',
+    },
+    monday: {
+      'ko-KR': '월',
+      'en-US': 'Mon',
+    },
+    tuesday: {
+      'ko-KR': '화',
+      'en-US': 'Tue',
+    },
+    wednesday: {
+      'ko-KR': '수',
+      'en-US': 'Wed',
+    },
+    thursday: {
+      'ko-KR': '목',
+      'en-US': 'Thu',
+    },
+    friday: {
+      'ko-KR': '금',
+      'en-US': 'Fri',
+    },
+    saturday: {
+      'ko-KR': '토',
+      'en-US': 'Sat',
+    },
+  });
+
+  const weekDays = [
+    i18n.text('sunday'),
+    i18n.text('monday'),
+    i18n.text('tuesday'),
+    i18n.text('wednesday'),
+    i18n.text('thursday'),
+    i18n.text('friday'),
+    i18n.text('saturday'),
+  ];
 
   const calculateCalendar = () => {
     const weeks: Week[] = [];

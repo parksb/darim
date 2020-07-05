@@ -6,6 +6,7 @@ import * as api from '../../api/auth';
 import { Button, Section } from '../../components';
 import { Session } from '../../models';
 import SecuritySettings from "./SecuritySettings";
+import I18n from "../../utils/i18n";
 
 interface Props {
   sessionState: [Session, React.Dispatch<React.SetStateAction<Session | null>>]
@@ -71,6 +72,21 @@ const Settings: React.FC<Props> = ({ sessionState }) => {
   const [session, setSession] = sessionState;
   const { path, url } = useRouteMatch();
 
+  const i18n = new I18n({
+    profileSettings: {
+      'ko-KR': '프로필 설정',
+      'en-US': 'Profile settings',
+    },
+    securitySettings: {
+      'ko-KR': '보안 설정',
+      'en-US': 'Security settings',
+    },
+    signOut: {
+      'ko-KR': '로그아웃 ↗',
+      'en-US': 'Sign out ↗'
+    }
+  });
+
   const signOut = async () => {
     const result = await api.logout();
     if (result) {
@@ -87,11 +103,11 @@ const Settings: React.FC<Props> = ({ sessionState }) => {
       </UserInfoSection>
     </ProfileContainer>
     <SettingsButtonSection row>
-      <SettingsButton>Profile settings</SettingsButton>
+      <SettingsButton>{i18n.text('profileSettings')}</SettingsButton>
       <ButtonLink to={`${url}/security`}>
-        <SecuritySettingsButton>Security settings</SecuritySettingsButton>
+        <SecuritySettingsButton>{i18n.text('securitySettings')}</SecuritySettingsButton>
       </ButtonLink>
-      <SettingsButton onClick={() => signOut()}>Sign out ↗</SettingsButton>
+      <SettingsButton onClick={() => signOut()}>{i18n.text('signOut')}</SettingsButton>
     </SettingsButtonSection>
     <SettingsSection>
       <Switch>

@@ -1,6 +1,7 @@
 import Http from '../utils/http';
 import Post from '../models/Post';
 import Secret from '../utils/secret';
+import I18n from "../utils/i18n";
 
 interface CreatePostBody {
   title: string;
@@ -103,7 +104,14 @@ async function createPost(publicKey: string, title: string, date: string, conten
 
     return await Http.post<CreatePostBody, number>(url, body);
   } catch (e) {
-    alert('Failed to save post');
+    const i18n = new I18n({
+      error: {
+        'ko-KR': '저장에 실패했습니다',
+        'en-US': 'Failed to save',
+      },
+    });
+
+    alert(i18n.text('error'));
   }
 
   return null;
@@ -131,7 +139,14 @@ async function updatePost(publicKey: string, id: number, title?: string, date?: 
 
     return await Http.patch<UpdatePostBody, boolean>(url, body);
   } catch (e) {
-    alert('Failed to save post')
+    const i18n = new I18n({
+      error: {
+        'ko-KR': '저장에 실패했습니다',
+        'en-US': 'Failed to save',
+      },
+    });
+
+    alert(i18n.text('error'))
   }
 
   return false;

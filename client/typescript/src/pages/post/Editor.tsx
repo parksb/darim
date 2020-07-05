@@ -1,6 +1,8 @@
-import React, { ChangeEventHandler, FocusEventHandler, useEffect, useState } from 'react';
+import React, { ChangeEventHandler, FocusEventHandler } from 'react';
 import styled from 'styled-components';
 import TextareaAutosize from 'react-textarea-autosize';
+
+import I18n from "../../utils/i18n";
 
 interface Props {
   content: string;
@@ -20,8 +22,15 @@ const TextArea = styled(TextareaAutosize)`
 `;
 
 const Editor: React.FC<Props> = ({ content, onBlur, onChange}) => {
+  const i18n = new I18n({
+    content: {
+      'ko-KR': '내용',
+      'en-US': 'Content',
+    },
+  });
+
   return <TextArea
-      placeholder='Content'
+      placeholder={i18n.text('content')}
       value={content}
       onBlur={onBlur}
       onChange={onChange}

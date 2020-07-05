@@ -4,6 +4,7 @@ import styled from "styled-components";
 import * as api from '../../api/auth';
 import { Button, Section, TextField } from '../../components';
 import Secret from "../../utils/secret";
+import I18n from "../../utils/i18n";
 
 enum SaveStatus {
   NONE,
@@ -42,16 +43,43 @@ const SecuritySettings: React.FC = () => {
   const [newSecretKey, setNewSecretKey] = useState('');
   const [newSecretKeySaveStatus, setNewSecretKeySaveStatus] = useState(SaveStatus.NONE);
 
+  const i18n = new I18n({
+    saveStatusOngoing: {
+      'ko-KR': '저장 중...',
+      'en-US': 'Saving...',
+    },
+    saveStatusSuccess: {
+      'ko-KR': '✅ 저장되었습니다!',
+      'en-US': '✅ Saved!',
+    },
+    saveStatusFailure: {
+      'ko-KR': '❌ 저장에 실패했습니다',
+      'en-US': '❌ Failed to save',
+    },
+    secretKey: {
+      'ko-KR': '비밀키',
+      'en-US': 'Secret key',
+    },
+    newSecretKey: {
+      'ko-KR': '새 비밀키',
+      'en-US': 'New secret key',
+    },
+    save: {
+      'ko-KR': '저장',
+      'en-US': 'Save',
+    },
+  });
+
   const getSaveStatusText = (status: SaveStatus) => {
     switch (status) {
-      case SaveStatus.NONE:
-        return '';
       case SaveStatus.FAILURE:
-        return '❌ Failed to save';
+        return i18n.text('saveStatusFailure');
       case SaveStatus.SUCCESS:
-        return '✅ Saved!';
+        return i18n.text('saveStatusSuccess');
       case SaveStatus.ONGOING:
-        return 'Saving...';
+        return i18n.text('saveStatusOngoing');
+      default:
+        return '';
     }
   };
 
@@ -73,14 +101,14 @@ const SecuritySettings: React.FC = () => {
 
   return <Section>
     <Section>
-      <SectionTitle>Secret key</SectionTitle>
+      <SectionTitle>{i18n.text('secretKey')}</SectionTitle>
       <Section row>
-        <FullWidthTextField type='password' placeholder='New secret key' value={newSecretKey} onChange={({ target: { value } }) => setNewSecretKey(value)} autoComplete='new-password' />
+        <FullWidthTextField type='password' placeholder={i18n.text('newSecretKey')} value={newSecretKey} onChange={({ target: { value } }) => setNewSecretKey(value)} autoComplete='new-password' />
       </Section>
       <Section row>
-        <NonBorderFullWidthTextField type='email' placeholder='Email' value={email} onChange={({ target: { value } }) => setEmail(value)} />
-        <NonBorderFullWidthTextField type='password' placeholder='Password' value={password} onChange={({ target: { value } }) => setPassword(value)} autoComplete='off' />
-        <NonBorderButton onClick={applyNewPrivateKey}>Save</NonBorderButton>
+        <NonBorderFullWidthTextField type='email' placeholder={i18n.text('email')} value={email} onChange={({ target: { value } }) => setEmail(value)} />
+        <NonBorderFullWidthTextField type='password' placeholder={i18n.text('password')} value={password} onChange={({ target: { value } }) => setPassword(value)} autoComplete='off' />
+        <NonBorderButton onClick={applyNewPrivateKey}>{i18n.text('save')}</NonBorderButton>
       </Section>
       <SaveStatusText>{getSaveStatusText(newSecretKeySaveStatus)}</SaveStatusText>
     </Section>
