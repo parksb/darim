@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import styled from "styled-components";
 
-import * as api from '../../api/auth';
+import * as authApi from '../../api/auth';
+import * as userApi from '../../api/user';
 import { Button, Section, TextField } from '../../components';
 import Secret from "../../utils/secret";
 import I18n from "../../utils/i18n";
@@ -13,6 +14,15 @@ enum SaveStatus {
   ONGOING,
 }
 
+interface Props {
+  userId: string;
+  userEmail: string;
+}
+
+const SettingsSection = styled(Section)`
+  margin-bottom: 30px;
+`;
+
 const SectionTitle = styled.h2`
   font-size: 24px;
   font-weight: 700;
@@ -21,6 +31,7 @@ const SectionTitle = styled.h2`
 
 const FullWidthTextField = styled(TextField)`
   flex: 1;
+  height: 21px;
 `;
 
 const NonBorderFullWidthTextField = styled(FullWidthTextField)`
@@ -37,11 +48,14 @@ const SaveStatusText = styled.span`
   color: #c0c0c0;
 `;
 
-const SecuritySettings: React.FC = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+const SecuritySettings: React.FC<Props> = ({ userId, userEmail }) => {
   const [newSecretKey, setNewSecretKey] = useState('');
   const [newSecretKeySaveStatus, setNewSecretKeySaveStatus] = useState(SaveStatus.NONE);
+  const [newSecretKeyPassword, setNewSecretKeyPassword] = useState('');
+
+  const [newPassword, setNewPassword] = useState('');
+  const [newPasswordSaveStatus, setNewPasswordSaveStatus] = useState(SaveStatus.NONE);
+  const [newPasswordPassword, setNewPasswordPassword] = useState('');
 
   const i18n = new I18n({
     saveStatusOngoing: {
@@ -64,10 +78,14 @@ const SecuritySettings: React.FC = () => {
       'ko-KR': '새 비밀키',
       'en-US': 'New secret key',
     },
-    save: {
-      'ko-KR': '저장',
-      'en-US': 'Save',
+    newPassword: {
+      'ko-KR': '새 비밀번호',
+      'en-US': 'New password',
     },
+    oldPassword: {
+      'ko-KR': '기존 비밀번호',
+      'en-US': 'Old password',
+    }
   });
 
   const getSaveStatusText = (status: SaveStatus) => {
@@ -83,13 +101,12 @@ const SecuritySettings: React.FC = () => {
     }
   };
 
-  const applyNewPrivateKey = async () => {
+  const saveNewPrivateKey = async () => {
     setNewSecretKeySaveStatus(SaveStatus.ONGOING);
-    const result = await api.login(email, password);
+    const result = await authApi.login(userEmail, newSecretKeyPassword);
 
-    setEmail('');
-    setPassword('');
     setNewSecretKey('');
+    setNewSecretKeyPassword('');
 
     if (result) {
       Secret.setPrivateKeyToLocalStorage(newSecretKey);
@@ -99,19 +116,71 @@ const SecuritySettings: React.FC = () => {
     }
   };
 
+  const saveNewPassword = async () => {
+    setNewPasswordSaveStatus(SaveStatus.ONGOING);
+    const result = await authApi.login(userEmail, newPasswordPassword);
+
+    if (result) {
+      const updateResult = await userApi.updateUser(userId, newPassword);
+
+      setNewPassword('');
+      setNewPasswordPassword('');
+
+      if (updateResult) {
+        setNewPasswordSaveStatus(SaveStatus.SUCCESS);
+      } else {
+        setNewPasswordSaveStatus(SaveStatus.FAILURE);
+      }
+    } else {
+      setNewPasswordSaveStatus(SaveStatus.FAILURE);
+    }
+  };
+
   return <Section>
-    <Section>
+    <SettingsSection>
+      <SectionTitle>{i18n.text('password')}</SectionTitle>
+      <FullWidthTextField
+        type='password'
+        placeholder={i18n.text('newPassword')}
+        value={newPassword}
+        onChange={({ target: { value } }) => setNewPassword(value)}
+        autoComplete='new-password'
+      />
+      <Section row>
+        <NonBorderFullWidthTextField
+          type='password'
+          placeholder={i18n.text('oldPassword')}
+          value={newPasswordPassword}
+          onChange={({ target: { value } }) => setNewPasswordPassword(value)}
+          autoComplete='off'
+        />
+        <NonBorderButton onClick={saveNewPassword}>{i18n.text('save')}</NonBorderButton>
+      </Section>
+      <SaveStatusText>{getSaveStatusText(newPasswordSaveStatus)}</SaveStatusText>
+    </SettingsSection>
+    <SettingsSection>
       <SectionTitle>{i18n.text('secretKey')}</SectionTitle>
       <Section row>
-        <FullWidthTextField type='password' placeholder={i18n.text('newSecretKey')} value={newSecretKey} onChange={({ target: { value } }) => setNewSecretKey(value)} autoComplete='new-password' />
+        <FullWidthTextField
+          type='password'
+          placeholder={i18n.text('newSecretKey')}
+          value={newSecretKey}
+          onChange={({ target: { value } }) => setNewSecretKey(value)}
+          autoComplete='new-password'
+        />
       </Section>
       <Section row>
-        <NonBorderFullWidthTextField type='email' placeholder={i18n.text('email')} value={email} onChange={({ target: { value } }) => setEmail(value)} />
-        <NonBorderFullWidthTextField type='password' placeholder={i18n.text('password')} value={password} onChange={({ target: { value } }) => setPassword(value)} autoComplete='off' />
-        <NonBorderButton onClick={applyNewPrivateKey}>{i18n.text('save')}</NonBorderButton>
+        <NonBorderFullWidthTextField
+          type='password'
+          placeholder={i18n.text('password')}
+          value={newSecretKeyPassword}
+          onChange={({ target: { value } }) => setNewSecretKeyPassword(value)}
+          autoComplete='off'
+        />
+        <NonBorderButton onClick={saveNewPrivateKey}>{i18n.text('save')}</NonBorderButton>
       </Section>
       <SaveStatusText>{getSaveStatusText(newSecretKeySaveStatus)}</SaveStatusText>
-    </Section>
+    </SettingsSection>
   </Section>;
 };
 

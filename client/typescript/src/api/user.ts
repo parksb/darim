@@ -1,3 +1,5 @@
+import SHA3 from 'crypto-js/sha3';
+
 import Http from '../utils/http';
 import I18n from "../utils/i18n";
 
@@ -5,6 +7,12 @@ interface CreateUserBody {
   user_public_key: string;
   token_key: string;
   token_pin: string;
+}
+
+interface UpdateUserBody {
+  name?: string;
+  password?: string;
+  avatar_url?: string;
 }
 
 async function createUser(user_public_key: string, token_key: string, token_pin: string): Promise<boolean | null> {
@@ -32,4 +40,27 @@ async function createUser(user_public_key: string, token_key: string, token_pin:
   return null;
 }
 
-export { createUser };
+async function updateUser(userId: string, password?: string) {
+  const url = `${Http.baseUrl}/users/${userId}`;
+
+  const body: UpdateUserBody = {};
+
+  if (password) {
+    body.password = SHA3(password, { outputLength: 512 }).toString();
+  }
+
+  try {
+    return await Http.patch<UpdateUserBody, boolean>(url, body);
+  } catch (e) {
+    const i18n = new I18n({
+      error: {
+        'ko-KR': '변경에 실패했습니다',
+        'en-US': 'Failed to update',
+      },
+    });
+
+    alert(i18n.text('error'));
+  }
+}
+
+export { createUser, updateUser };

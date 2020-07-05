@@ -65,7 +65,7 @@ const ButtonLink = styled(Link)`
 `;
 
 const SettingsSection = styled(Section)`
-  margin-top: 30px;
+  margin-top: 40px;
 `;
 
 const Settings: React.FC<Props> = ({ sessionState }) => {
@@ -111,7 +111,9 @@ const Settings: React.FC<Props> = ({ sessionState }) => {
     </SettingsButtonSection>
     <SettingsSection>
       <Switch>
-        <Route path={`${path}/security`} component={SecuritySettings} />
+        <Route path={`${path}/security`}>
+          <SecuritySettings userId={session.user_id || ''} userEmail={session.user_email || ''}  />
+        </Route>
       </Switch>
     </SettingsSection>
   </Section>;

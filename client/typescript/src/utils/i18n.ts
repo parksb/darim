@@ -26,7 +26,11 @@ const presetTexts: I18nText = {
   avatar: {
     'ko-KR': '프로필 사진 URL',
     'en-US': 'Avatar URL',
-  }
+  },
+  save: {
+    'ko-KR': '저장',
+    'en-US': 'Save',
+  },
 };
 
 class I18n {
