@@ -38,7 +38,7 @@ const ItemHead = styled(Section)`
 
 const Date = styled.time`
   font-size: 12px;
-  padding: 10px 10px 5px;
+  padding: 10px 10px 10px;
 `;
 
 const PostContainer = styled.div`
