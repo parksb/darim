@@ -2,12 +2,8 @@ import React, { useState } from 'react';
 import styled from 'styled-components';
 
 import * as api from '../../api/auth';
-import { Button, TextField, Section, LoadingDots } from '../../components';
-import I18n from "../../utils/i18n";
-
-const Container = styled(Section)`
-  margin-bottom: 30px;
-`;
+import { Button, Container, TextField, Section, LoadingDots } from '../../components';
+import I18n from '../../utils/i18n';
 
 const FullWidthTextField = styled(TextField)`
   flex: 1;
@@ -57,7 +53,7 @@ const Join: React.FC = () => {
     }
   };
 
-  return <Container>
+  return <Container bottom={30}>
     {isSetToken ? (
       i18n.text('info')
     ) : (

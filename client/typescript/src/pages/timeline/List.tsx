@@ -2,8 +2,8 @@ import React, { useEffect, useState } from 'react';
 
 import * as api from '../../api/post';
 import ListItem from './ListItem';
-import {Post, Session} from '../../models';
-import { Section } from "../../components";
+import { Post, Session } from '../../models';
+import { Container } from "../../components";
 
 interface Props {
   session: Session | null;
@@ -21,11 +21,11 @@ const List: React.FC<Props> = ({ session }) => {
     load();
   }, []);
 
-  return <Section>
+  return <Container top={50}>
     {posts.map((post: Post) => {
       return <ListItem key={post.id} post={post}/>
     })}
-  </Section>
+  </Container>
 };
 
 export default List;

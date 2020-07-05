@@ -3,17 +3,13 @@ import { Link } from 'react-router-dom';
 import styled from 'styled-components';
 
 import * as api from '../../api/auth';
-import { TextField, Button, Section, LoadingDots } from '../../components';
+import { TextField, Button, Container, LoadingDots } from '../../components';
 import { Session } from '../../models';
 import I18n from "../../utils/i18n";
 
 interface Props {
   session_state: [Session | null, React.Dispatch<React.SetStateAction<Session | null>>]
 }
-
-const Container = styled(Section)`
-  margin-bottom: 30px;
-`;
 
 const SignUpButton = styled(Button)`
   border-left: 0;

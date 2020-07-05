@@ -4,15 +4,11 @@ import styled from 'styled-components';
 import dayjs from 'dayjs';
 
 import { Post } from '../../models';
-import { Section } from '../../components';
+import { Container } from '../../components';
 
 interface Props {
   post: Post;
 }
-
-const Card = styled(Section)`
-  margin-bottom: 30px;
-`;
 
 const Title = styled.h3`
   font-size: 18px;
@@ -46,13 +42,13 @@ const ListItem: React.FC<Props> = ({ post }) => {
   const { id, title, date } = post;
   const displayed_date = dayjs(date).format('YYYY / MM / DD');
 
-  return <Card row>
+  return <Container bottom={30} row>
     <StyledLink to={`/post/${id}`}>
       <Date dateTime={date}>{displayed_date}</Date>
       <HorizontalLine />
       <Title>{title}</Title>
     </StyledLink>
-  </Card>
+  </Container>
 };
 
 export default ListItem;

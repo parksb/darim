@@ -5,7 +5,7 @@ import dayjs from "dayjs";
 
 import * as api from '../../api/post';
 import { Post, Session } from '../../models';
-import { Section, TextField } from '../../components';
+import { Container, Section, TextField } from '../../components';
 import Editor from "./Editor";
 import Preview from "./Preview";
 import I18n from "../../utils/i18n";
@@ -25,10 +25,6 @@ enum ContentViewMode {
   EDITOR,
   PREVIEW,
 }
-
-const Container = styled(Section)`
-  margin-bottom: 30px;
-`;
 
 const TitleTextField = styled(TextField)`
   font-size: 24px;
@@ -202,7 +198,7 @@ const Post: React.FC<Props> = ({ session }) => {
     }
   }, []);
 
-  return <Container>
+  return <Container bottom={30}>
     <TitleTextField
       placeholder={i18n.text('title')}
       value={title}

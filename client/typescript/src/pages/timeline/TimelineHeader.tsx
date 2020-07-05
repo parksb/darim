@@ -1,17 +1,16 @@
 import React from 'react';
-import { Link } from "react-router-dom";
+import { Link } from 'react-router-dom';
 import styled from 'styled-components';
 
-import { Button, Section } from '../../components';
-import { ViewMode } from "./Timeline";
-import I18n from "../../utils/i18n";
+import { Button, Container } from '../../components';
+import { ViewMode } from './Timeline';
+import I18n from '../../utils/i18n';
 
 interface Props {
   viewModeState: [ViewMode, React.Dispatch<React.SetStateAction<ViewMode>>]
 }
 
-const Container = styled(Section)`
-  margin-bottom: 40px;
+const MainContainer = styled(Container)`
   justify-content: space-between;
 `;
 
@@ -44,7 +43,7 @@ const TimelineHeader: React.FC<Props> = ({ viewModeState }) => {
     }
   };
 
-  return <Container row>
+  return <MainContainer row>
     <Link to={'/post'}>
       <Button>New +</Button>
     </Link>
@@ -52,7 +51,7 @@ const TimelineHeader: React.FC<Props> = ({ viewModeState }) => {
       <option value={ViewMode.CALENDAR}>{i18n.text('calendarView')}</option>
       <option value={ViewMode.LIST}>{i18n.text('listView')}</option>
     </Select>
-  </Container>
+  </MainContainer>
 };
 
 export default TimelineHeader;

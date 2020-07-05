@@ -5,7 +5,7 @@ import styled from 'styled-components';
 
 import * as api from '../../api/post';
 import { Post, Session } from '../../models';
-import { Button, Section } from "../../components";
+import { Button, Container, Section } from "../../components";
 import CalendarItem from "./CalendarItem";
 import I18n from "../../utils/i18n";
 
@@ -156,7 +156,7 @@ const Calendar: React.FC<Props> = ({ session }) => {
     calculateCalendar();
   }, [cursorDate]);
 
-  return <Section>
+  return <Container fullWidth>
     <MonthControlContainer row>
       <MonthControlButton onClick={() => setCursorDate(cursorDate.subtract(1, 'month'))}>
         ＜
@@ -182,7 +182,7 @@ const Calendar: React.FC<Props> = ({ session }) => {
         </WeekLine>;
       })}
     </Section>
-  </Section>
+  </Container>
 };
 
 export default Calendar;

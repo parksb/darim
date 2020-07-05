@@ -4,13 +4,9 @@ import styled from 'styled-components';
 import CopyToClipboard from 'react-copy-to-clipboard';
 
 import * as api from '../../api/user';
-import { Button, TextField, Section } from '../../components';
-import Secret from "../../utils/secret";
-import I18n from "../../utils/i18n";
-
-const Container = styled(Section)`
-  margin-bottom: 30px;
-`;
+import { Button, Container, TextField, Section } from '../../components';
+import Secret from '../../utils/secret';
+import I18n from '../../utils/i18n';
 
 const FullWidthTextField = styled(TextField)`
   flex: 1;
@@ -106,7 +102,7 @@ const Token: React.FC = () => {
     return URL.createObjectURL(blob);
   };
 
-  return <Container>
+  return <Container bottom={30}>
     {!privateKey ? (
       <Section row>
         <FullWidthTextField type='text' placeholder={i18n.text('pin')} value={pin} onChange={({ target: { value } }) => setPin(value)} />
@@ -115,7 +111,6 @@ const Token: React.FC = () => {
     ) : (
       <>
         <InfoSection>
-
           <PublicKeySection row>
             <a download='darim-public-key.txt' href={getDownloadURLOfTextFile(publicKey)}>
               <Button>{i18n.text('downloadPublicKey')}</Button>
