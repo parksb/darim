@@ -1,5 +1,7 @@
-use crate::models::{error::ServiceError, post::*};
 use diesel::result::Error;
+
+use crate::models::error::{get_service_error, ServiceError};
+use crate::models::post::*;
 
 pub fn get(user_id: u64, id: u64) -> Result<PostDTO, ServiceError> {
     let post_repository = PostRepository::new();
@@ -15,14 +17,8 @@ pub fn get(user_id: u64, id: u64) -> Result<PostDTO, ServiceError> {
             created_at: post.created_at,
         }),
         Err(error) => match error {
-            Error::NotFound => {
-                println!("{}", ServiceError::NotFound(id.to_string()));
-                Err(ServiceError::NotFound(id.to_string()))
-            }
-            _ => {
-                println!("{}", ServiceError::QueryExecutionFailure);
-                Err(ServiceError::QueryExecutionFailure)
-            }
+            Error::NotFound => Err(get_service_error(ServiceError::NotFound(id.to_string()))),
+            _ => Err(get_service_error(ServiceError::QueryExecutionFailure)),
         },
     }
 }
@@ -48,15 +44,13 @@ pub fn get_list(user_id: u64) -> Result<Vec<PostDTO>, ServiceError> {
 
         Ok(post_to_show_list)
     } else {
-        println!("{}", ServiceError::QueryExecutionFailure);
-        Err(ServiceError::QueryExecutionFailure)
+        Err(get_service_error(ServiceError::QueryExecutionFailure))
     }
 }
 
 pub fn create(user_id: u64, args: CreateArgs) -> Result<u64, ServiceError> {
     if args.title.trim().is_empty() || args.content.trim().is_empty() {
-        println!("{}", ServiceError::InvalidArgument);
-        return Err(ServiceError::InvalidArgument);
+        return Err(get_service_error(ServiceError::InvalidArgument));
     }
 
     let post_repository = PostRepository::new();
@@ -68,16 +62,13 @@ pub fn create(user_id: u64, args: CreateArgs) -> Result<u64, ServiceError> {
                 let created_post = &post_list[post_list.len() - 1];
                 Ok(created_post.id)
             } else {
-                println!("{}", ServiceError::QueryExecutionFailure);
-                Err(ServiceError::QueryExecutionFailure)
+                Err(get_service_error(ServiceError::QueryExecutionFailure))
             }
         } else {
-            println!("{}", ServiceError::QueryExecutionFailure);
-            Err(ServiceError::QueryExecutionFailure)
+            Err(get_service_error(ServiceError::QueryExecutionFailure))
         }
     } else {
-        println!("{}", ServiceError::QueryExecutionFailure);
-        Err(ServiceError::QueryExecutionFailure)
+        Err(get_service_error(ServiceError::QueryExecutionFailure))
     }
 }
 
@@ -89,32 +80,27 @@ pub fn delete(id: u64, user_id: u64) -> Result<bool, ServiceError> {
         if deleted_count > 0 {
             Ok(true)
         } else {
-            println!("{}", ServiceError::NotFound(id.to_string()));
-            Err(ServiceError::NotFound(id.to_string()))
+            Err(get_service_error(ServiceError::NotFound(id.to_string())))
         }
     } else {
-        println!("{}", ServiceError::QueryExecutionFailure);
-        Err(ServiceError::QueryExecutionFailure)
+        Err(get_service_error(ServiceError::QueryExecutionFailure))
     }
 }
 
 pub fn update(id: u64, user_id: u64, args: UpdateArgs) -> Result<bool, ServiceError> {
     if args.title.is_none() && args.content.is_none() && args.date.is_none() {
-        println!("{}", ServiceError::InvalidArgument);
-        return Err(ServiceError::InvalidArgument);
+        return Err(get_service_error(ServiceError::InvalidArgument));
     }
 
     if let Some(content) = &args.content {
         if content.trim().is_empty() {
-            println!("{}", ServiceError::InvalidArgument);
-            return Err(ServiceError::InvalidArgument);
+            return Err(get_service_error(ServiceError::InvalidArgument));
         }
     }
 
     if let Some(title) = &args.title {
         if title.trim().is_empty() {
-            println!("{}", ServiceError::InvalidArgument);
-            return Err(ServiceError::InvalidArgument);
+            return Err(get_service_error(ServiceError::InvalidArgument));
         }
     }
 
@@ -125,11 +111,9 @@ pub fn update(id: u64, user_id: u64, args: UpdateArgs) -> Result<bool, ServiceEr
         if updated_count > 0 {
             Ok(true)
         } else {
-            println!("{}", ServiceError::NotFound(id.to_string()));
-            Err(ServiceError::NotFound(id.to_string()))
+            Err(get_service_error(ServiceError::NotFound(id.to_string())))
         }
     } else {
-        println!("{}", ServiceError::QueryExecutionFailure);
-        Err(ServiceError::QueryExecutionFailure)
+        Err(get_service_error(ServiceError::QueryExecutionFailure))
     }
 }

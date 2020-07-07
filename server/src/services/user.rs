@@ -1,8 +1,9 @@
 use diesel::result::Error;
 
 use crate::models::auth::{Token, TokenRepository};
+use crate::models::error::{get_service_error, ServiceError};
+use crate::models::user::*;
 use crate::models::user_key::UserKeyRepository;
-use crate::models::{error::ServiceError, user::*};
 use crate::utils::password_util;
 
 pub fn get_one(id: u64) -> Result<UserDTO, ServiceError> {
@@ -21,14 +22,8 @@ pub fn get_one(id: u64) -> Result<UserDTO, ServiceError> {
             created_at: user.created_at,
         }),
         Err(error) => match error {
-            Error::NotFound => {
-                println!("{}", ServiceError::NotFound(id.to_string()));
-                Err(ServiceError::NotFound(id.to_string()))
-            }
-            _ => {
-                println!("{}", ServiceError::QueryExecutionFailure);
-                Err(ServiceError::QueryExecutionFailure)
-            }
+            Error::NotFound => Err(get_service_error(ServiceError::NotFound(id.to_string()))),
+            _ => Err(get_service_error(ServiceError::QueryExecutionFailure)),
         },
     }
 }
@@ -56,8 +51,7 @@ pub fn get_list() -> Result<Vec<UserDTO>, ServiceError> {
 
         Ok(user_to_show_list)
     } else {
-        println!("{}", ServiceError::QueryExecutionFailure);
-        Err(ServiceError::QueryExecutionFailure)
+        Err(get_service_error(ServiceError::QueryExecutionFailure))
     }
 }
 
@@ -68,24 +62,21 @@ pub fn create(args: CreateArgs) -> Result<bool, ServiceError> {
         {
             serialized_token
         } else {
-            println!("{}", ServiceError::NotFound(args.token_key.clone()));
-            return Err(ServiceError::NotFound(args.token_key));
+            return Err(get_service_error(ServiceError::NotFound(args.token_key)));
         };
 
         let deserialized_token: Token =
             if let Ok(deserialized_token) = serde_json::from_str(&serialized_token) {
                 deserialized_token
             } else {
-                println!("{}", ServiceError::InvalidFormat);
-                return Err(ServiceError::InvalidFormat);
+                return Err(get_service_error(ServiceError::InvalidFormat));
             };
 
         if args.token_pin == deserialized_token.pin {
             let _ = token_repository.delete(&args.token_key);
             deserialized_token
         } else {
-            println!("{}", ServiceError::Unauthorized);
-            return Err(ServiceError::Unauthorized);
+            return Err(get_service_error(ServiceError::Unauthorized));
         }
     };
 
@@ -115,20 +106,16 @@ pub fn create(args: CreateArgs) -> Result<bool, ServiceError> {
                 if user_key_created_count > 0 {
                     Ok(true)
                 } else {
-                    println!("{}", ServiceError::QueryExecutionFailure);
-                    Err(ServiceError::QueryExecutionFailure)
+                    Err(get_service_error(ServiceError::QueryExecutionFailure))
                 }
             } else {
-                println!("{}", ServiceError::QueryExecutionFailure);
-                Err(ServiceError::QueryExecutionFailure)
+                Err(get_service_error(ServiceError::QueryExecutionFailure))
             }
         } else {
-            println!("{}", ServiceError::QueryExecutionFailure);
-            Err(ServiceError::QueryExecutionFailure)
+            Err(get_service_error(ServiceError::QueryExecutionFailure))
         }
     } else {
-        println!("{}", ServiceError::QueryExecutionFailure);
-        Err(ServiceError::QueryExecutionFailure)
+        Err(get_service_error(ServiceError::QueryExecutionFailure))
     }
 }
 
@@ -142,27 +129,23 @@ pub fn delete(id: u64) -> Result<bool, ServiceError> {
         if deleted_count > 0 {
             Ok(true)
         } else {
-            println!("{}", ServiceError::QueryExecutionFailure);
-            Err(ServiceError::QueryExecutionFailure)
+            Err(get_service_error(ServiceError::QueryExecutionFailure))
         }
     } else {
-        println!("{}", ServiceError::QueryExecutionFailure);
-        Err(ServiceError::QueryExecutionFailure)
+        Err(get_service_error(ServiceError::QueryExecutionFailure))
     }
 }
 
 pub fn update(id: u64, args: UpdateArgs) -> Result<bool, ServiceError> {
     if args.name.is_none() && args.password.is_none() && args.avatar_url.is_none() {
-        println!("{}", ServiceError::InvalidArgument);
-        return Err(ServiceError::InvalidArgument);
+        return Err(get_service_error(ServiceError::InvalidArgument));
     }
 
     if let (Some(name), Some(password), Some(avatar_url)) =
         (&args.name, &args.password, &args.avatar_url)
     {
         if name.trim().is_empty() || password.trim().is_empty() || avatar_url.trim().is_empty() {
-            println!("{}", ServiceError::InvalidArgument);
-            return Err(ServiceError::InvalidArgument);
+            return Err(get_service_error(ServiceError::InvalidArgument));
         }
     }
 
@@ -182,11 +165,9 @@ pub fn update(id: u64, args: UpdateArgs) -> Result<bool, ServiceError> {
         if updated_count > 0 {
             Ok(true)
         } else {
-            println!("{}", ServiceError::QueryExecutionFailure);
-            Err(ServiceError::QueryExecutionFailure)
+            Err(get_service_error(ServiceError::QueryExecutionFailure))
         }
     } else {
-        println!("{}", ServiceError::QueryExecutionFailure);
-        Err(ServiceError::QueryExecutionFailure)
+        Err(get_service_error(ServiceError::QueryExecutionFailure))
     }
 }

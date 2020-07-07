@@ -1,8 +1,9 @@
 use diesel::result::Error;
 use rand::{distributions::Alphanumeric, thread_rng, Rng};
 
+use crate::models::error::{get_service_error, ServiceError};
 use crate::models::user_key::UserKeyRepository;
-use crate::models::{auth::*, error::ServiceError, user::*};
+use crate::models::{auth::*, user::*};
 use crate::utils::password_util;
 
 pub fn login(args: LoginArgs) -> Result<UserSession, ServiceError> {
@@ -32,8 +33,7 @@ pub fn login(args: LoginArgs) -> Result<UserSession, ServiceError> {
             let user_public_key = if let Ok(user_key) = user_key {
                 user_key.public_key
             } else {
-                println!("{}", ServiceError::NotFound(args.email.clone()));
-                return Err(ServiceError::NotFound(args.email));
+                return Err(get_service_error(ServiceError::NotFound(args.email)));
             };
 
             UserSession {
@@ -46,14 +46,8 @@ pub fn login(args: LoginArgs) -> Result<UserSession, ServiceError> {
         }
         Err(error) => {
             return match error {
-                Error::NotFound => {
-                    println!("{}", ServiceError::NotFound(args.email.clone()));
-                    Err(ServiceError::NotFound(args.email))
-                }
-                _ => {
-                    println!("{}", ServiceError::QueryExecutionFailure);
-                    Err(ServiceError::QueryExecutionFailure)
-                }
+                Error::NotFound => Err(get_service_error(ServiceError::NotFound(args.email))),
+                _ => Err(get_service_error(ServiceError::QueryExecutionFailure)),
             }
         }
     };
@@ -66,8 +60,7 @@ pub fn set_sign_up_token(args: SetSignUpTokenArgs) -> Result<bool, ServiceError>
         || args.email.trim().is_empty()
         || args.password.trim().is_empty()
     {
-        println!("{}", ServiceError::InvalidArgument);
-        return Err(ServiceError::InvalidArgument);
+        return Err(get_service_error(ServiceError::InvalidArgument));
     }
 
     let pin: String = thread_rng().sample_iter(&Alphanumeric).take(8).collect();
@@ -85,8 +78,7 @@ pub fn set_sign_up_token(args: SetSignUpTokenArgs) -> Result<bool, ServiceError>
     let serialized_token = if let Ok(serialized_token) = serialized_token {
         serialized_token
     } else {
-        println!("{}", ServiceError::InvalidFormat);
-        return Err(ServiceError::InvalidFormat);
+        return Err(get_service_error(ServiceError::InvalidFormat));
     };
 
     let result = {
@@ -96,9 +88,6 @@ pub fn set_sign_up_token(args: SetSignUpTokenArgs) -> Result<bool, ServiceError>
 
     match result {
         Ok(_) => Ok(true),
-        Err(_) => {
-            println!("{}", ServiceError::QueryExecutionFailure);
-            Err(ServiceError::QueryExecutionFailure)
-        }
+        Err(_) => Err(get_service_error(ServiceError::QueryExecutionFailure)),
     }
 }
