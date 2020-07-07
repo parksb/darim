@@ -32,11 +32,11 @@ use crate::utils::{http_util, session_util};
 ///
 /// ```json
 /// {
-///     "data": true
+///     "data": true,
+///     "error": null
 /// }
 /// ```
-#[post("/users")]
-pub async fn create_user(args: web::Json<CreateArgs>) -> impl Responder {
+pub fn create_user(args: web::Json<CreateArgs>) -> impl Responder {
     let response = user::create(args.into_inner());
     http_util::get_response::<bool>(response)
 }
@@ -53,11 +53,11 @@ pub async fn create_user(args: web::Json<CreateArgs>) -> impl Responder {
 ///
 /// ```json
 /// {
-///     "data": true
+///     "data": true,
+///     "error": null
 /// }
 /// ```
-#[delete("/users/{id}")]
-pub async fn delete_user(session: Session, id: web::Path<u64>) -> impl Responder {
+pub fn delete_user(session: Session, id: web::Path<u64>) -> impl Responder {
     let response = if let Some(user_session) = session_util::get_session(&session) {
         let id_in_path = id.into_inner();
         if id_in_path != user_session.user_id {
@@ -98,11 +98,11 @@ pub async fn delete_user(session: Session, id: web::Path<u64>) -> impl Responder
 ///
 /// ```json
 /// {
-///     "data": true
+///     "data": true,
+///     "error": null
 /// }
 /// ```
-#[patch("/users/{id}")]
-pub async fn update_user(
+pub fn update_user(
     session: Session,
     id: web::Path<u64>,
     user: web::Json<UpdateArgs>,
@@ -121,8 +121,27 @@ pub async fn update_user(
     http_util::get_response::<bool>(response)
 }
 
+#[post("/users")]
+pub async fn create_user_route(args: web::Json<CreateArgs>) -> impl Responder {
+    create_user(args)
+}
+
+#[delete("/users/{id}")]
+pub async fn delete_user_route(session: Session, id: web::Path<u64>) -> impl Responder {
+   delete_user(session, id)
+}
+
+#[patch("/users/{id}")]
+pub async fn update_user_route(
+    session: Session,
+    id: web::Path<u64>,
+    user: web::Json<UpdateArgs>,
+) -> impl Responder {
+    update_user(session, id, user)
+}
+
 pub fn init_routes(cfg: &mut web::ServiceConfig) {
-    cfg.service(create_user);
-    cfg.service(delete_user);
-    cfg.service(update_user);
+    cfg.service(create_user_route);
+    cfg.service(delete_user_route);
+    cfg.service(update_user_route);
 }

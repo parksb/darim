@@ -25,8 +25,7 @@ use crate::utils::{http_util, session_util};
 ///     }
 /// }
 /// ```
-#[get("/auth")]
-pub async fn get_auth(session: Session) -> impl Responder {
+pub fn get_auth(session: Session) -> impl Responder {
     let user_session = session_util::get_session(&session);
 
     if let Some(response) = user_session {
@@ -64,11 +63,11 @@ pub async fn get_auth(session: Session) -> impl Responder {
 ///
 /// ```json
 /// {
-///     "data": true
+///     "data": true,
+///     "error": null
 /// }
 /// ```
-#[post("/auth/token")]
-pub async fn set_sign_up_token(args: web::Json<SetSignUpTokenArgs>) -> impl Responder {
+pub fn set_sign_up_token(args: web::Json<SetSignUpTokenArgs>) -> impl Responder {
     let response = auth::set_sign_up_token(args.into_inner());
     http_util::get_response::<bool>(response)
 }
@@ -101,11 +100,11 @@ pub async fn set_sign_up_token(args: web::Json<SetSignUpTokenArgs>) -> impl Resp
 ///         "user_id": 0,
 ///         "user_email": "park@email.com"
 ///         "user_name": "park",
-///     }
+///     },
+///     "error": null
 /// }
 /// ```
-#[post("/auth/login")]
-pub async fn login(session: Session, args: web::Json<LoginArgs>) -> impl Responder {
+pub fn login(session: Session, args: web::Json<LoginArgs>) -> impl Responder {
     let user_session = auth::login(args.into_inner());
 
     match user_session {
@@ -144,11 +143,11 @@ pub async fn login(session: Session, args: web::Json<LoginArgs>) -> impl Respond
 ///
 /// ```json
 /// {
-///     "data": true
+///     "data": true,
+///     "error": null
 /// }
 /// ```
-#[post("/auth/logout")]
-pub async fn logout(session: Session) -> impl Responder {
+pub fn logout(session: Session) -> impl Responder {
     let is_logged_in = session_util::get_session(&session);
     let result = if is_logged_in.is_some() {
         session_util::unset_session(session);
@@ -160,9 +159,29 @@ pub async fn logout(session: Session) -> impl Responder {
     http_util::get_response::<bool>(Ok(result))
 }
 
+#[get("/auth")]
+pub async fn get_auth_route(session: Session) -> impl Responder {
+    get_auth(session)
+}
+
+#[post("/auth/token")]
+pub async fn set_sign_up_token_route(args: web::Json<SetSignUpTokenArgs>) -> impl Responder {
+    set_sign_up_token(args)
+}
+
+#[post("/auth/login")]
+pub async fn login_route(session: Session, args: web::Json<LoginArgs>) -> impl Responder {
+    login(session, args)
+}
+
+#[post("/auth/logout")]
+pub async fn logout_route(session: Session) -> impl Responder {
+    logout(session)
+}
+
 pub fn init_routes(cfg: &mut web::ServiceConfig) {
-    cfg.service(set_sign_up_token);
-    cfg.service(get_auth);
-    cfg.service(login);
-    cfg.service(logout);
+    cfg.service(set_sign_up_token_route);
+    cfg.service(get_auth_route);
+    cfg.service(login_route);
+    cfg.service(logout_route);
 }
