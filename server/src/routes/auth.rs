@@ -1,10 +1,9 @@
 use actix_session::Session;
-use actix_web::{get, post, web, HttpResponse, Responder};
-use serde_json::json;
+use actix_web::{get, post, web, Responder};
 
 use crate::models::{auth::*, error::*};
 use crate::services::auth;
-use crate::utils::session_util;
+use crate::utils::{http_util, session_util};
 
 /// Get auth information as user session
 ///
@@ -31,9 +30,9 @@ pub async fn get_auth(session: Session) -> impl Responder {
     let user_session = session_util::get_session(&session);
 
     if let Some(response) = user_session {
-        HttpResponse::Ok().json(json!({ "data": response }))
+        http_util::get_response::<UserSession>(Ok(response))
     } else {
-        HttpResponse::Unauthorized().body(format!("{}", ServiceError::Unauthorized))
+        http_util::get_response::<UserSession>(Err(ServiceError::Unauthorized))
     }
 }
 
@@ -71,16 +70,7 @@ pub async fn get_auth(session: Session) -> impl Responder {
 #[post("/auth/token")]
 pub async fn set_sign_up_token(args: web::Json<SetSignUpTokenArgs>) -> impl Responder {
     let response = auth::set_sign_up_token(args.into_inner());
-    match response {
-        Ok(result) => HttpResponse::Ok().json(json!({ "data": result })),
-        Err(ServiceError::InvalidArgument) => {
-            HttpResponse::BadRequest().body(format!("{}", ServiceError::InvalidArgument))
-        }
-        Err(ServiceError::DuplicatedKey) => {
-            HttpResponse::Conflict().body(format!("{}", ServiceError::DuplicatedKey))
-        }
-        _ => HttpResponse::InternalServerError().body("internal server error"),
-    }
+    http_util::get_response::<bool>(response)
 }
 
 /// Login to set user session
@@ -130,15 +120,15 @@ pub async fn login(session: Session, args: web::Json<LoginArgs>) -> impl Respond
             );
 
             if is_succeed {
-                HttpResponse::Ok().json(json!({ "data": response }))
+                http_util::get_response::<UserSession>(Ok(response))
             } else {
-                HttpResponse::InternalServerError().body("internal server error")
+                http_util::get_response::<UserSession>(Err(ServiceError::InternalServerError))
             }
         }
         Err(ServiceError::NotFound(key)) => {
-            HttpResponse::NotFound().body(format!("{}", ServiceError::NotFound(key)))
+            http_util::get_response::<UserSession>(Err(ServiceError::NotFound(key)))
         }
-        _ => HttpResponse::InternalServerError().body("internal server error"),
+        _ => http_util::get_response::<UserSession>(Err(ServiceError::InternalServerError)),
     }
 }
 
@@ -167,7 +157,7 @@ pub async fn logout(session: Session) -> impl Responder {
         false
     };
 
-    HttpResponse::Ok().json(json!({ "data": result }))
+    http_util::get_response::<bool>(Ok(result))
 }
 
 pub fn init_routes(cfg: &mut web::ServiceConfig) {
