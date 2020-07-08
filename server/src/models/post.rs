@@ -6,6 +6,7 @@ use serde::{Deserialize, Serialize};
 use crate::models::connection;
 use crate::schema::{posts, posts::dsl};
 
+/// Post representing `posts` table.
 #[derive(Debug, Serialize, Deserialize, Queryable)]
 pub struct Post {
     pub id: u64,
@@ -17,6 +18,7 @@ pub struct Post {
     pub updated_at: Option<NaiveDateTime>,
 }
 
+/// Arguments for `POST /posts` API.
 #[derive(Serialize, Deserialize)]
 pub struct CreateArgs {
     pub title: String,
@@ -24,6 +26,7 @@ pub struct CreateArgs {
     pub date: NaiveDateTime,
 }
 
+/// Arguments for `PATCH /posts/:id` API.
 #[derive(Serialize, Deserialize)]
 pub struct UpdateArgs {
     pub title: Option<String>,
@@ -31,6 +34,7 @@ pub struct UpdateArgs {
     pub date: Option<NaiveDateTime>,
 }
 
+/// Post DTO using between routes layer and service layer.
 #[derive(Serialize, Deserialize)]
 pub struct PostDTO {
     pub id: u64,
@@ -41,6 +45,7 @@ pub struct PostDTO {
     pub updated_at: Option<NaiveDateTime>,
 }
 
+/// Post DAO using between models layer and RDB.
 #[derive(Insertable, AsChangeset)]
 #[table_name = "posts"]
 struct PostDAO {
@@ -52,17 +57,20 @@ struct PostDAO {
     updated_at: Option<NaiveDateTime>,
 }
 
+/// A core data repository for post.
 pub struct PostRepository {
     conn: MysqlConnection,
 }
 
 impl PostRepository {
+    /// Creates a new post repository.
     pub fn new() -> Self {
         Self {
             conn: connection::connect_rdb(),
         }
     }
 
+    /// Finds a post by user id and post id.
     pub fn find(&self, user_id: u64, post_id: u64) -> Result<Post, Error> {
         let post: Post = dsl::posts
             .find(post_id)
@@ -72,6 +80,7 @@ impl PostRepository {
         Ok(post)
     }
 
+    /// Finds all post written by specific user.
     pub fn find_all(&self, user_id: u64) -> Result<Vec<Post>, Error> {
         let post_list: Vec<Post> = dsl::posts
             .filter(dsl::user_id.eq(user_id))
@@ -81,6 +90,7 @@ impl PostRepository {
         Ok(post_list)
     }
 
+    /// Creates a new post.
     pub fn create(
         &self,
         user_id: u64,
@@ -104,6 +114,7 @@ impl PostRepository {
         Ok(count)
     }
 
+    /// Updates a post written by specific user.
     pub fn update(
         &self,
         user_id: u64,
@@ -129,6 +140,7 @@ impl PostRepository {
         Ok(count)
     }
 
+    /// Deletes a post written by specific user.
     pub fn delete(&self, user_id: u64, post_id: u64) -> Result<usize, Error> {
         let target_post = dsl::posts.find(post_id).filter(dsl::user_id.eq(user_id));
         let count = diesel::delete(target_post).execute(&self.conn)?;

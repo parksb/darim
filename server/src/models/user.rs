@@ -6,6 +6,7 @@ use serde::{Deserialize, Serialize};
 use crate::models::connection;
 use crate::schema::{users, users::dsl};
 
+/// User representing `users` table.
 #[derive(Debug, Serialize, Deserialize, Queryable)]
 pub struct User {
     pub id: u64,
@@ -17,6 +18,7 @@ pub struct User {
     pub updated_at: Option<NaiveDateTime>,
 }
 
+/// Arguments for `POST /users` API.
 #[derive(Serialize, Deserialize)]
 pub struct CreateArgs {
     pub user_public_key: String,
@@ -24,6 +26,7 @@ pub struct CreateArgs {
     pub token_pin: String,
 }
 
+/// Arguments for `PATCH /users/:id` API.
 #[derive(Serialize, Deserialize)]
 pub struct UpdateArgs {
     pub name: Option<String>,
@@ -31,6 +34,7 @@ pub struct UpdateArgs {
     pub avatar_url: Option<String>,
 }
 
+/// User DTO using between routes layer and service layer.
 #[derive(Serialize, Deserialize)]
 pub struct UserDTO {
     pub id: u64,
@@ -41,6 +45,7 @@ pub struct UserDTO {
     pub updated_at: Option<NaiveDateTime>,
 }
 
+/// User DAO using between models layer and RDB.
 #[derive(Insertable, AsChangeset)]
 #[table_name = "users"]
 struct UserDAO {
@@ -52,22 +57,26 @@ struct UserDAO {
     updated_at: Option<NaiveDateTime>,
 }
 
+/// A core data repository for user.
 pub struct UserRepository {
     conn: MysqlConnection,
 }
 
 impl UserRepository {
+    /// Creates a new user repository.
     pub fn new() -> Self {
         Self {
             conn: connection::connect_rdb(),
         }
     }
 
+    /// Finds a user by id.
     pub fn find_by_id(&self, id: u64) -> Result<User, Error> {
         let user: User = dsl::users.find(id).get_result::<User>(&self.conn)?;
         Ok(user)
     }
 
+    /// Finds a user by email.
     pub fn find_by_email(&self, email: &str) -> Result<User, Error> {
         let user: User = dsl::users
             .filter(dsl::email.eq(email))
@@ -75,6 +84,7 @@ impl UserRepository {
         Ok(user)
     }
 
+    /// Finds a password of the user specified by email.
     pub fn find_password_by_email(&self, email: &str) -> Result<String, Error> {
         let password: String = dsl::users
             .select(dsl::password)
@@ -83,11 +93,13 @@ impl UserRepository {
         Ok(password)
     }
 
+    /// Finds all users.
     pub fn find_all(&self) -> Result<Vec<User>, Error> {
         let user_list: Vec<User> = dsl::users.load::<User>(&self.conn)?;
         Ok(user_list)
     }
 
+    /// Creates a new user.
     pub fn create(
         &self,
         name: &str,
@@ -111,6 +123,7 @@ impl UserRepository {
         Ok(count)
     }
 
+    /// Updates a new user.
     pub fn update(
         &self,
         id: u64,
@@ -135,6 +148,7 @@ impl UserRepository {
         Ok(count)
     }
 
+    /// Deletes a user.
     pub fn delete(&self, id: u64) -> Result<usize, Error> {
         let target_user = dsl::users.find(id);
         // Consider also logical deletion

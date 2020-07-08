@@ -3,6 +3,7 @@ use serde::Serialize;
 
 use crate::models::error::ServiceError;
 
+/// HTTP response of the API.
 #[derive(Serialize)]
 pub struct Response<T> {
     data: Option<T>,
@@ -10,6 +11,7 @@ pub struct Response<T> {
 }
 
 impl<T> Response<T> {
+    /// Creates a response containing normal data.
     fn ok(data: T) -> Self {
         Response {
             data: Some(data),
@@ -17,6 +19,7 @@ impl<T> Response<T> {
         }
     }
 
+    /// Creates a response containing error.
     fn err(error: ServiceError) -> Self {
         Response {
             data: None,
@@ -25,6 +28,11 @@ impl<T> Response<T> {
     }
 }
 
+/// Converts service result to HTTP response, and return it.
+///
+/// # Arguments
+///
+/// * `data` - A result of the service.
 pub fn get_response<T: Serialize>(data: Result<T, ServiceError>) -> HttpResponse {
     match data {
         Ok(data) => HttpResponse::Ok().json(Response::<T>::ok(data)),

@@ -6,7 +6,7 @@ use std::env;
 
 use darim::routes;
 
-/// Health Check
+/// Health check
 #[get("/")]
 async fn health_check() -> impl Responder {
     let mut response = HashMap::new();

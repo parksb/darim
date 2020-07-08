@@ -6,7 +6,7 @@ use crate::models::user::*;
 use crate::services::user;
 use crate::utils::{http_util, session_util};
 
-/// Create a user
+/// Creates a new user
 ///
 /// # Request
 ///
@@ -41,7 +41,7 @@ pub fn create_user(args: web::Json<CreateArgs>) -> impl Responder {
     http_util::get_response::<bool>(response)
 }
 
-/// Delete a user
+/// Deletes a user
 ///
 /// # Request
 ///
@@ -72,7 +72,7 @@ pub fn delete_user(session: Session, id: web::Path<u64>) -> impl Responder {
     http_util::get_response::<bool>(response)
 }
 
-/// Update a user
+/// Updates a user
 ///
 /// # Request
 ///
@@ -128,7 +128,7 @@ pub async fn create_user_route(args: web::Json<CreateArgs>) -> impl Responder {
 
 #[delete("/users/{id}")]
 pub async fn delete_user_route(session: Session, id: web::Path<u64>) -> impl Responder {
-   delete_user(session, id)
+    delete_user(session, id)
 }
 
 #[patch("/users/{id}")]

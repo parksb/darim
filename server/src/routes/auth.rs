@@ -5,7 +5,7 @@ use crate::models::{auth::*, error::*};
 use crate::services::auth;
 use crate::utils::{http_util, session_util};
 
-/// Get auth information as user session
+/// Responds auth information as user session.
 ///
 /// # Request
 ///
@@ -35,7 +35,7 @@ pub fn get_auth(session: Session) -> impl Responder {
     }
 }
 
-/// Set token to create user
+/// Sets token to create user.
 ///
 /// # Request
 ///
@@ -72,7 +72,7 @@ pub fn set_sign_up_token(args: web::Json<SetSignUpTokenArgs>) -> impl Responder 
     http_util::get_response::<bool>(response)
 }
 
-/// Login to set user session
+/// Signs in to set user session.
 ///
 /// # Request
 ///
@@ -104,13 +104,13 @@ pub fn set_sign_up_token(args: web::Json<SetSignUpTokenArgs>) -> impl Responder 
 ///     "error": null
 /// }
 /// ```
-pub fn login(session: Session, args: web::Json<LoginArgs>) -> impl Responder {
+pub fn login(mut session: Session, args: web::Json<LoginArgs>) -> impl Responder {
     let user_session = auth::login(args.into_inner());
 
     match user_session {
         Ok(response) => {
             let is_succeed = session_util::set_session(
-                session,
+                &mut session,
                 response.user_id,
                 &response.user_email,
                 &response.user_name,
@@ -131,7 +131,7 @@ pub fn login(session: Session, args: web::Json<LoginArgs>) -> impl Responder {
     }
 }
 
-/// Logout to unset user session
+/// Signs out to unset user session.
 ///
 /// # Request
 ///
@@ -147,10 +147,10 @@ pub fn login(session: Session, args: web::Json<LoginArgs>) -> impl Responder {
 ///     "error": null
 /// }
 /// ```
-pub fn logout(session: Session) -> impl Responder {
+pub fn logout(mut session: Session) -> impl Responder {
     let is_logged_in = session_util::get_session(&session);
     let result = if is_logged_in.is_some() {
-        session_util::unset_session(session);
+        session_util::unset_session(&mut session);
         true
     } else {
         false

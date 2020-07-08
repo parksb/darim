@@ -6,7 +6,7 @@ use crate::models::post::*;
 use crate::services::post;
 use crate::utils::{http_util, session_util};
 
-/// Get a post written by logged-in user
+/// Responds a post written by logged-in user
 ///
 /// # Request
 ///
@@ -41,7 +41,7 @@ pub fn get_post(session: Session, id: web::Path<u64>) -> impl Responder {
     http_util::get_response::<PostDTO>(response)
 }
 
-/// List posts written by logged-in user
+/// Lists posts written by logged-in user
 ///
 /// # Request
 ///
@@ -84,7 +84,7 @@ pub fn get_posts(session: Session) -> impl Responder {
     http_util::get_response::<Vec<PostDTO>>(response)
 }
 
-/// Create a post
+/// Creates a new post
 ///
 /// # Request
 ///
@@ -122,7 +122,7 @@ pub fn create_post(session: Session, post: web::Json<CreateArgs>) -> impl Respon
     http_util::get_response::<u64>(response)
 }
 
-/// Delete a post
+/// Deletes a post
 ///
 /// # Request
 ///
@@ -148,7 +148,7 @@ pub fn delete_post(session: Session, id: web::Path<u64>) -> impl Responder {
     http_util::get_response::<bool>(response)
 }
 
-/// Update a post
+/// Updates a post
 ///
 /// # Request
 ///

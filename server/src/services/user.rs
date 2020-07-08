@@ -6,6 +6,7 @@ use crate::models::user::*;
 use crate::models::user_key::UserKeyRepository;
 use crate::utils::password_util;
 
+/// Finds a user by id.
 pub fn get_one(id: u64) -> Result<UserDTO, ServiceError> {
     let user = {
         let user_repository = UserRepository::new();
@@ -28,6 +29,7 @@ pub fn get_one(id: u64) -> Result<UserDTO, ServiceError> {
     }
 }
 
+/// Finds all users.
 pub fn get_list() -> Result<Vec<UserDTO>, ServiceError> {
     let user_list = {
         let user_repository = UserRepository::new();
@@ -55,6 +57,11 @@ pub fn get_list() -> Result<Vec<UserDTO>, ServiceError> {
     }
 }
 
+/// Creates a new user.
+///
+/// 1. Finds serialized token by token key from arguments.
+/// 1. Deserializes the found token and compares pin from token and it from arguments.
+/// 1. If the pins are equal, deletes the token from redis and creates a new user.
 pub fn create(args: CreateArgs) -> Result<bool, ServiceError> {
     let token: Token = {
         let mut token_repository = TokenRepository::new();
@@ -119,6 +126,7 @@ pub fn create(args: CreateArgs) -> Result<bool, ServiceError> {
     }
 }
 
+/// Deletes a user.
 pub fn delete(id: u64) -> Result<bool, ServiceError> {
     let deleted_count = {
         let user_repository = UserRepository::new();
@@ -136,6 +144,7 @@ pub fn delete(id: u64) -> Result<bool, ServiceError> {
     }
 }
 
+/// Updates a new user.
 pub fn update(id: u64, args: UpdateArgs) -> Result<bool, ServiceError> {
     if args.name.is_none() && args.password.is_none() && args.avatar_url.is_none() {
         return Err(get_service_error(ServiceError::InvalidArgument));

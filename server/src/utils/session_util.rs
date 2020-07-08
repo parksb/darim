@@ -12,7 +12,7 @@ use actix_session::Session;
 /// * `user_public_key` - A public key of the user account
 /// * `user_avatar_url` - A avatar image url of the user account
 pub fn set_session(
-    session: Session,
+    session: &mut Session,
     user_id: u64,
     user_email: &str,
     user_name: &str,
@@ -42,7 +42,7 @@ pub fn set_session(
 /// # Arguments
 ///
 /// * `session` - An session object
-pub fn unset_session(session: Session) {
+pub fn unset_session(session: &mut Session) {
     session.clear();
 }
 
@@ -105,4 +105,95 @@ pub fn get_session(session: &Session) -> Option<UserSession> {
         user_public_key,
         user_avatar_url,
     })
+}
+
+#[cfg(test)]
+mod tests {
+    use actix_session::UserSession;
+    use actix_web::test;
+
+    use super::*;
+
+    #[test]
+    fn test_set_session() {
+        let req = test::TestRequest::default().to_srv_request();
+        let mut session = req.get_session();
+
+        let user_id = 10;
+        let user_email = String::from("user@email.com");
+        let user_name = String::from("park");
+        let user_public_key = String::from("d63ee429");
+        let user_avatar_url = String::from("image.jpg");
+
+        let is_set_session = set_session(
+            &mut session,
+            user_id,
+            &user_email,
+            &user_name,
+            &user_public_key,
+            &Some(user_avatar_url.clone()),
+        );
+
+        assert_eq!(is_set_session, true);
+        assert_eq!(session.get::<u64>("user_id").unwrap(), Some(user_id));
+        assert_eq!(
+            session.get::<String>("user_email").unwrap(),
+            Some(user_email)
+        );
+        assert_eq!(session.get::<String>("user_name").unwrap(), Some(user_name));
+        assert_eq!(
+            session.get::<String>("user_public_key").unwrap(),
+            Some(user_public_key)
+        );
+        assert_eq!(
+            session.get::<String>("user_avatar_url").unwrap(),
+            Some(user_avatar_url)
+        );
+    }
+
+    #[test]
+    fn test_unset_session() {
+        let req = test::TestRequest::default().to_srv_request();
+        let mut session = req.get_session();
+
+        session.set("user_id", 10).unwrap();
+        unset_session(&mut session);
+
+        assert_eq!(session.get::<u64>("user_id").unwrap(), None);
+    }
+
+    #[test]
+    fn test_get_session() {
+        let req = test::TestRequest::default().to_srv_request();
+        let session = req.get_session();
+
+        let user_id = 10;
+        let user_email = "user@email.com";
+        let user_name = "park";
+        let user_public_key = "d63ee429";
+        let user_avatar_url = String::from("image.jpg");
+
+        session.set("user_id", user_id).unwrap();
+        session.set("user_email", user_email).unwrap();
+        session.set("user_name", user_name).unwrap();
+        session.set("user_public_key", user_public_key).unwrap();
+        session
+            .set("user_avatar_url", &Some(user_avatar_url.clone()))
+            .unwrap();
+
+        let user_session = get_session(&session);
+
+        assert!(user_session.is_some());
+        assert_eq!(user_session.as_ref().unwrap().user_id, user_id);
+        assert_eq!(user_session.as_ref().unwrap().user_email, user_email);
+        assert_eq!(user_session.as_ref().unwrap().user_name, user_name);
+        assert_eq!(
+            user_session.as_ref().unwrap().user_public_key,
+            user_public_key
+        );
+        assert_eq!(
+            user_session.as_ref().unwrap().user_avatar_url,
+            Some(user_avatar_url)
+        );
+    }
 }

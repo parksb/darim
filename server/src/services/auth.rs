@@ -6,6 +6,11 @@ use crate::models::user_key::UserKeyRepository;
 use crate::models::{auth::*, user::*};
 use crate::utils::password_util;
 
+/// Signs in to set user session.
+///
+/// 1. Finds password of the user by email from arguments.
+/// 1. Compares password from the found user and it from the arguments.
+/// 1. If the passwords are equal, returns the found user.
 pub fn login(args: LoginArgs) -> Result<UserSession, ServiceError> {
     let user = {
         let user_repository = UserRepository::new();
@@ -55,6 +60,11 @@ pub fn login(args: LoginArgs) -> Result<UserSession, ServiceError> {
     Ok(logged_in_user_session)
 }
 
+/// Sets token for sign up process.
+///
+/// 1. Generates a random string called pin.
+/// 1. Creates a new token containing the pin and information of the user from arguments.
+/// 1. Serializes the token and inserts it to redis.
 pub fn set_sign_up_token(args: SetSignUpTokenArgs) -> Result<bool, ServiceError> {
     if args.name.trim().is_empty()
         || args.email.trim().is_empty()

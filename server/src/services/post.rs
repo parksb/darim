@@ -3,6 +3,7 @@ use diesel::result::Error;
 use crate::models::error::{get_service_error, ServiceError};
 use crate::models::post::*;
 
+/// Finds a post by user id and post id.
 pub fn get(user_id: u64, id: u64) -> Result<PostDTO, ServiceError> {
     let post_repository = PostRepository::new();
     let post = post_repository.find(user_id, id);
@@ -23,6 +24,7 @@ pub fn get(user_id: u64, id: u64) -> Result<PostDTO, ServiceError> {
     }
 }
 
+/// Finds all post written by specific user.
 pub fn get_list(user_id: u64) -> Result<Vec<PostDTO>, ServiceError> {
     let post_repository = PostRepository::new();
     let post_list = post_repository.find_all(user_id);
@@ -48,6 +50,7 @@ pub fn get_list(user_id: u64) -> Result<Vec<PostDTO>, ServiceError> {
     }
 }
 
+/// Creates a new post and returns id of the created post.
 pub fn create(user_id: u64, args: CreateArgs) -> Result<u64, ServiceError> {
     if args.title.trim().is_empty() || args.content.trim().is_empty() {
         return Err(get_service_error(ServiceError::InvalidArgument));
@@ -72,6 +75,7 @@ pub fn create(user_id: u64, args: CreateArgs) -> Result<u64, ServiceError> {
     }
 }
 
+/// Deletes a post written by specific user.
 pub fn delete(id: u64, user_id: u64) -> Result<bool, ServiceError> {
     let post_repository = PostRepository::new();
     let deleted_count = post_repository.delete(user_id, id);
@@ -87,6 +91,7 @@ pub fn delete(id: u64, user_id: u64) -> Result<bool, ServiceError> {
     }
 }
 
+/// Updates a post written by specific user.
 pub fn update(id: u64, user_id: u64, args: UpdateArgs) -> Result<bool, ServiceError> {
     if args.title.is_none() && args.content.is_none() && args.date.is_none() {
         return Err(get_service_error(ServiceError::InvalidArgument));
