@@ -1,14 +1,14 @@
-import React, {useEffect, useState} from 'react';
-import { useParams, useLocation } from "react-router-dom";
+import React, { useEffect, useState } from 'react';
+import { useParams, useLocation } from 'react-router-dom';
 import styled from 'styled-components';
-import dayjs from "dayjs";
+import dayjs from 'dayjs';
 
 import * as api from '../../api/post';
 import { Post, Session } from '../../models';
 import { Container, Section, TextField } from '../../components';
-import Editor from "./Editor";
-import Preview from "./Preview";
-import I18n from "../../utils/i18n";
+import Editor from './Editor';
+import Preview from './Preview';
+import I18n from '../../utils/i18n';
 
 interface Props {
   session: Session | null;
@@ -78,32 +78,32 @@ const PreviewRadio = styled(Radio)`
 const Post: React.FC<Props> = ({ session }) => {
   const i18n = new I18n({
     title: {
-      'ko-KR': '제목',
-      'en-US': 'Title',
+      ko: '제목',
+      en: 'Title',
     },
     saveStatusOngoing: {
-      'ko-KR': '저장 중...',
-      'en-US': 'Saving...',
+      ko: '저장 중...',
+      en: 'Saving...',
     },
     saveStatusSuccess: {
-      'ko-KR': '✅ 저장되었습니다!',
-      'en-US': '✅ Saved!',
+      ko: '✅ 저장되었습니다!',
+      en: '✅ Saved!',
     },
     saveStatusFailure: {
-      'ko-KR': '❌ 저장에 실패했습니다',
-      'en-US': '❌ Failed to save',
+      ko: '❌ 저장에 실패했습니다',
+      en: '❌ Failed to save',
     },
     retry: {
-      'ko-KR': '재시도',
-      'en-US': 'Retry',
+      ko: '재시도',
+      en: 'Retry',
     },
     editor: {
-      'ko-KR': '에디터',
-      'en-US': 'Editor',
+      ko: '에디터',
+      en: 'Editor',
     },
     preview: {
-      'ko-KR': '미리보기',
-      'en-US': 'Preview',
+      ko: '미리보기',
+      en: 'Preview',
     },
   });
 

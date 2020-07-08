@@ -28,16 +28,16 @@ const Join: React.FC = () => {
 
   const i18n = new I18n({
     info: {
-      'ko-KR': `이메일 주소를 인증하고 계정을 활성화할 수 있는 인증키가 발송되었습니다. 이메일(${email})을 확인해주세요.`,
-      'en-US': `Please check your email (${email}) to verify your email address and activate your account`,
+      ko: `이메일 주소를 인증하고 계정을 활성화할 수 있는 인증키가 발송되었습니다. 이메일(${email})을 확인해주세요.`,
+      en: `Please check your email (${email}) to verify your email address and activate your account`,
     },
     signingUp: {
-      'ko-KR': '안전한 암호화 알고리즘으로 회원가입 중입니다',
-      'en-US': 'Signing up with secure encryption algorithm',
+      ko: '안전한 암호화 알고리즘으로 회원가입 중입니다',
+      en: 'Signing up with secure encryption algorithm',
     },
     signUp: {
-      'ko-KR': '회원가입 ↗',
-      'en-US': 'Create account ↗',
+      ko: '회원가입 ↗',
+      en: 'Create account ↗',
     }
   });
 

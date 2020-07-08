@@ -24,8 +24,8 @@ const TextArea = styled(TextareaAutosize)`
 const Editor: React.FC<Props> = ({ content, onBlur, onChange}) => {
   const i18n = new I18n({
     content: {
-      'ko-KR': '내용',
-      'en-US': 'Content',
+      ko: '내용',
+      en: 'Content',
     },
   });
 

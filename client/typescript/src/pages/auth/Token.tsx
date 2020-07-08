@@ -47,40 +47,40 @@ const Token: React.FC = () => {
 
   const i18n = new I18n({
     info: {
-      'ko-KR': '👋 환영합니다! 글을 안전하게 암호화하기 위해 사용할 공개키와 비밀키를 준비했습니다:',
-      'en-US': '👋 Welcome to Darim! This is your public key and secret key that will be used to encrypt your posts:',
+      ko: '👋 환영합니다! 글을 안전하게 암호화하기 위해 사용할 공개키와 비밀키를 준비했습니다:',
+      en: '👋 Welcome to Darim! This is your public key and secret key that will be used to encrypt your posts:',
     },
     verify: {
-      'ko-KR': '인증 ↗',
-      'en-US': 'Verify ↗',
+      ko: '인증 ↗',
+      en: 'Verify ↗',
     },
     pin: {
-      'ko-KR': '인증키',
-      'en-US': 'Pin',
+      ko: '인증키',
+      en: 'Pin',
     },
     downloadPublicKey: {
-      'ko-KR': '공개키 파일 다운로드',
-      'en-US': 'Download the public key as file',
+      ko: '공개키 파일 다운로드',
+      en: 'Download the public key as file',
     },
     copyPublicKey: {
-      'ko-KR': '공개키 복사하기',
-      'en-US': 'Copy the public key to clipboard',
+      ko: '공개키 복사하기',
+      en: 'Copy the public key to clipboard',
     },
     downloadPrivateKey: {
-      'ko-KR': '비밀키 파일 다운로드',
-      'en-US': 'Download the secret key as file',
+      ko: '비밀키 파일 다운로드',
+      en: 'Download the secret key as file',
     },
     copyPrivateKey: {
-      'ko-KR': '비밀키 복사하기',
-      'en-US': 'Copy the secret key to clipboard',
+      ko: '비밀키 복사하기',
+      en: 'Copy the secret key to clipboard',
     },
     notice: {
-      'ko-KR': '공개키와 비밀키를 잃어버리지 마세요. 키 파일을 다운로드받아 안전한 곳에 두거나, 키를 복사해 다른 곳에 보관할 것을 강력히 권장합니다. 또한, 절대로 비밀키를 다른 사람에게 알려주지 마세요.',
-      'en-US': 'Don\'t lose your public key and secret key. It is strongly recommended that you download the key files and store it in a secure place, or copy the keys to somewhere else. Also, NEVER let anyone know your secret key.',
+      ko: '공개키와 비밀키를 잃어버리지 마세요. 키 파일을 다운로드받아 안전한 곳에 두거나, 키를 복사해 다른 곳에 보관할 것을 강력히 권장합니다. 또한, 절대로 비밀키를 다른 사람에게 알려주지 마세요.',
+      en: 'Don\'t lose your public key and secret key. It is strongly recommended that you download the key files and store it in a secure place, or copy the keys to somewhere else. Also, NEVER let anyone know your secret key.',
     },
     goToSignIn: {
-      'ko-KR': '로그인하러 가기 ↗',
-      'en-US': 'Go to sign in ↗',
+      ko: '로그인하러 가기 ↗',
+      en: 'Go to sign in ↗',
     },
   });
 

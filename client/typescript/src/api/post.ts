@@ -106,8 +106,8 @@ async function createPost(publicKey: string, title: string, date: string, conten
   } catch (e) {
     const i18n = new I18n({
       error: {
-        'ko-KR': '저장에 실패했습니다',
-        'en-US': 'Failed to save',
+        ko: '저장에 실패했습니다',
+        en: 'Failed to save',
       },
     });
 
@@ -141,8 +141,8 @@ async function updatePost(publicKey: string, id: number, title?: string, date?: 
   } catch (e) {
     const i18n = new I18n({
       error: {
-        'ko-KR': '저장에 실패했습니다',
-        'en-US': 'Failed to save',
+        ko: '저장에 실패했습니다',
+        en: 'Failed to save',
       },
     });
 

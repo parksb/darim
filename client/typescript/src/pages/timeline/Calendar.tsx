@@ -77,32 +77,32 @@ const Calendar: React.FC<Props> = ({ session }) => {
 
   const i18n = new I18n({
     sunday: {
-      'ko-KR': '일',
-      'en-US': 'Sun',
+      ko: '일',
+      en: 'Sun',
     },
     monday: {
-      'ko-KR': '월',
-      'en-US': 'Mon',
+      ko: '월',
+      en: 'Mon',
     },
     tuesday: {
-      'ko-KR': '화',
-      'en-US': 'Tue',
+      ko: '화',
+      en: 'Tue',
     },
     wednesday: {
-      'ko-KR': '수',
-      'en-US': 'Wed',
+      ko: '수',
+      en: 'Wed',
     },
     thursday: {
-      'ko-KR': '목',
-      'en-US': 'Thu',
+      ko: '목',
+      en: 'Thu',
     },
     friday: {
-      'ko-KR': '금',
-      'en-US': 'Fri',
+      ko: '금',
+      en: 'Fri',
     },
     saturday: {
-      'ko-KR': '토',
-      'en-US': 'Sat',
+      ko: '토',
+      en: 'Sat',
     },
   });
 

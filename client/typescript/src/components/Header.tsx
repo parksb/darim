@@ -42,8 +42,8 @@ const UserAvatar = styled(({ src, ...other }) => <div {...other} />)`
 const Header: React.FC<Props> = ({ session }) => {
   const i18n = new I18n({
     title: {
-      'ko-KR': '🏕 Darim',
-      'en-US': '🏕 Darim',
+      ko: '🏕 Darim',
+      en: '🏕 Darim',
     },
   });
 

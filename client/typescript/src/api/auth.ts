@@ -40,12 +40,12 @@ async function login(email: string, password: string): Promise<Session | null> {
   } catch (e) {
     const i18n = new I18n({
       error404: {
-        'ko-KR': '이메일이나 비밀번호가 잘못되었습니다',
-        'en-US': 'Incorrect email or password',
+        ko: '이메일이나 비밀번호가 잘못되었습니다',
+        en: 'Incorrect email or password',
       },
       error: {
-        'ko-KR': '로그인에 실패했습니다',
-        'en-US': 'Failed to sign in',
+        ko: '로그인에 실패했습니다',
+        en: 'Failed to sign in',
       },
     });
 
@@ -67,8 +67,8 @@ async function logout(): Promise<boolean | null> {
   } catch (e) {
     const i18n = new I18n({
       error: {
-        'ko-KR': '로그아웃에 실패했습니다',
-        'en-US': 'Failed to sign out',
+        ko: '로그아웃에 실패했습니다',
+        en: 'Failed to sign out',
       },
     });
 
@@ -94,8 +94,8 @@ async function setSignUpToken(name: string, email: string, password: string, ava
   } catch (e) {
     const i18n = new I18n({
       error: {
-        'ko-KR': '토큰 설정에 실패했습니다',
-        'en-US': 'Failed to set token',
+        ko: '토큰 설정에 실패했습니다',
+        en: 'Failed to set token',
       },
     });
 

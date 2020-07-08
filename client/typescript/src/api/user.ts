@@ -29,8 +29,8 @@ async function createUser(user_public_key: string, token_key: string, token_pin:
   } catch (e) {
     const i18n = new I18n({
       error: {
-        'ko-KR': '이메일 인증에 실패했습니다',
-        'en-US': 'Failed to verify email',
+        ko: '이메일 인증에 실패했습니다',
+        en: 'Failed to verify email',
       },
     });
 
@@ -54,8 +54,8 @@ async function updateUser(userId: string, password?: string) {
   } catch (e) {
     const i18n = new I18n({
       error: {
-        'ko-KR': '변경에 실패했습니다',
-        'en-US': 'Failed to update',
+        ko: '변경에 실패했습니다',
+        en: 'Failed to update',
       },
     });
 

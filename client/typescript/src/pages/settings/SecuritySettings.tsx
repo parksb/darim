@@ -4,8 +4,8 @@ import styled from "styled-components";
 import * as authApi from '../../api/auth';
 import * as userApi from '../../api/user';
 import { Button, Section, TextField } from '../../components';
-import Secret from "../../utils/secret";
-import I18n from "../../utils/i18n";
+import Secret from '../../utils/secret';
+import I18n from '../../utils/i18n';
 
 enum SaveStatus {
   NONE,
@@ -59,32 +59,32 @@ const SecuritySettings: React.FC<Props> = ({ userId, userEmail }) => {
 
   const i18n = new I18n({
     saveStatusOngoing: {
-      'ko-KR': '저장 중...',
-      'en-US': 'Saving...',
+      ko: '저장 중...',
+      en: 'Saving...',
     },
     saveStatusSuccess: {
-      'ko-KR': '✅ 저장되었습니다!',
-      'en-US': '✅ Saved!',
+      ko: '✅ 저장되었습니다!',
+      en: '✅ Saved!',
     },
     saveStatusFailure: {
-      'ko-KR': '❌ 저장에 실패했습니다',
-      'en-US': '❌ Failed to save',
+      ko: '❌ 저장에 실패했습니다',
+      en: '❌ Failed to save',
     },
     secretKey: {
-      'ko-KR': '비밀키',
-      'en-US': 'Secret key',
+      ko: '비밀키',
+      en: 'Secret key',
     },
     newSecretKey: {
-      'ko-KR': '새 비밀키',
-      'en-US': 'New secret key',
+      ko: '새 비밀키',
+      en: 'New secret key',
     },
     newPassword: {
-      'ko-KR': '새 비밀번호',
-      'en-US': 'New password',
+      ko: '새 비밀번호',
+      en: 'New password',
     },
     oldPassword: {
-      'ko-KR': '기존 비밀번호',
-      'en-US': 'Old password',
+      ko: '기존 비밀번호',
+      en: 'Old password',
     }
   });
 

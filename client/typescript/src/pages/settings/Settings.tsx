@@ -74,16 +74,16 @@ const Settings: React.FC<Props> = ({ sessionState }) => {
 
   const i18n = new I18n({
     profileSettings: {
-      'ko-KR': '프로필 설정',
-      'en-US': 'Profile settings',
+      ko: '프로필 설정',
+      en: 'Profile settings',
     },
     securitySettings: {
-      'ko-KR': '보안 설정',
-      'en-US': 'Security settings',
+      ko: '보안 설정',
+      en: 'Security settings',
     },
     signOut: {
-      'ko-KR': '로그아웃 ↗',
-      'en-US': 'Sign out ↗'
+      ko: '로그아웃 ↗',
+      en: 'Sign out ↗'
     }
   });
 

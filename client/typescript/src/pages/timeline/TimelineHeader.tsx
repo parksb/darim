@@ -23,12 +23,12 @@ const TimelineHeader: React.FC<Props> = ({ viewModeState }) => {
 
   const i18n = new I18n({
     listView: {
-      'ko-KR': '리스트 뷰',
-      'en-US': 'List view',
+      ko: '리스트 뷰',
+      en: 'List view',
     },
     calendarView: {
-      'ko-KR': '캘린더 뷰',
-      'en-US': 'Calendar view',
+      ko: '캘린더 뷰',
+      en: 'Calendar view',
     }
   });
 

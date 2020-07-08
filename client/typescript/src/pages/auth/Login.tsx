@@ -28,16 +28,16 @@ const Login: React.FC<Props> = ({ session_state }) => {
 
   const i18n = new I18n({
     signIn: {
-      'ko-KR': '로그인 ↗',
-      'en-US': 'Sign in ↗',
+      ko: '로그인 ↗',
+      en: 'Sign in ↗',
     },
     signUp: {
-      'ko-KR': '회원가입 ↗',
-      'en-US': 'Create account ↗',
+      ko: '회원가입 ↗',
+      en: 'Create account ↗',
     },
     signing: {
-      'ko-KR': '안전한 암호화 알고리즘으로 로그인 중입니다',
-      'en-US': 'Signing up with secure encryption algorithm',
+      ko: '안전한 암호화 알고리즘으로 로그인 중입니다',
+      en: 'Signing up with secure encryption algorithm',
     },
   });
 
