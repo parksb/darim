@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import styled from "styled-components";
+import styled from 'styled-components';
 
 import * as authApi from '../../api/auth';
 import * as userApi from '../../api/user';
@@ -18,10 +18,6 @@ interface Props {
   userId: string;
   userEmail: string;
 }
-
-const SettingsSection = styled(Section)`
-  margin-bottom: 30px;
-`;
 
 const SectionTitle = styled.h2`
   font-size: 24px;
@@ -137,7 +133,7 @@ const SecuritySettings: React.FC<Props> = ({ userId, userEmail }) => {
   };
 
   return <Section>
-    <SettingsSection>
+    <Section bottom={30}>
       <SectionTitle>{i18n.text('password')}</SectionTitle>
       <FullWidthTextField
         type='password'
@@ -157,8 +153,8 @@ const SecuritySettings: React.FC<Props> = ({ userId, userEmail }) => {
         <NonBorderButton onClick={saveNewPassword}>{i18n.text('save')}</NonBorderButton>
       </Section>
       <SaveStatusText>{getSaveStatusText(newPasswordSaveStatus)}</SaveStatusText>
-    </SettingsSection>
-    <SettingsSection>
+    </Section>
+    <Section bottom={30}>
       <SectionTitle>{i18n.text('secretKey')}</SectionTitle>
       <Section row>
         <FullWidthTextField
@@ -180,7 +176,7 @@ const SecuritySettings: React.FC<Props> = ({ userId, userEmail }) => {
         <NonBorderButton onClick={saveNewPrivateKey}>{i18n.text('save')}</NonBorderButton>
       </Section>
       <SaveStatusText>{getSaveStatusText(newSecretKeySaveStatus)}</SaveStatusText>
-    </SettingsSection>
+    </Section>
   </Section>;
 };
 

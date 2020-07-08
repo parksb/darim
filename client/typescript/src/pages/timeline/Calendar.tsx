@@ -46,7 +46,6 @@ const WeekDay = styled(Section)`
 const MonthControlContainer = styled(Section)`
   align-items: center;
   align-self: center;
-  margin-bottom: 30px;
 `;
 
 const MonthControlButton = styled(Button)`
@@ -161,7 +160,7 @@ const Calendar: React.FC<Props> = ({ session }) => {
   }, [cursorDate]);
 
   return <Container fullWidth fullHeight>
-    <MonthControlContainer row>
+    <MonthControlContainer bottom={30} row>
       <MonthControlButton onClick={() => setCursorDate(cursorDate.subtract(1, 'month'))}>
         ＜
       </MonthControlButton>

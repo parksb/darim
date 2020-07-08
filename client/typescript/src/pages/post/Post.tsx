@@ -57,8 +57,6 @@ const LinkLikeText = styled(SaveStatusText)`
 `;
 
 const ContentViewModeSection = styled(Section)`
-  margin-top: 20px;
-  margin-bottom: 15px;
   justify-content: space-between;
 `;
 
@@ -210,7 +208,7 @@ const Post: React.FC<Props> = ({ session }) => {
       onBlur={({ target: { value } }: { target: { value: string } }) => upsertPost(null, value)}
       onChange={({ target: { value } }: { target: { value: string } }) => setDate(value)}
     />
-    <ContentViewModeSection row>
+    <ContentViewModeSection top={20} bottom={15} row>
       <Section row>
         <SaveStatusText>{getSaveStatusText(saveStatus)}</SaveStatusText>
         {saveStatus === SaveStatus.FAILURE && <LinkLikeText onClick={() => upsertPost(title, date, content)}>{i18n.text('retry')}</LinkLikeText>}

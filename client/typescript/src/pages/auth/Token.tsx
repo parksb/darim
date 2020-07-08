@@ -14,20 +14,11 @@ const FullWidthTextField = styled(TextField)`
 
 const InfoSection = styled(Section)`
   line-height: 150%;
-  margin-bottom: 20px;
 `;
 
 const KeySection = styled(Section)`
   padding: 15px;
   background-color: #f0f0f0;
-`;
-
-const PublicKeySection = styled(KeySection)`
-  margin-top: 20px;
-`;
-
-const PrivateKeySection = styled(KeySection)`
-  margin: 10px 0 20px;
 `;
 
 const CopyButton = styled(Button)`
@@ -110,23 +101,23 @@ const Token: React.FC = () => {
       </Section>
     ) : (
       <>
-        <InfoSection>
-          <PublicKeySection row>
+        <InfoSection bottom={20}>
+          <KeySection top={20} row>
             <a download='darim-public-key.txt' href={getDownloadURLOfTextFile(publicKey)}>
               <Button>{i18n.text('downloadPublicKey')}</Button>
             </a>
             <CopyToClipboard text={publicKey}>
               <CopyButton>{i18n.text('copyPublicKey')}</CopyButton>
             </CopyToClipboard>
-          </PublicKeySection>
-          <PrivateKeySection row>
+          </KeySection>
+          <KeySection top={10} bottom={20} row>
             <a download='darim-secret-key.txt' href={getDownloadURLOfTextFile(privateKey)}>
               <Button>{i18n.text('downloadPrivateKey')}</Button>
             </a>
             <CopyToClipboard text={privateKey}>
               <CopyButton>{i18n.text('copyPrivateKey')}</CopyButton>
             </CopyToClipboard>
-          </PrivateKeySection>
+          </KeySection>
           {i18n.text('notice')}
         </InfoSection>
         <Link to='/'>

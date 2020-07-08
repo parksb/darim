@@ -28,10 +28,6 @@ const ProfileContainer = styled(Section)`
   text-align: center;
 `;
 
-const UserInfoSection = styled(Section)`
-  margin-top: 10px;
-`;
-
 const UserName = styled.h2`
   font-size: 24px;
   font-weight: 700;
@@ -42,10 +38,6 @@ const UserEmail = styled.h3`
   font-size: 16px;
   font-weight: 100;
   color: #a0a0a0;
-`;
-
-const SettingsButtonSection = styled(Section)`
-  margin-top: 30px;
 `;
 
 const SettingsButton = styled(Button)`
@@ -62,10 +54,6 @@ const SecuritySettingsButton = styled(SettingsButton)`
 
 const ButtonLink = styled(Link)`
   display: contents;
-`;
-
-const SettingsSection = styled(Section)`
-  margin-top: 40px;
 `;
 
 const Settings: React.FC<Props> = ({ sessionState }) => {
@@ -97,25 +85,25 @@ const Settings: React.FC<Props> = ({ sessionState }) => {
   return <Section>
     <ProfileContainer>
       <UserAvatar src={session.user_avatar_url} />
-      <UserInfoSection>
+      <Section top={10}>
         <UserName>{session.user_name}</UserName>
         <UserEmail>{session.user_email}</UserEmail>
-      </UserInfoSection>
+      </Section>
     </ProfileContainer>
-    <SettingsButtonSection row>
+    <Section top={30} row>
       <SettingsButton>{i18n.text('profileSettings')}</SettingsButton>
       <ButtonLink to={`${url}/security`}>
         <SecuritySettingsButton>{i18n.text('securitySettings')}</SecuritySettingsButton>
       </ButtonLink>
       <SettingsButton onClick={() => signOut()}>{i18n.text('signOut')}</SettingsButton>
-    </SettingsButtonSection>
-    <SettingsSection>
+    </Section>
+    <Section top={40}>
       <Switch>
         <Route path={`${path}/security`}>
           <SecuritySettings userId={session.user_id || ''} userEmail={session.user_email || ''}  />
         </Route>
       </Switch>
-    </SettingsSection>
+    </Section>
   </Section>;
 };
 
