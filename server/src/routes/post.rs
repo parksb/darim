@@ -1,9 +1,8 @@
 use actix_session::Session;
 use actix_web::{delete, get, patch, post, web, Responder};
 
-use crate::models::error::*;
-use crate::models::post::*;
-use crate::services::post;
+use crate::models::{post::*, error::*};
+use crate::services::post::PostService;
 use crate::utils::{http_util, session_util};
 
 /// Responds a post written by logged-in user
@@ -33,7 +32,7 @@ use crate::utils::{http_util, session_util};
 /// ```
 pub fn get_post(session: Session, id: web::Path<u64>) -> impl Responder {
     let response = if let Some(user_session) = session_util::get_session(&session) {
-        post::get(user_session.user_id, id.into_inner())
+        PostService::get(user_session.user_id, id.into_inner())
     } else {
         Err(ServiceError::Unauthorized)
     };
@@ -76,7 +75,7 @@ pub fn get_post(session: Session, id: web::Path<u64>) -> impl Responder {
 /// ```
 pub fn get_posts(session: Session) -> impl Responder {
     let response = if let Some(user_session) = session_util::get_session(&session) {
-        post::get_list(user_session.user_id)
+        PostService::get_list(user_session.user_id)
     } else {
         Err(ServiceError::Unauthorized)
     };
@@ -114,7 +113,7 @@ pub fn get_posts(session: Session) -> impl Responder {
 /// ```
 pub fn create_post(session: Session, post: web::Json<CreateArgs>) -> impl Responder {
     let response = if let Some(user_session) = session_util::get_session(&session) {
-        post::create(user_session.user_id, post.into_inner())
+        PostService::create(user_session.user_id, post.into_inner())
     } else {
         Err(ServiceError::Unauthorized)
     };
@@ -140,7 +139,7 @@ pub fn create_post(session: Session, post: web::Json<CreateArgs>) -> impl Respon
 /// ```
 pub fn delete_post(session: Session, id: web::Path<u64>) -> impl Responder {
     let response = if let Some(user_session) = session_util::get_session(&session) {
-        post::delete(id.into_inner(), user_session.user_id)
+        PostService::delete(id.into_inner(), user_session.user_id)
     } else {
         Err(ServiceError::Unauthorized)
     };
@@ -180,7 +179,7 @@ pub fn update_post(
     args: web::Json<UpdateArgs>,
 ) -> impl Responder {
     let response = if let Some(user_session) = session_util::get_session(&session) {
-        post::update(id.into_inner(), user_session.user_id, args.into_inner())
+        PostService::update(id.into_inner(), user_session.user_id, args.into_inner())
     } else {
         Err(ServiceError::Unauthorized)
     };

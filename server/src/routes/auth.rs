@@ -2,7 +2,7 @@ use actix_session::Session;
 use actix_web::{get, post, web, Responder};
 
 use crate::models::{auth::*, error::*};
-use crate::services::auth;
+use crate::services::auth::AuthService;
 use crate::utils::{http_util, session_util};
 
 /// Responds auth information as user session.
@@ -68,7 +68,7 @@ pub fn get_auth(session: Session) -> impl Responder {
 /// }
 /// ```
 pub fn set_sign_up_token(args: web::Json<SetSignUpTokenArgs>) -> impl Responder {
-    let response = auth::set_sign_up_token(args.into_inner());
+    let response = AuthService::set_sign_up_token(args.into_inner());
     http_util::get_response::<bool>(response)
 }
 
@@ -105,7 +105,7 @@ pub fn set_sign_up_token(args: web::Json<SetSignUpTokenArgs>) -> impl Responder 
 /// }
 /// ```
 pub fn login(mut session: Session, args: web::Json<LoginArgs>) -> impl Responder {
-    let user_session = auth::login(args.into_inner());
+    let user_session = AuthService::login(args.into_inner());
 
     match user_session {
         Ok(response) => {

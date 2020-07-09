@@ -1,9 +1,8 @@
 use actix_session::Session;
 use actix_web::{delete, patch, post, web, Responder};
 
-use crate::models::error::*;
-use crate::models::user::*;
-use crate::services::user;
+use crate::models::{user::*, error::*};
+use crate::services::user::UserService;
 use crate::utils::{http_util, session_util};
 
 /// Creates a new user
@@ -37,7 +36,7 @@ use crate::utils::{http_util, session_util};
 /// }
 /// ```
 pub fn create_user(args: web::Json<CreateArgs>) -> impl Responder {
-    let response = user::create(args.into_inner());
+    let response = UserService::create(args.into_inner());
     http_util::get_response::<bool>(response)
 }
 
@@ -63,7 +62,7 @@ pub fn delete_user(session: Session, id: web::Path<u64>) -> impl Responder {
         if id_in_path != user_session.user_id {
             Err(ServiceError::Unauthorized)
         } else {
-            user::delete(id_in_path)
+            UserService::delete(id_in_path)
         }
     } else {
         Err(ServiceError::Unauthorized)
@@ -112,7 +111,7 @@ pub fn update_user(
         if id_in_path != user_session.user_id {
             Err(ServiceError::Unauthorized)
         } else {
-            user::update(id_in_path, user.into_inner())
+            UserService::update(id_in_path, user.into_inner())
         }
     } else {
         Err(ServiceError::Unauthorized)
