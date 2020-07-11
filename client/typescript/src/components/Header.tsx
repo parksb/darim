@@ -2,8 +2,8 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import styled from 'styled-components';
 
-import { Session } from "../models";
-import I18n from "../utils/i18n";
+import { Session } from '../models';
+import I18n from '../utils/i18n';
 
 interface Props {
   session: Session | null;

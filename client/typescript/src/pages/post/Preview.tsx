@@ -1,6 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
-import MarkdownIt from "markdown-it";
+import MarkdownIt from 'markdown-it';
 
 interface Props {
   content: string;

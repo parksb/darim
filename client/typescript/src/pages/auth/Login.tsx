@@ -5,7 +5,7 @@ import styled from 'styled-components';
 import * as api from '../../api/auth';
 import { TextField, Button, Container, LoadingDots } from '../../components';
 import { Session } from '../../models';
-import I18n from "../../utils/i18n";
+import I18n from '../../utils/i18n';
 
 interface Props {
   session_state: [Session | null, React.Dispatch<React.SetStateAction<Session | null>>]

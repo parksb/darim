@@ -1,10 +1,10 @@
 import React from 'react';
-import { Link } from "react-router-dom";
+import { Link } from 'react-router-dom';
 import styled from 'styled-components';
 import dayjs from 'dayjs';
 
 import { Post } from '../../models';
-import { Button, Section } from "../../components";
+import { Button, Section } from '../../components';
 
 interface Props {
   posts?: Post[];

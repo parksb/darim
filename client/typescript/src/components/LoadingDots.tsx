@@ -1,4 +1,4 @@
-import styled from "styled-components";
+import styled from 'styled-components';
 
 // Component borrowed from dmitrizzle
 // https://gist.github.com/dmitrizzle/5883ca1f72f34398155eb2bc1d0ccfc6

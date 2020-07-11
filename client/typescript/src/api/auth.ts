@@ -1,7 +1,7 @@
 import SHA3 from 'crypto-js/sha3';
 
 import Http from '../utils/http';
-import I18n from "../utils/i18n";
+import I18n from '../utils/i18n';
 import { Session } from '../models';
 
 interface LoginBody {

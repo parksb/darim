@@ -1,7 +1,7 @@
 import SHA3 from 'crypto-js/sha3';
 
 import Http from '../utils/http';
-import I18n from "../utils/i18n";
+import I18n from '../utils/i18n';
 
 interface CreateUserBody {
   user_public_key: string;
@@ -40,7 +40,7 @@ async function createUser(user_public_key: string, token_key: string, token_pin:
   return null;
 }
 
-async function updateUser(userId: string, password?: string) {
+async function updateUser(userId: string, password?: string): Promise<boolean | null> {
   const url = `${Http.baseUrl}/users/${userId}`;
 
   const body: UpdateUserBody = {};
@@ -61,6 +61,8 @@ async function updateUser(userId: string, password?: string) {
 
     alert(i18n.text('error'));
   }
+
+  return null;
 }
 
 export { createUser, updateUser };

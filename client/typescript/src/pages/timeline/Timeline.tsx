@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-import Calendar from "./Calendar";
+import Calendar from './Calendar';
 import List from './List';
 import TimelineHeader from './TimelineHeader';
 import { Session } from '../../models';

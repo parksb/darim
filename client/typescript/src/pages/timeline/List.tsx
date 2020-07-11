@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import * as api from '../../api/post';
 import ListItem from './ListItem';
 import { Post, Session } from '../../models';
-import { Container } from "../../components";
+import { Container } from '../../components';
 
 interface Props {
   session: Session | null;

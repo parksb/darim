@@ -2,7 +2,7 @@ import React, { ChangeEventHandler, FocusEventHandler } from 'react';
 import styled from 'styled-components';
 import TextareaAutosize from 'react-textarea-autosize';
 
-import I18n from "../../utils/i18n";
+import I18n from '../../utils/i18n';
 
 interface Props {
   content: string;

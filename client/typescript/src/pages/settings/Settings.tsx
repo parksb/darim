@@ -1,12 +1,12 @@
 import React from 'react';
 import styled from 'styled-components';
-import { Switch, Route, Link, useRouteMatch } from "react-router-dom";
+import { Switch, Route, Link, useRouteMatch } from 'react-router-dom';
 
 import * as api from '../../api/auth';
 import { Button, Section } from '../../components';
 import { Session } from '../../models';
-import SecuritySettings from "./SecuritySettings";
-import I18n from "../../utils/i18n";
+import SecuritySettings from './SecuritySettings';
+import I18n from '../../utils/i18n';
 
 interface Props {
   sessionState: [Session, React.Dispatch<React.SetStateAction<Session | null>>]
