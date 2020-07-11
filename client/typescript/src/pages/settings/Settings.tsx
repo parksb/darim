@@ -103,7 +103,7 @@ const Settings: React.FC<Props> = ({ sessionState }) => {
     <Section top={40}>
       <Switch>
         <Route path={`${path}/profile`}>
-          <ProfileSettings userId={session.user_id || ''}/>
+          <ProfileSettings userId={session.user_id || ''} setSession={setSession}/>
         </Route>
         <Route path={`${path}/security`}>
           <SecuritySettings userId={session.user_id || ''} userEmail={session.user_email || ''}  />

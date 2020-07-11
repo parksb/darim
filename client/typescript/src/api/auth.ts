@@ -26,6 +26,16 @@ async function fetchSession(): Promise<Session | null> {
   }
 }
 
+async function refreshSession(): Promise<Session | null> {
+  const url = `${Http.baseUrl}/auth`;
+
+  try {
+    return await Http.postWithoutBody<Session>(url);
+  } catch (e) { /**/ }
+
+  return null;
+}
+
 async function login(email: string, password: string): Promise<Session | null> {
   const url = `${Http.baseUrl}/auth/login`;
   const hashedPassword = SHA3(password, { outputLength: 512 }).toString();
@@ -105,4 +115,4 @@ async function setSignUpToken(name: string, email: string, password: string, ava
   return null;
 }
 
-export { fetchSession, login, logout, setSignUpToken };
+export { fetchSession, refreshSession, login, logout, setSignUpToken };

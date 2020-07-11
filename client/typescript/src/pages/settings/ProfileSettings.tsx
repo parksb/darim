@@ -1,13 +1,16 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
 
-import * as api from '../../api/user';
+import * as userApi from '../../api/user';
+import * as authApi from '../../api/auth';
 import { Button, Section, TextField } from '../../components';
 import I18n from '../../utils/i18n';
 import { SaveStatus, getSaveStatusText } from '../../utils/status';
+import { Session } from '../../models';
 
 interface Props {
   userId: string;
+  setSession: React.Dispatch<React.SetStateAction<Session | null>>;
 }
 
 const SectionTitle = styled.h2`
@@ -27,7 +30,7 @@ const SaveStatusText = styled.span`
   color: #c0c0c0;
 `;
 
-const ProfileSettings: React.FC<Props> = ({ userId }) => {
+const ProfileSettings: React.FC<Props> = ({ userId, setSession }) => {
   const [newName, setNewName] = useState('');
   const [newAvatar, setNewAvatar] = useState('');
 
@@ -45,13 +48,23 @@ const ProfileSettings: React.FC<Props> = ({ userId }) => {
     },
   });
 
+  const refreshSession = async () => {
+    const refreshedSession = await authApi.refreshSession();
+    if (refreshedSession) {
+      setSession(refreshedSession);
+      return true;
+    } else {
+      return false;
+    }
+  };
+
   const saveNewName = async () => {
     setNewNameSaveStatus(SaveStatus.ONGOING);
-    const result = await api.updateUser(userId, undefined, newName);
+    const result = await userApi.updateUser(userId, undefined, newName);
 
     setNewName('');
 
-    if (result) {
+    if (result && await refreshSession()) {
       setNewNameSaveStatus(SaveStatus.SUCCESS);
     } else {
       setNewNameSaveStatus(SaveStatus.FAILURE);
@@ -60,11 +73,11 @@ const ProfileSettings: React.FC<Props> = ({ userId }) => {
 
   const saveNewAvatar = async () => {
     setNewAvatarSaveStatus(SaveStatus.ONGOING);
-    const result = await api.updateUser(userId, undefined, undefined, newAvatar);
+    const result = await userApi.updateUser(userId, undefined, undefined, newAvatar);
 
     setNewAvatar('');
 
-    if (result) {
+    if (result && await refreshSession()) {
       setNewAvatarSaveStatus(SaveStatus.SUCCESS);
     } else {
       setNewAvatarSaveStatus(SaveStatus.FAILURE);
