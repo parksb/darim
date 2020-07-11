@@ -26,7 +26,8 @@ impl AuthRoute {
     ///         "user_email": "park@email.com"
     ///         "user_name": "park",
     ///         "user_avatar_url": "avatar.jpg"
-    ///     }
+    ///     },
+    ///     "error": null
     /// }
     /// ```
     pub fn get_auth(session: Session) -> impl Responder {
@@ -37,6 +38,32 @@ impl AuthRoute {
         } else {
             http_util::get_response::<UserSession>(Err(ServiceError::Unauthorized))
         }
+    }
+
+   /// Refresh auth information as user session.
+   ///
+   /// # Request
+   ///
+   /// ```text
+   /// POST /auth
+   /// ```
+   ///
+   /// # Response
+   ///
+   /// ```json
+   /// {
+   ///     "data": {
+   ///         "user_id": 0,
+   //         "user_email": "park@email.com"
+   ///        "user_name": "park",
+   ///        "user_avatar_url": "avatar.jpg"
+   ///     },
+   ///     "error": null
+   /// }
+   /// ```
+    pub fn refresh_auth(session: Session) -> impl Responder {
+        let user_session = AuthService::refresh_user_session(session);
+       http_util::get_response::<UserSession>(user_session)
     }
 
     /// Sets token to create user.
@@ -169,6 +196,11 @@ pub async fn get_auth_route(session: Session) -> impl Responder {
     AuthRoute::get_auth(session)
 }
 
+#[post("/auth")]
+pub async fn refresh_session_route(session: Session) -> impl Responder {
+    AuthRoute::refresh_auth(session)
+}
+
 #[post("/auth/token")]
 pub async fn set_sign_up_token_route(args: web::Json<SetSignUpTokenArgs>) -> impl Responder {
     AuthRoute::set_sign_up_token(args)
@@ -187,6 +219,7 @@ pub async fn logout_route(session: Session) -> impl Responder {
 /// Initializes the auth routes.
 pub fn init_routes(cfg: &mut web::ServiceConfig) {
     cfg.service(set_sign_up_token_route);
+    cfg.service(refresh_session_route);
     cfg.service(get_auth_route);
     cfg.service(login_route);
     cfg.service(logout_route);

@@ -1,10 +1,11 @@
+use actix_session::Session;
 use diesel::result::Error;
 use rand::{distributions::Alphanumeric, thread_rng, Rng};
 
 use crate::models::error::{get_service_error, ServiceError};
 use crate::models::user_key::UserKeyRepository;
 use crate::models::{auth::*, user::*};
-use crate::utils::password_util;
+use crate::utils::{password_util, session_util};
 
 pub struct AuthService {}
 
@@ -61,6 +62,39 @@ impl AuthService {
         };
 
         Ok(logged_in_user_session)
+    }
+
+    /// Refreshes the user session.
+    pub fn refresh_user_session(mut session: Session) -> Result<UserSession, ServiceError> {
+        let user_session = session_util::get_session(&session);
+
+        if let Some(user_session) = user_session {
+            let user = {
+                let user_repository = UserRepository::new();
+                user_repository.find_by_id(user_session.user_id)
+            };
+
+            if let Ok(user) = user {
+                session_util::set_session(
+                    &mut session,
+                    user_session.user_id,
+                    &user_session.user_email,
+                    &user.name,
+                    &user_session.user_public_key,
+                    &user.avatar_url,
+                );
+
+                if let Some(refreshed_user_session) = session_util::get_session(&session) {
+                    Ok(refreshed_user_session)
+                } else {
+                    Err(get_service_error(ServiceError::Unauthorized))
+                }
+            } else {
+                Err(get_service_error(ServiceError::UserNotFound(user_session.user_id.to_string())))
+            }
+        } else {
+            Err(get_service_error(ServiceError::Unauthorized))
+        }
     }
 
     /// Sets token for sign up process.

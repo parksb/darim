@@ -33,6 +33,9 @@ pub enum ServiceError {
 
     #[error("internal server error")]
     InternalServerError,
+
+    #[error("user for id `{0}` not found")]
+    UserNotFound(String),
 }
 
 /// Logs and returns service error passed by parameter.
