@@ -9,16 +9,10 @@ import { Container, Section, TextField } from '../../components';
 import Editor from './Editor';
 import Preview from './Preview';
 import I18n from '../../utils/i18n';
+import { SaveStatus, getSaveStatusText } from '../../utils/status';
 
 interface Props {
   session: Session | null;
-}
-
-enum SaveStatus {
-  NONE,
-  FAILURE,
-  SUCCESS,
-  ONGOING,
 }
 
 enum ContentViewMode {
@@ -79,18 +73,6 @@ const Post: React.FC<Props> = ({ session }) => {
       ko: '제목',
       en: 'Title',
     },
-    saveStatusOngoing: {
-      ko: '저장 중...',
-      en: 'Saving...',
-    },
-    saveStatusSuccess: {
-      ko: '✅ 저장되었습니다!',
-      en: '✅ Saved!',
-    },
-    saveStatusFailure: {
-      ko: '❌ 저장에 실패했습니다',
-      en: '❌ Failed to save',
-    },
     retry: {
       ko: '재시도',
       en: 'Retry',
@@ -105,7 +87,7 @@ const Post: React.FC<Props> = ({ session }) => {
     },
   });
 
-  const getFormattedDate = (date?: string, withTime: boolean = false) => {
+  const getFormattedDate = (date?: string, withTime = false) => {
     const format = withTime ? 'YYYY-MM-DDT00:00:00' : 'YYYY-MM-DD';
     if (date) {
       return dayjs(date).format(format);
@@ -170,19 +152,6 @@ const Post: React.FC<Props> = ({ session }) => {
           setSaveStatus(SaveStatus.FAILURE);
         }
       }
-    }
-  };
-
-  const getSaveStatusText = (status: SaveStatus) => {
-    switch (status) {
-      case SaveStatus.FAILURE:
-        return i18n.text('saveStatusFailure');
-      case SaveStatus.SUCCESS:
-        return i18n.text('saveStatusSuccess');
-      case SaveStatus.ONGOING:
-        return i18n.text('saveStatusOngoing');
-      default:
-        return '';
     }
   };
 

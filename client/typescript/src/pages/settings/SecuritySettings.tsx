@@ -6,13 +6,7 @@ import * as userApi from '../../api/user';
 import { Button, Section, TextField } from '../../components';
 import Secret from '../../utils/secret';
 import I18n from '../../utils/i18n';
-
-enum SaveStatus {
-  NONE,
-  FAILURE,
-  SUCCESS,
-  ONGOING,
-}
+import { SaveStatus, getSaveStatusText } from '../../utils/status';
 
 interface Props {
   userId: string;
@@ -54,18 +48,6 @@ const SecuritySettings: React.FC<Props> = ({ userId, userEmail }) => {
   const [newPasswordPassword, setNewPasswordPassword] = useState('');
 
   const i18n = new I18n({
-    saveStatusOngoing: {
-      ko: '저장 중...',
-      en: 'Saving...',
-    },
-    saveStatusSuccess: {
-      ko: '✅ 저장되었습니다!',
-      en: '✅ Saved!',
-    },
-    saveStatusFailure: {
-      ko: '❌ 저장에 실패했습니다',
-      en: '❌ Failed to save',
-    },
     secretKey: {
       ko: '비밀키',
       en: 'Secret key',
@@ -83,19 +65,6 @@ const SecuritySettings: React.FC<Props> = ({ userId, userEmail }) => {
       en: 'Old password',
     }
   });
-
-  const getSaveStatusText = (status: SaveStatus) => {
-    switch (status) {
-      case SaveStatus.FAILURE:
-        return i18n.text('saveStatusFailure');
-      case SaveStatus.SUCCESS:
-        return i18n.text('saveStatusSuccess');
-      case SaveStatus.ONGOING:
-        return i18n.text('saveStatusOngoing');
-      default:
-        return '';
-    }
-  };
 
   const saveNewPrivateKey = async () => {
     setNewSecretKeySaveStatus(SaveStatus.ONGOING);
