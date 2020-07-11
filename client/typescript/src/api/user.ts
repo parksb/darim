@@ -40,14 +40,14 @@ async function createUser(user_public_key: string, token_key: string, token_pin:
   return null;
 }
 
-async function updateUser(userId: string, password?: string): Promise<boolean | null> {
+async function updateUser(userId: string, password?: string, name?: string, avatar?: string): Promise<boolean | null> {
   const url = `${Http.baseUrl}/users/${userId}`;
 
-  const body: UpdateUserBody = {};
-
-  if (password) {
-    body.password = SHA3(password, { outputLength: 512 }).toString();
-  }
+  const body: UpdateUserBody = {
+    password: password ? SHA3(password, { outputLength: 512 }).toString() : undefined,
+    name: name,
+    avatar_url: avatar,
+  };
 
   try {
     return await Http.patch<UpdateUserBody, boolean>(url, body);

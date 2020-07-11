@@ -1,10 +1,11 @@
 import React from 'react';
 import styled from 'styled-components';
-import { Switch, Route, Link, useRouteMatch } from 'react-router-dom';
+import { Redirect, Switch, Route, Link, useRouteMatch } from 'react-router-dom';
 
 import * as api from '../../api/auth';
-import { Button, Section } from '../../components';
+import { Tab, Section } from '../../components';
 import { Session } from '../../models';
+import ProfileSettings from './ProfileSettings';
 import SecuritySettings from './SecuritySettings';
 import I18n from '../../utils/i18n';
 
@@ -40,15 +41,15 @@ const UserEmail = styled.h3`
   color: #a0a0a0;
 `;
 
-const SettingsButton = styled(Button)`
+const SettingsTab = styled(Tab)`
   flex: 3;
-
-   &:nth-child(n+2) {
-    border-left: 0;
-  }
 `;
 
-const SecuritySettingsButton = styled(SettingsButton)`
+const SecuritySettingsTab = styled(SettingsTab)`
+  border-left: 0;
+`;
+
+const SignOutTab = styled(SettingsTab)`
   border-left: 0;
 `;
 
@@ -91,17 +92,23 @@ const Settings: React.FC<Props> = ({ sessionState }) => {
       </Section>
     </ProfileContainer>
     <Section top={30} row>
-      <SettingsButton>{i18n.text('profileSettings')}</SettingsButton>
-      <ButtonLink to={`${url}/security`}>
-        <SecuritySettingsButton>{i18n.text('securitySettings')}</SecuritySettingsButton>
+      <ButtonLink to={`${url}/profile`}>
+        <SettingsTab>{i18n.text('profileSettings')}</SettingsTab>
       </ButtonLink>
-      <SettingsButton onClick={() => signOut()}>{i18n.text('signOut')}</SettingsButton>
+      <ButtonLink to={`${url}/security`}>
+        <SecuritySettingsTab>{i18n.text('securitySettings')}</SecuritySettingsTab>
+      </ButtonLink>
+      <SignOutTab onClick={() => signOut()}>{i18n.text('signOut')}</SignOutTab>
     </Section>
     <Section top={40}>
       <Switch>
+        <Route path={`${path}/profile`}>
+          <ProfileSettings userId={session.user_id || ''}/>
+        </Route>
         <Route path={`${path}/security`}>
           <SecuritySettings userId={session.user_id || ''} userEmail={session.user_email || ''}  />
         </Route>
+        <Redirect to={`${path}/profile`} />
       </Switch>
     </Section>
   </Section>;
