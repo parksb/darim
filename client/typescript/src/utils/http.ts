@@ -1,5 +1,6 @@
 interface ResponseData<T> {
-  data: T;
+  data: T | null;
+  error: string | null;
 }
 
 enum HttpMethods {
@@ -27,11 +28,12 @@ class Http {
       credentials: 'include',
     });
 
-    if (rawResponse.status !== 200) {
+    const response: ResponseData<T> = await rawResponse.json();
+
+    if (!response.data) {
       throw new Error(rawResponse.status.toString());
     }
 
-    const response: ResponseData<T> = await rawResponse.json();
     return response.data;
   }
 
