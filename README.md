@@ -4,9 +4,10 @@
 [![Server CI](https://github.com/ParkSB/darim/workflows/Server%20CI/badge.svg)](https://github.com/ParkSB/darim/actions?query=workflow%3A%22Server+CI%22)
 
 * Darim: Diary Improved
-* A personal diary service that supports calendar view and markdown syntax.
+* Darim is a personal diary service that supports encryption, calendar view, and markdown syntax.
+* You can keep your diary a secret even from the developer through client-side encryption.
 
-![Preview](https://user-images.githubusercontent.com/6410412/85219561-e805e200-b3df-11ea-964e-e444f6ada7fa.png)
+![Preview](https://user-images.githubusercontent.com/6410412/87238882-579d4900-c443-11ea-8e81-267b3243237c.png)
 
 ## Architecture
 

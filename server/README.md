@@ -6,7 +6,9 @@
 * [thecloudmaker/actix_tutorials](https://github.com/thecloudmaker/actix_tutorials)
 * [actix/examples](https://github.com/actix/examples)
 * [diesel.rs](http://diesel.rs/)
+* [Rust Crypto](https://github.com/RustCrypto)
 * [Yoshua Wuyts, "Error Handling Survey", 2019](https://blog.yoshuawuyts.com/error-handling-survey/)
+* Ji-soo Kim, Jong-sub Moon, “A Study on Data Security of Web Local Storage”, _JICS_, vol.17, no. 3, pp. 55-66, Jun, 2016
 
 ```
 +----------------------------------+
