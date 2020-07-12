@@ -1,7 +1,7 @@
 use actix_session::Session;
 use actix_web::{delete, get, patch, post, web, Responder};
 
-use crate::models::{post::*, error::*};
+use crate::models::{error::*, post::*};
 use crate::services::post::PostService;
 use crate::utils::{http_util, session_util};
 

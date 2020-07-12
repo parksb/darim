@@ -4,13 +4,14 @@ use actix_web::{get, App, HttpResponse, HttpServer, Responder};
 use std::collections::HashMap;
 use std::env;
 
+use chrono::Duration;
 use darim::routes;
 
 /// Health check
 #[get("/")]
 async fn health_check() -> impl Responder {
     let mut response = HashMap::new();
-    response.insert("version", format!("{}", env!("CARGO_PKG_VERSION")));
+    response.insert("version", env!("CARGO_PKG_VERSION"));
     HttpResponse::Ok().json(response)
 }
 
@@ -22,7 +23,12 @@ async fn main() -> std::io::Result<()> {
     HttpServer::new(move || {
         App::new()
             .wrap(Cors::new().supports_credentials().finish())
-            .wrap(CookieSession::signed(&[0; 32]).secure(false))
+            .wrap(
+                CookieSession::signed(&[0; 64])
+                    .secure(false) // It should be `true` in production.
+                    .http_only(true)
+                    .max_age_time(Duration::days(30)),
+            )
             .service(health_check)
             .configure(routes::post::init_routes)
             .configure(routes::user::init_routes)

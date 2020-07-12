@@ -90,7 +90,9 @@ impl AuthService {
                     Err(get_service_error(ServiceError::Unauthorized))
                 }
             } else {
-                Err(get_service_error(ServiceError::UserNotFound(user_session.user_id.to_string())))
+                Err(get_service_error(ServiceError::UserNotFound(
+                    user_session.user_id.to_string(),
+                )))
             }
         } else {
             Err(get_service_error(ServiceError::Unauthorized))

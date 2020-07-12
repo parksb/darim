@@ -40,30 +40,30 @@ impl AuthRoute {
         }
     }
 
-   /// Refresh auth information as user session.
-   ///
-   /// # Request
-   ///
-   /// ```text
-   /// POST /auth
-   /// ```
-   ///
-   /// # Response
-   ///
-   /// ```json
-   /// {
-   ///     "data": {
-   ///         "user_id": 0,
-   //         "user_email": "park@email.com"
-   ///        "user_name": "park",
-   ///        "user_avatar_url": "avatar.jpg"
-   ///     },
-   ///     "error": null
-   /// }
-   /// ```
+    /// Refresh auth information as user session.
+    ///
+    /// # Request
+    ///
+    /// ```text
+    /// POST /auth
+    /// ```
+    ///
+    /// # Response
+    ///
+    /// ```json
+    /// {
+    ///     "data": {
+    ///         "user_id": 0,
+    //         "user_email": "park@email.com"
+    ///        "user_name": "park",
+    ///        "user_avatar_url": "avatar.jpg"
+    ///     },
+    ///     "error": null
+    /// }
+    /// ```
     pub fn refresh_auth(session: Session) -> impl Responder {
         let user_session = AuthService::refresh_user_session(session);
-       http_util::get_response::<UserSession>(user_session)
+        http_util::get_response::<UserSession>(user_session)
     }
 
     /// Sets token to create user.
