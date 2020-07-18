@@ -53,41 +53,25 @@ pub fn unset_session(session: &mut Session) {
 /// * `session` - An session object
 pub fn get_session(session: &Session) -> Option<UserSession> {
     let user_id = if let Ok(id) = session.get::<u64>("user_id") {
-        if let Some(id) = id {
-            id
-        } else {
-            return None;
-        }
+        id?
     } else {
         return None;
     };
 
     let user_email = if let Ok(email) = session.get::<String>("user_email") {
-        if let Some(email) = email {
-            email
-        } else {
-            return None;
-        }
+        email?
     } else {
         return None;
     };
 
     let user_name = if let Ok(name) = session.get::<String>("user_name") {
-        if let Some(name) = name {
-            name
-        } else {
-            return None;
-        }
+        name?
     } else {
         return None;
     };
 
     let user_public_key = if let Ok(public_key) = session.get::<String>("user_public_key") {
-        if let Some(public_key) = public_key {
-            public_key
-        } else {
-            return None;
-        }
+        public_key?
     } else {
         return None;
     };
