@@ -1,6 +1,8 @@
 use diesel::result::Error;
 
-use crate::models::auth::{SignUpToken, SignUpTokenRepository};
+use crate::models::auth::{
+    PasswordToken, PasswordTokenRepository, SignUpToken, SignUpTokenRepository,
+};
 use crate::models::error::{get_service_error, ServiceError};
 use crate::models::user::*;
 use crate::models::user_key::UserKeyRepository;
@@ -182,6 +184,49 @@ impl UserService {
             }
         } else {
             Err(get_service_error(ServiceError::QueryExecutionFailure))
+        }
+    }
+
+    // Reset the password.
+    pub fn reset_password(args: ResetPasswordArgs) -> Result<bool, ServiceError> {
+        let user_repository = UserRepository::new();
+        let user = if let Ok(user) = user_repository.find_by_email(&args.email) {
+            user
+        } else {
+            return Err(get_service_error(ServiceError::UserNotFound(args.email)));
+        };
+
+        let mut token_repository = PasswordTokenRepository::new(user.id);
+        let token: PasswordToken = {
+            if let Ok(serialized_token) = token_repository.find() {
+                if let Ok(deserialized_token) = serde_json::from_str(&serialized_token) {
+                    deserialized_token
+                } else {
+                    return Err(get_service_error(ServiceError::InvalidFormat));
+                }
+            } else {
+                return Err(get_service_error(ServiceError::NotFound(
+                    user.id.to_string(),
+                )));
+            }
+        };
+
+        if token.id == args.token_id && token.password == args.temporary_password {
+            let hashed_password = password_util::get_hashed_password(&args.new_password);
+            if let Ok(count_updated) =
+                user_repository.update(user.id, &None, &Some(hashed_password), &None)
+            {
+                if count_updated > 0 {
+                    let _ = token_repository.delete();
+                    Ok(true)
+                } else {
+                    Err(get_service_error(ServiceError::QueryExecutionFailure))
+                }
+            } else {
+                Err(get_service_error(ServiceError::UserNotFound(args.email)))
+            }
+        } else {
+            Err(get_service_error(ServiceError::Unauthorized))
         }
     }
 }

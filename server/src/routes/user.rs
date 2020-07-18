@@ -123,6 +123,43 @@ impl UserRoute {
 
         http_util::get_response::<bool>(response)
     }
+
+    /// Resets the password.
+    ///
+    /// # Request
+    ///
+    /// ```text
+    /// POST /users/password
+    /// ```
+    ///
+    /// ## Parameters
+    ///
+    /// * email - An email of the user.
+    /// * token_id - A password token ID.
+    /// * temporary_password - A temporary password.
+    /// * new_password - A new password.
+    ///
+    /// ```json
+    /// {
+    ///     "email": "park@email.com",
+    ///     "token_id": "d63ee429",
+    ///     "temporary_password": "P9d82Jc5",
+    ///     "new_password": "71I3Qz9u"
+    /// }
+    /// ```
+    ///
+    /// # Response
+    ///
+    /// ```json
+    /// {
+    ///     "data": true,
+    ///     "error": null
+    /// }
+    /// ```
+    pub fn reset_password(args: web::Json<ResetPasswordArgs>) -> impl Responder {
+        let response = UserService::reset_password(args.into_inner());
+        http_util::get_response::<bool>(response)
+    }
 }
 
 #[post("/users")]
@@ -144,9 +181,15 @@ pub async fn update_user_route(
     UserRoute::update_user(session, id, user)
 }
 
+#[post("/users/password")]
+pub async fn reset_password_route(args: web::Json<ResetPasswordArgs>) -> impl Responder {
+    UserRoute::reset_password(args)
+}
+
 /// Initializes the user routes.
 pub fn init_routes(cfg: &mut web::ServiceConfig) {
     cfg.service(create_user_route);
     cfg.service(delete_user_route);
     cfg.service(update_user_route);
+    cfg.service(reset_password_route);
 }

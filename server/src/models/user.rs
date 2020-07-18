@@ -34,6 +34,15 @@ pub struct UpdateArgs {
     pub avatar_url: Option<String>,
 }
 
+/// Arguments for `POST /users/password` API.
+#[derive(Serialize, Deserialize)]
+pub struct ResetPasswordArgs {
+    pub email: String,
+    pub token_id: String,
+    pub temporary_password: String,
+    pub new_password: String,
+}
+
 /// User DTO using between routes layer and service layer.
 #[derive(Serialize, Deserialize)]
 pub struct UserDTO {

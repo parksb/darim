@@ -126,7 +126,9 @@ impl PasswordTokenRepository {
     pub fn save(&mut self, serialized_token: &str) -> Result<bool, RedisError> {
         let ttl_seconds = 180; // 3 min
 
-        let _ = self.client.set::<&str, &str, _>(&self.key, &serialized_token)?;
+        let _ = self
+            .client
+            .set::<&str, &str, _>(&self.key, &serialized_token)?;
         let _ = self.client.expire::<&str, _>(&self.key, ttl_seconds)?;
 
         Ok(true)

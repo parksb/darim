@@ -152,7 +152,7 @@ impl AuthService {
             }
         };
 
-         let token = PasswordToken {
+        let token = PasswordToken {
             id: thread_rng().sample_iter(&Alphanumeric).take(32).collect(),
             password: thread_rng().sample_iter(&Alphanumeric).take(512).collect(),
         };
@@ -162,14 +162,14 @@ impl AuthService {
             serialized_token
         } else {
             return Err(get_service_error(ServiceError::InvalidFormat));
-        };       
-
-        let result = {
-          let mut token_repository = PasswordTokenRepository::new(user.id);
-          token_repository.save(&serialized_token)
         };
 
-         match result {
+        let result = {
+            let mut token_repository = PasswordTokenRepository::new(user.id);
+            token_repository.save(&serialized_token)
+        };
+
+        match result {
             Ok(_) => Ok(true),
             Err(_) => Err(get_service_error(ServiceError::QueryExecutionFailure)),
         }
