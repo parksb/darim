@@ -20,6 +20,12 @@ pub struct SetSignUpTokenArgs {
     pub avatar_url: Option<String>,
 }
 
+/// Arguments for `POST /auth/token/password` API.
+#[derive(Serialize, Deserialize)]
+pub struct SetPasswordTokenArgs {
+    pub email: String,
+}
+
 /// Session containing information of the logged-in user.
 #[derive(Serialize, Deserialize)]
 pub struct UserSession {
@@ -30,11 +36,11 @@ pub struct UserSession {
     pub user_avatar_url: Option<String>,
 }
 
-/// Token representing data in redis.
-/// Token containing information of the user in progress to sign up.
+/// Sign up token that represents data in redis.
+/// The token has information of the user used for sign up.
 /// It can be referenced by unique `pin` as key.
 #[derive(Serialize, Deserialize)]
-pub struct Token {
+pub struct SignUpToken {
     pub pin: String,
     pub name: String,
     pub email: String,
@@ -43,11 +49,11 @@ pub struct Token {
 }
 
 /// A core data repository for token.
-pub struct TokenRepository {
+pub struct SignUpTokenRepository {
     client: redis::Connection,
 }
 
-impl TokenRepository {
+impl SignUpTokenRepository {
     /// Creates a new token repository.
     pub fn new() -> Self {
         Self {
@@ -77,8 +83,52 @@ impl TokenRepository {
     }
 }
 
-impl Default for TokenRepository {
+impl Default for SignUpTokenRepository {
     fn default() -> Self {
         Self::new()
+    }
+}
+
+/// Password token that represents data in redis.
+/// The token has temporary password used to reset the password.
+#[derive(Serialize, Deserialize)]
+pub struct PasswordToken {
+    pub id: String,
+    pub password: String,
+}
+
+/// A core data repository for password token.
+pub struct PasswordTokenRepository {
+    key: String,
+    client: redis::Connection,
+}
+
+impl PasswordTokenRepository {
+    /// Creates a new token repository.
+    pub fn new(user_id: u64) -> Self {
+        Self {
+            key: format!("password_token:{}", user_id),
+            client: connection::connect_redis(),
+        }
+    }
+
+    /// Finds a token by key.
+    pub fn find(&mut self) -> Result<String, RedisError> {
+        self.client.get::<&str, String>(&self.key)
+    }
+
+    /// Deletes a token by key.
+    pub fn delete(&mut self) -> Result<bool, RedisError> {
+        self.client.del::<&str, _>(&self.key)
+    }
+
+    /// Creates a new token.
+    pub fn save(&mut self, serialized_token: &str) -> Result<bool, RedisError> {
+        let ttl_seconds = 180; // 3 min
+
+        let _ = self.client.set::<&str, &str, _>(&self.key, &serialized_token)?;
+        let _ = self.client.expire::<&str, _>(&self.key, ttl_seconds)?;
+
+        Ok(true)
     }
 }

@@ -66,12 +66,12 @@ impl AuthRoute {
         http_util::get_response::<UserSession>(user_session)
     }
 
-    /// Sets token to create user.
+    /// Sets token for creating user.
     ///
     /// # Request
     ///
     /// ```text
-    /// POST /auth/token
+    /// POST /auth/token/sign_up
     /// ```
     ///
     /// ## Parameters
@@ -100,6 +100,37 @@ impl AuthRoute {
     /// ```
     pub fn set_sign_up_token(args: web::Json<SetSignUpTokenArgs>) -> impl Responder {
         let response = AuthService::set_sign_up_token(args.into_inner());
+        http_util::get_response::<bool>(response)
+    }
+
+    /// Sets token for resetting password.
+    ///
+    /// # Request
+    ///
+    /// ```text
+    /// POST /auth/token/password
+    /// ```
+    ///
+    /// ## Parameters
+    ///
+    /// * email - A unique email of the user.
+    ///
+    /// ```json
+    /// {
+    ///     "email": "park@email.com",
+    /// }
+    /// ```
+    ///
+    /// # Response
+    ///
+    /// ```json
+    /// {
+    ///     "data": true,
+    ///     "error": null
+    /// }
+    /// ```
+    pub fn set_password_token(args: web::Json<SetPasswordTokenArgs>) -> impl Responder {
+        let response = AuthService::set_password_token(args.into_inner());
         http_util::get_response::<bool>(response)
     }
 
@@ -201,9 +232,14 @@ pub async fn refresh_session_route(session: Session) -> impl Responder {
     AuthRoute::refresh_auth(session)
 }
 
-#[post("/auth/token")]
+#[post("/auth/token/sign_up")]
 pub async fn set_sign_up_token_route(args: web::Json<SetSignUpTokenArgs>) -> impl Responder {
     AuthRoute::set_sign_up_token(args)
+}
+
+#[post("/auth/token/password")]
+pub async fn set_password_token_route(args: web::Json<SetPasswordTokenArgs>) -> impl Responder {
+    AuthRoute::set_password_token(args)
 }
 
 #[post("/auth/login")]
@@ -219,6 +255,7 @@ pub async fn logout_route(session: Session) -> impl Responder {
 /// Initializes the auth routes.
 pub fn init_routes(cfg: &mut web::ServiceConfig) {
     cfg.service(set_sign_up_token_route);
+    cfg.service(set_password_token_route);
     cfg.service(refresh_session_route);
     cfg.service(get_auth_route);
     cfg.service(login_route);

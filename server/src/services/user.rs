@@ -1,6 +1,6 @@
 use diesel::result::Error;
 
-use crate::models::auth::{Token, TokenRepository};
+use crate::models::auth::{SignUpToken, SignUpTokenRepository};
 use crate::models::error::{get_service_error, ServiceError};
 use crate::models::user::*;
 use crate::models::user_key::UserKeyRepository;
@@ -66,8 +66,8 @@ impl UserService {
     /// 1. Deserializes the found token and compares pin from token and it from arguments.
     /// 1. If the pins are equal, deletes the token from redis and creates a new user.
     pub fn create(args: CreateArgs) -> Result<bool, ServiceError> {
-        let token: Token = {
-            let mut token_repository = TokenRepository::new();
+        let token: SignUpToken = {
+            let mut token_repository = SignUpTokenRepository::new();
             let serialized_token =
                 if let Ok(serialized_token) = token_repository.find(&args.token_key) {
                     serialized_token
@@ -75,7 +75,7 @@ impl UserService {
                     return Err(get_service_error(ServiceError::NotFound(args.token_key)));
                 };
 
-            let deserialized_token: Token =
+            let deserialized_token: SignUpToken =
                 if let Ok(deserialized_token) = serde_json::from_str(&serialized_token) {
                     deserialized_token
                 } else {
