@@ -16,6 +16,10 @@ interface SetSignUpTokenBody {
   avatar_url: string | null;
 }
 
+interface SetPasswordTokenBody {
+  email: string;
+}
+
 async function fetchSession(): Promise<Session | null> {
   const url = `${Http.baseUrl}/auth`;
 
@@ -89,7 +93,7 @@ async function logout(): Promise<boolean | null> {
 }
 
 async function setSignUpToken(name: string, email: string, password: string, avatarUrl?: string): Promise<boolean | null> {
-  const url = `${Http.baseUrl}/auth/token`;
+  const url = `${Http.baseUrl}/auth/token/sign_up`;
   const hashedPassword = SHA3(password, { outputLength: 512 }).toString();
 
   const body: SetSignUpTokenBody = {
@@ -115,4 +119,34 @@ async function setSignUpToken(name: string, email: string, password: string, ava
   return null;
 }
 
-export { fetchSession, refreshSession, login, logout, setSignUpToken };
+async function setPasswordToken(email: string): Promise<boolean | null> {
+  const url = `${Http.baseUrl}/auth/token/password`;
+  const body: SetPasswordTokenBody = {
+    email,
+  };
+
+  try {
+    return await Http.post<SetPasswordTokenBody, boolean>(url, body);
+  } catch (e) {
+    const i18n = new I18n({
+      error404: {
+        ko: '계정을 찾을 수 없습니다',
+        en: 'Cannot find the account',
+      },
+      error: {
+        ko: '토큰 설정에 실패했습니다',
+        en: 'Failed to set token',
+      },
+    });
+
+    if (e.message === '404') {
+      alert(i18n.text('error404'));
+    } else {
+      alert(i18n.text('error'));
+    }
+  }
+
+  return null;
+}
+
+export { fetchSession, refreshSession, login, logout, setSignUpToken, setPasswordToken };

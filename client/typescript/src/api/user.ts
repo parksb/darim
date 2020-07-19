@@ -15,6 +15,13 @@ interface UpdateUserBody {
   avatar_url?: string;
 }
 
+interface ResetPasswordBody {
+  email: string;
+  token_id: string;
+  temporary_password: string;
+  new_password: string;
+}
+
 async function createUser(user_public_key: string, token_key: string, token_pin: string): Promise<boolean | null> {
   const url = `${Http.baseUrl}/users`;
 
@@ -65,4 +72,30 @@ async function updateUser(userId: string, password?: string, name?: string, avat
   return null;
 }
 
-export { createUser, updateUser };
+async function resetPassword(email: string, tokenId: string, temporaryPassword: string, newPassword: string): Promise<boolean | null> {
+  const url = `${Http.baseUrl}/users/password`;
+
+  const body: ResetPasswordBody = {
+    email,
+    token_id: tokenId,
+    temporary_password: temporaryPassword,
+    new_password: SHA3(newPassword, { outputLength: 512 }).toString(),
+  };
+
+  try {
+    return await Http.post<ResetPasswordBody, boolean>(url, body);
+  } catch (e) {
+    const i18n = new I18n({
+      error: {
+        ko: '변경에 실패했습니다',
+        en: 'Failed to reset',
+      },
+    });
+
+    alert(i18n.text('error'));
+  }
+
+  return null;
+}
+
+export { createUser, updateUser, resetPassword };

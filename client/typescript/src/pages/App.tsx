@@ -6,7 +6,7 @@ import * as api from '../api/auth';
 import { Header, Container } from '../components';
 import { Session } from '../models';
 import { Timeline } from './timeline';
-import { Login, Join, Token } from './auth';
+import { Login, Join, Token, PasswordReset } from './auth';
 import { Post } from './post';
 import { Settings } from './settings';
 
@@ -42,6 +42,11 @@ const App: React.FC = () => {
           <Route path='/join'>
             <Container>
               {session ? <Redirect to="/" /> : <Join />}
+            </Container>
+          </Route>
+          <Route path='/password_reset'>
+            <Container>
+              {session ? <Redirect to="/" /> : <PasswordReset />}
             </Container>
           </Route>
           <Route path='/token/:key'>
