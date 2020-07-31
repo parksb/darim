@@ -33,7 +33,7 @@ impl PostService {
     pub fn get_list(user_id: u64) -> Result<Vec<PostDTO>, ServiceError> {
         let post_list = {
             let post_repository = PostRepository::new();
-            post_repository.find_all(user_id)
+            post_repository.find_all_in_desc_date_order(user_id)
         };
 
         if let Ok(post_list) = post_list {
