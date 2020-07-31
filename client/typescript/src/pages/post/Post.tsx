@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, useLocation } from 'react-router-dom';
+import { useParams, useLocation, Redirect } from 'react-router-dom';
 import styled from 'styled-components';
 import dayjs from 'dayjs';
 
 import * as api from '../../api/post';
 import { Post, Session } from '../../models';
-import { Container, Section, TextField } from '../../components';
+import { Button, Container, Section, TextField } from '../../components';
 import Editor from './Editor';
 import Preview from './Preview';
 import I18n from '../../utils/i18n';
@@ -67,6 +67,13 @@ const PreviewRadio = styled(Radio)`
   margin-left: 7px;
 `;
 
+const DeleteButton = styled(Button)`
+  font-size: 12px;
+  max-width: 50px;
+  align-self: flex-end;
+  margin-top: 20px;
+`;
+
 const Post: React.FC<Props> = ({ session }) => {
   const i18n = new I18n({
     title: {
@@ -84,6 +91,14 @@ const Post: React.FC<Props> = ({ session }) => {
     preview: {
       ko: '미리보기',
       en: 'Preview',
+    },
+    delete: {
+      ko: '삭제',
+      en: 'Delete',
+    },
+    deleteConfirm: {
+      ko: '정말 삭제하시겠습니까?',
+      en: 'Are you sure want to delete?'
     },
   });
 
@@ -107,6 +122,7 @@ const Post: React.FC<Props> = ({ session }) => {
 
   const [contentViewMode, setContentViewMode] = useState(ContentViewMode.EDITOR);
   const [saveStatus, setSaveStatus] = useState(SaveStatus.NONE);
+  const [isDeleted, setIsDeleted] = useState(false);
 
   const load = async () => {
     const post = await api.fetchPost(id, session?.user_public_key || '');
@@ -151,6 +167,15 @@ const Post: React.FC<Props> = ({ session }) => {
         } else {
           setSaveStatus(SaveStatus.FAILURE);
         }
+      }
+    }
+  };
+
+  const deletePost = async () => {
+    if (postId && confirm(i18n.text('deleteConfirm'))) {
+      const result = await api.deletePost(postId);
+      if (result) {
+        setIsDeleted(true);
       }
     }
   };
@@ -212,6 +237,8 @@ const Post: React.FC<Props> = ({ session }) => {
     ) : (
       <Preview content={content} />
     )}
+    {postId && <DeleteButton onClick={deletePost}>{i18n.text('delete')}</DeleteButton>}
+    {isDeleted && <Redirect to='/' />}
   </Container>
 };
 

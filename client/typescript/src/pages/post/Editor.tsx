@@ -12,7 +12,7 @@ interface Props {
 
 const TextArea = styled(TextareaAutosize)`
   max-width: 100%;
-  min-height: 500px;
+  min-height: 720px;
   padding: 5px;
   font-family: sans-serif;
   font-size: 16px;

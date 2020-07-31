@@ -146,10 +146,28 @@ async function updatePost(publicKey: string, id: number, title?: string, date?: 
       },
     });
 
-    alert(i18n.text('error'))
+    alert(i18n.text('error'));
   }
 
   return false;
 }
 
-export { fetchPosts, createPost, updatePost, fetchPost };
+async function deletePost(id: number): Promise<boolean> {
+  try {
+    const url = `${Http.baseUrl}/posts/${id}`;
+    return await Http.delete<boolean>(url);
+  } catch (e) {
+     const i18n = new I18n({
+      error: {
+        ko: '삭제에 실패했습니다',
+        en: 'Failed to delete',
+      },
+    });
+
+    alert(i18n.text('error'));
+  }
+
+  return false;
+}
+
+export { fetchPosts, createPost, updatePost, fetchPost, deletePost };
