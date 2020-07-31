@@ -54,6 +54,10 @@ class Http {
     const jsonBody = JSON.stringify(body);
     return Http.request(HttpMethods.PATCH, url, jsonBody);
   }
+
+  static delete<T>(url: string): Promise<T> {
+    return Http.request(HttpMethods.DELETE, url);
+  }
 }
 
 export default Http;
