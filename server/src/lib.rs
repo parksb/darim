@@ -65,6 +65,8 @@ pub mod services {
 
 /// Reusable functions for multiple modules.
 pub mod utils {
+    /// Utilities related to email.
+    pub mod email_util;
     /// Utilities related to HTTP.
     pub mod http_util;
     /// Utilities related to password.

@@ -79,15 +79,15 @@ impl PostRepository {
 
         Ok(post)
     }
- 
-     /// Finds all post written by specific user.
+
+    /// Finds all post written by specific user.
     pub fn find_all(&self, user_id: u64) -> Result<Vec<Post>, Error> {
         let post_list: Vec<Post> = dsl::posts
             .filter(dsl::user_id.eq(user_id))
             .load::<Post>(&self.conn)?;
 
         Ok(post_list)
-    }   
+    }
 
     /// Finds all post written by specific user in desc date order.
     pub fn find_all_in_desc_date_order(&self, user_id: u64) -> Result<Vec<Post>, Error> {

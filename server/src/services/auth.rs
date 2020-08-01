@@ -5,7 +5,7 @@ use rand::{distributions::Alphanumeric, thread_rng, Rng};
 use crate::models::error::{get_service_error, ServiceError};
 use crate::models::user_key::UserKeyRepository;
 use crate::models::{auth::*, user::*};
-use crate::utils::{password_util, session_util};
+use crate::utils::{email_util, password_util, session_util};
 
 pub struct AuthService {}
 
@@ -135,6 +135,13 @@ impl AuthService {
             token_repository.save(&serialized_token)
         };
 
+        // TODO: Specify the link.
+        let _ = email_util::send_email(
+            &token.email,
+            &String::from("Welcome to Darim"),
+            &format!("Hello {} :)\n\nYou’ve joined Darim.\n\nPlease visit the link to finish the sign up processs:\n{}", token.name, token.pin),
+        );
+
         match result {
             Ok(_) => Ok(true),
             Err(_) => Err(get_service_error(ServiceError::QueryExecutionFailure)),
@@ -168,6 +175,13 @@ impl AuthService {
             let mut token_repository = PasswordTokenRepository::new(user.id);
             token_repository.save(&serialized_token)
         };
+
+        // TODO: Specify the link.
+        let _ = email_util::send_email(
+            &args.email,
+            &String::from("Please reset your password"),
+            &format!("Hello :)\n\nPlease copy the temporary password:\n{}\n\nand visit the link to reset your password:\n{}", token.password, token.id),
+        );
 
         match result {
             Ok(_) => Ok(true),
