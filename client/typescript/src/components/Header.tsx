@@ -26,6 +26,10 @@ const Title = styled.h1`
   display: inline;
   font-size: 28px;
   font-weight: 700;
+
+  &:hover {
+    background-color: #ffce05;
+  }
 `;
 
 const UserAvatar = styled(({ src, ...other }) => <div {...other} />)`
