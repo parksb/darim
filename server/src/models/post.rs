@@ -18,22 +18,6 @@ pub struct Post {
     pub updated_at: Option<NaiveDateTime>,
 }
 
-/// Arguments for `POST /posts` API.
-#[derive(Serialize, Deserialize)]
-pub struct CreateArgs {
-    pub title: String,
-    pub content: String,
-    pub date: NaiveDateTime,
-}
-
-/// Arguments for `PATCH /posts/:id` API.
-#[derive(Serialize, Deserialize)]
-pub struct UpdateArgs {
-    pub title: Option<String>,
-    pub content: Option<String>,
-    pub date: Option<NaiveDateTime>,
-}
-
 /// Post DTO using between routes layer and service layer.
 #[derive(Serialize, Deserialize)]
 pub struct PostDTO {

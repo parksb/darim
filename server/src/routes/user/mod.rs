@@ -1,9 +1,12 @@
 use actix_session::Session;
 use actix_web::{delete, patch, post, web, Responder};
 
-use crate::models::{error::*, user::*};
+use crate::models::error::*;
 use crate::services::user::UserService;
 use crate::utils::{http_util, session_util};
+
+mod models;
+use models::*;
 
 /// User route
 pub struct UserRoute {}
@@ -40,7 +43,12 @@ impl UserRoute {
     /// }
     /// ```
     pub fn create_user(args: web::Json<CreateArgs>) -> impl Responder {
-        let response = UserService::create(args.into_inner());
+        let CreateArgs {
+            user_public_key,
+            token_key,
+            token_pin,
+        } = args.into_inner();
+        let response = UserService::create(&user_public_key, &token_key, &token_pin);
         http_util::get_response::<bool>(response)
     }
 
@@ -108,14 +116,19 @@ impl UserRoute {
     pub fn update_user(
         session: Session,
         id: web::Path<u64>,
-        user: web::Json<UpdateArgs>,
+        args: web::Json<UpdateArgs>,
     ) -> impl Responder {
         let response = if let Some(user_session) = session_util::get_session(&session) {
             let id_in_path = id.into_inner();
             if id_in_path != user_session.user_id {
                 Err(ServiceError::Unauthorized)
             } else {
-                UserService::update(id_in_path, user.into_inner())
+                let UpdateArgs {
+                    name,
+                    password,
+                    avatar_url,
+                } = args.into_inner();
+                UserService::update(id_in_path, &name, &password, &avatar_url)
             }
         } else {
             Err(ServiceError::Unauthorized)
@@ -157,7 +170,14 @@ impl UserRoute {
     /// }
     /// ```
     pub fn reset_password(args: web::Json<ResetPasswordArgs>) -> impl Responder {
-        let response = UserService::reset_password(args.into_inner());
+        let ResetPasswordArgs {
+            email,
+            token_id,
+            temporary_password,
+            new_password,
+        } = args.into_inner();
+        let response =
+            UserService::reset_password(&email, &token_id, &temporary_password, &new_password);
         http_util::get_response::<bool>(response)
     }
 }

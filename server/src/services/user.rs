@@ -67,15 +67,20 @@ impl UserService {
     /// 1. Finds serialized token by token key from arguments.
     /// 1. Deserializes the found token and compares pin from token and it from arguments.
     /// 1. If the pins are equal, deletes the token from redis and creates a new user.
-    pub fn create(args: CreateArgs) -> Result<bool, ServiceError> {
+    pub fn create(
+        user_public_key: &str,
+        token_key: &str,
+        token_pin: &str,
+    ) -> Result<bool, ServiceError> {
         let token: SignUpToken = {
             let mut token_repository = SignUpTokenRepository::new();
-            let serialized_token =
-                if let Ok(serialized_token) = token_repository.find(&args.token_key) {
-                    serialized_token
-                } else {
-                    return Err(get_service_error(ServiceError::NotFound(args.token_key)));
-                };
+            let serialized_token = if let Ok(serialized_token) = token_repository.find(token_key) {
+                serialized_token
+            } else {
+                return Err(get_service_error(ServiceError::NotFound(
+                    token_key.to_string(),
+                )));
+            };
 
             let deserialized_token: SignUpToken =
                 if let Ok(deserialized_token) = serde_json::from_str(&serialized_token) {
@@ -84,8 +89,8 @@ impl UserService {
                     return Err(get_service_error(ServiceError::InvalidFormat));
                 };
 
-            if args.token_pin == deserialized_token.pin {
-                let _ = token_repository.delete(&args.token_key);
+            if token_pin == deserialized_token.pin {
+                let _ = token_repository.delete(token_key);
                 deserialized_token
             } else {
                 return Err(get_service_error(ServiceError::Unauthorized));
@@ -111,7 +116,7 @@ impl UserService {
             if created_count > 0 {
                 let user_key_created_count = {
                     let user_key_repository = UserKeyRepository::new();
-                    user_key_repository.create(user.id, &args.user_public_key)
+                    user_key_repository.create(user.id, user_public_key)
                 };
 
                 if let Ok(user_key_created_count) = user_key_created_count {
@@ -150,14 +155,17 @@ impl UserService {
     }
 
     /// Updates a new user.
-    pub fn update(id: u64, args: UpdateArgs) -> Result<bool, ServiceError> {
-        if args.name.is_none() && args.password.is_none() && args.avatar_url.is_none() {
+    pub fn update(
+        id: u64,
+        name: &Option<String>,
+        password: &Option<String>,
+        avatar_url: &Option<String>,
+    ) -> Result<bool, ServiceError> {
+        if name.is_none() && password.is_none() && avatar_url.is_none() {
             return Err(get_service_error(ServiceError::InvalidArgument));
         }
 
-        if let (Some(name), Some(password), Some(avatar_url)) =
-            (&args.name, &args.password, &args.avatar_url)
-        {
+        if let (Some(name), Some(password), Some(avatar_url)) = (name, password, avatar_url) {
             if name.trim().is_empty() || password.trim().is_empty() || avatar_url.trim().is_empty()
             {
                 return Err(get_service_error(ServiceError::InvalidArgument));
@@ -167,13 +175,13 @@ impl UserService {
         let updated_count = {
             let user_repository = UserRepository::new();
 
-            let password = if let Some(password) = args.password {
+            let hashed_password = if let Some(password) = password {
                 Some(password_util::get_hashed_password(&password))
             } else {
                 None
             };
 
-            user_repository.update(id, &args.name, &password, &args.avatar_url)
+            user_repository.update(id, name, &hashed_password, avatar_url)
         };
 
         if let Ok(updated_count) = updated_count {
@@ -188,12 +196,19 @@ impl UserService {
     }
 
     // Reset the password.
-    pub fn reset_password(args: ResetPasswordArgs) -> Result<bool, ServiceError> {
+    pub fn reset_password(
+        email: &str,
+        token_id: &str,
+        temporary_password: &str,
+        new_password: &str,
+    ) -> Result<bool, ServiceError> {
         let user_repository = UserRepository::new();
-        let user = if let Ok(user) = user_repository.find_by_email(&args.email) {
+        let user = if let Ok(user) = user_repository.find_by_email(email) {
             user
         } else {
-            return Err(get_service_error(ServiceError::UserNotFound(args.email)));
+            return Err(get_service_error(ServiceError::UserNotFound(
+                email.to_string(),
+            )));
         };
 
         let mut token_repository = PasswordTokenRepository::new(user.id);
@@ -211,8 +226,8 @@ impl UserService {
             }
         };
 
-        if token.id == args.token_id && token.password == args.temporary_password {
-            let hashed_password = password_util::get_hashed_password(&args.new_password);
+        if token.id == token_id && token.password == temporary_password {
+            let hashed_password = password_util::get_hashed_password(new_password);
             if let Ok(count_updated) =
                 user_repository.update(user.id, &None, &Some(hashed_password), &None)
             {
@@ -223,7 +238,9 @@ impl UserService {
                     Err(get_service_error(ServiceError::QueryExecutionFailure))
                 }
             } else {
-                Err(get_service_error(ServiceError::UserNotFound(args.email)))
+                Err(get_service_error(ServiceError::UserNotFound(
+                    email.to_string(),
+                )))
             }
         } else {
             Err(get_service_error(ServiceError::Unauthorized))

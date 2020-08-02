@@ -15,15 +15,15 @@ impl AuthService {
     /// 1. Finds password of the user by email from arguments.
     /// 1. Compares password from the found user and it from the arguments.
     /// 1. If the passwords are equal, returns the found user.
-    pub fn login(args: LoginArgs) -> Result<UserSession, ServiceError> {
+    pub fn login(email: &str, password: &str) -> Result<UserSession, ServiceError> {
         let user = {
             let user_repository = UserRepository::new();
-            let password = user_repository.find_password_by_email(&args.email);
+            let found_password = user_repository.find_password_by_email(email);
 
-            match password {
-                Ok(password) => {
-                    if password_util::check_password(&args.password, &password) {
-                        user_repository.find_by_email(&args.email)
+            match found_password {
+                Ok(found_password) => {
+                    if password_util::check_password(password, &found_password) {
+                        user_repository.find_by_email(email)
                     } else {
                         Err(Error::NotFound)
                     }
@@ -42,7 +42,7 @@ impl AuthService {
                 let user_public_key = if let Ok(user_key) = user_key {
                     user_key.public_key
                 } else {
-                    return Err(get_service_error(ServiceError::NotFound(args.email)));
+                    return Err(get_service_error(ServiceError::NotFound(email.to_string())));
                 };
 
                 UserSession {
@@ -55,7 +55,9 @@ impl AuthService {
             }
             Err(error) => {
                 return match error {
-                    Error::NotFound => Err(get_service_error(ServiceError::NotFound(args.email))),
+                    Error::NotFound => {
+                        Err(get_service_error(ServiceError::NotFound(email.to_string())))
+                    }
                     _ => Err(get_service_error(ServiceError::QueryExecutionFailure)),
                 }
             }
@@ -104,23 +106,25 @@ impl AuthService {
     /// 1. Generates a random string called pin.
     /// 1. Creates a new token containing the pin and information of the user from arguments.
     /// 1. Serializes the token and inserts it to redis.
-    pub fn set_sign_up_token(args: SetSignUpTokenArgs) -> Result<bool, ServiceError> {
-        if args.name.trim().is_empty()
-            || args.email.trim().is_empty()
-            || args.password.trim().is_empty()
-        {
+    pub fn set_sign_up_token(
+        name: &str,
+        email: &str,
+        password: &str,
+        avatar_url: &Option<String>,
+    ) -> Result<bool, ServiceError> {
+        if name.trim().is_empty() || email.trim().is_empty() || password.trim().is_empty() {
             return Err(get_service_error(ServiceError::InvalidArgument));
         }
 
         let pin: String = thread_rng().sample_iter(&Alphanumeric).take(8).collect();
-        let password = password_util::get_hashed_password(&args.password);
+        let hashed_password = password_util::get_hashed_password(password);
 
         let token = SignUpToken {
             pin,
-            name: args.name,
-            email: args.email,
-            password,
-            avatar_url: args.avatar_url,
+            name: name.to_string(),
+            email: email.to_string(),
+            password: hashed_password,
+            avatar_url: avatar_url.clone(),
         };
 
         let serialized_token = serde_json::to_string(&token);
@@ -149,13 +153,15 @@ impl AuthService {
     }
 
     /// Sets token for temporary password deposition in password finding process.
-    pub fn set_password_token(args: SetPasswordTokenArgs) -> Result<bool, ServiceError> {
+    pub fn set_password_token(email: &str) -> Result<bool, ServiceError> {
         let user = {
             let user_repository = UserRepository::new();
-            if let Ok(user) = user_repository.find_by_email(&args.email) {
+            if let Ok(user) = user_repository.find_by_email(email) {
                 user
             } else {
-                return Err(get_service_error(ServiceError::UserNotFound(args.email)));
+                return Err(get_service_error(ServiceError::UserNotFound(
+                    email.to_string(),
+                )));
             }
         };
 
@@ -178,7 +184,7 @@ impl AuthService {
 
         // TODO: Specify the link.
         let _ = email_util::send_email(
-            &args.email,
+            email,
             &String::from("Please reset your password"),
             &format!("Hello :)\n\nPlease copy the temporary password:\n{}\n\nand visit the link to reset your password:\n{}", token.password, token.id),
         );

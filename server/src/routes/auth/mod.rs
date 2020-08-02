@@ -5,6 +5,9 @@ use crate::models::{auth::*, error::*};
 use crate::services::auth::AuthService;
 use crate::utils::{http_util, session_util};
 
+mod models;
+use models::*;
+
 /// Auth route.
 pub struct AuthRoute {}
 
@@ -99,7 +102,13 @@ impl AuthRoute {
     /// }
     /// ```
     pub fn set_sign_up_token(args: web::Json<SetSignUpTokenArgs>) -> impl Responder {
-        let response = AuthService::set_sign_up_token(args.into_inner());
+        let SetSignUpTokenArgs {
+            name,
+            email,
+            password,
+            avatar_url,
+        } = args.into_inner();
+        let response = AuthService::set_sign_up_token(&name, &email, &password, &avatar_url);
         http_util::get_response::<bool>(response)
     }
 
@@ -130,7 +139,8 @@ impl AuthRoute {
     /// }
     /// ```
     pub fn set_password_token(args: web::Json<SetPasswordTokenArgs>) -> impl Responder {
-        let response = AuthService::set_password_token(args.into_inner());
+        let SetPasswordTokenArgs { email } = args.into_inner();
+        let response = AuthService::set_password_token(&email);
         http_util::get_response::<bool>(response)
     }
 
@@ -167,7 +177,8 @@ impl AuthRoute {
     /// }
     /// ```
     pub fn login(mut session: Session, args: web::Json<LoginArgs>) -> impl Responder {
-        let user_session = AuthService::login(args.into_inner());
+        let LoginArgs { email, password } = args.into_inner();
+        let user_session = AuthService::login(&email, &password);
 
         match user_session {
             Ok(response) => {

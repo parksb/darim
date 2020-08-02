@@ -1,3 +1,4 @@
+use chrono::NaiveDateTime;
 use diesel::result::Error;
 
 use crate::models::error::{get_service_error, ServiceError};
@@ -58,13 +59,18 @@ impl PostService {
     }
 
     /// Creates a new post and returns id of the created post.
-    pub fn create(user_id: u64, args: CreateArgs) -> Result<u64, ServiceError> {
-        if args.title.trim().is_empty() || args.content.trim().is_empty() {
+    pub fn create(
+        user_id: u64,
+        title: &str,
+        content: &str,
+        date: &NaiveDateTime,
+    ) -> Result<u64, ServiceError> {
+        if title.trim().is_empty() || content.trim().is_empty() {
             return Err(get_service_error(ServiceError::InvalidArgument));
         }
 
         let post_repository = PostRepository::new();
-        let created_count = post_repository.create(user_id, &args.title, &args.content, &args.date);
+        let created_count = post_repository.create(user_id, title, content, date);
 
         if let Ok(created_count) = created_count {
             if created_count > 0 {
@@ -101,18 +107,24 @@ impl PostService {
     }
 
     /// Updates a post written by specific user.
-    pub fn update(id: u64, user_id: u64, args: UpdateArgs) -> Result<bool, ServiceError> {
-        if args.title.is_none() && args.content.is_none() && args.date.is_none() {
+    pub fn update(
+        id: u64,
+        user_id: u64,
+        title: &Option<String>,
+        content: &Option<String>,
+        date: &Option<NaiveDateTime>,
+    ) -> Result<bool, ServiceError> {
+        if title.is_none() && content.is_none() && date.is_none() {
             return Err(get_service_error(ServiceError::InvalidArgument));
         }
 
-        if let Some(content) = &args.content {
+        if let Some(content) = content {
             if content.trim().is_empty() {
                 return Err(get_service_error(ServiceError::InvalidArgument));
             }
         }
 
-        if let Some(title) = &args.title {
+        if let Some(title) = title {
             if title.trim().is_empty() {
                 return Err(get_service_error(ServiceError::InvalidArgument));
             }
@@ -120,7 +132,7 @@ impl PostService {
 
         let updated_count = {
             let post_repository = PostRepository::new();
-            post_repository.update(user_id, id, &args.title, &args.content, &args.date)
+            post_repository.update(user_id, id, title, content, date)
         };
 
         if let Ok(updated_count) = updated_count {

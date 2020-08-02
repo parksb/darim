@@ -5,6 +5,9 @@ use crate::models::{error::*, post::*};
 use crate::services::post::PostService;
 use crate::utils::{http_util, session_util};
 
+mod models;
+use models::*;
+
 /// Post route.
 pub struct PostRoute {}
 
@@ -115,9 +118,14 @@ impl PostRoute {
     ///     "error": null
     /// }
     /// ```
-    pub fn create_post(session: Session, post: web::Json<CreateArgs>) -> impl Responder {
+    pub fn create_post(session: Session, args: web::Json<CreateArgs>) -> impl Responder {
         let response = if let Some(user_session) = session_util::get_session(&session) {
-            PostService::create(user_session.user_id, post.into_inner())
+            let CreateArgs {
+                title,
+                content,
+                date,
+            } = args.into_inner();
+            PostService::create(user_session.user_id, &title, &content, &date)
         } else {
             Err(ServiceError::Unauthorized)
         };
@@ -183,7 +191,18 @@ impl PostRoute {
         args: web::Json<UpdateArgs>,
     ) -> impl Responder {
         let response = if let Some(user_session) = session_util::get_session(&session) {
-            PostService::update(id.into_inner(), user_session.user_id, args.into_inner())
+            let UpdateArgs {
+                title,
+                content,
+                date,
+            } = args.into_inner();
+            PostService::update(
+                id.into_inner(),
+                user_session.user_id,
+                &title,
+                &content,
+                &date,
+            )
         } else {
             Err(ServiceError::Unauthorized)
         };
