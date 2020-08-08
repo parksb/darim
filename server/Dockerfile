@@ -10,4 +10,4 @@ RUN diesel migration run
 RUN cargo build --release
 
 EXPOSE 8080
-CMD ["cargo run"]
+CMD ["cargo run --release"]
