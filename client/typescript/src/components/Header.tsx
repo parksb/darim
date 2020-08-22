@@ -2,8 +2,8 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import styled from 'styled-components';
 
+import { getI18n } from '../utils/i18n';
 import { Session } from '../models';
-import I18n from '../utils/i18n';
 
 interface Props {
   session: Session | null;
@@ -44,7 +44,7 @@ const UserAvatar = styled(({ src, ...other }) => <div {...other} />)`
 `;
 
 const Header: React.FC<Props> = ({ session }) => {
-  const i18n = new I18n({
+  const i18n = getI18n({
     title: {
       ko: '🏕 Darim',
       en: '🏕 Darim',

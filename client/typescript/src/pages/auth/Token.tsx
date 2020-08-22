@@ -2,11 +2,12 @@ import React, { useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import styled from 'styled-components';
 import CopyToClipboard from 'react-copy-to-clipboard';
+import { Secret, Storage } from 'snowball-js';
 
+import { localStoragePrivateKey } from '../../constants';
+import { getI18n } from '../../utils/i18n';
 import * as api from '../../api/user';
 import { Button, Container, TextField, Section } from '../../components';
-import Secret from '../../utils/secret';
-import I18n from '../../utils/i18n';
 
 const FullWidthTextField = styled(TextField)`
   flex: 1;
@@ -36,7 +37,7 @@ const Token: React.FC = () => {
   const [privateKey, setPrivateKey] = useState('');
   const [publicKey, setPublicKey] = useState('');
 
-  const i18n = new I18n({
+  const i18n = getI18n({
     info: {
       ko: '👋 환영합니다! 글을 안전하게 암호화하기 위해 사용할 공개키와 비밀키를 준비했습니다:',
       en: '👋 Welcome to Darim! This is your public key and secret key that will be used to encrypt your posts:',
@@ -82,7 +83,7 @@ const Token: React.FC = () => {
 
     const result = await api.createUser(generatedPublicKey, key, pin);
     if (result) {
-      Secret.setPrivateKeyToLocalStorage(encryptedPrivateKey);
+      Storage.set(localStoragePrivateKey, encryptedPrivateKey);
       setPrivateKey(encryptedPrivateKey);
       setPublicKey(generatedPublicKey);
     }

@@ -2,10 +2,10 @@ import React, { useState } from 'react';
 import { Redirect } from 'react-router-dom';
 import styled from 'styled-components';
 
+import { getI18n } from '../../utils/i18n';
 import * as authApi from '../../api/auth';
 import * as userApi from '../../api/user';
 import { Button, Container, Section, TextField } from '../../components';
-import I18n from '../../utils/i18n';
 
 const FullWidthTextField = styled(TextField)`
   flex: 1;
@@ -28,7 +28,7 @@ const PasswordReset: React.FC = () => {
   const [temporaryPassword, setTemporaryPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
 
-  const i18n = new I18n({
+  const i18n = getI18n({
     send: {
       ko: '메일 보내기',
       en: 'Send email',

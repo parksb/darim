@@ -2,12 +2,12 @@ import React from 'react';
 import styled from 'styled-components';
 import { Redirect, Switch, Route, Link, useRouteMatch } from 'react-router-dom';
 
+import { getI18n } from '../../utils/i18n';
 import * as api from '../../api/auth';
 import { Tab, Section } from '../../components';
 import { Session } from '../../models';
 import ProfileSettings from './ProfileSettings';
 import SecuritySettings from './SecuritySettings';
-import I18n from '../../utils/i18n';
 
 interface Props {
   sessionState: [Session, React.Dispatch<React.SetStateAction<Session | null>>]
@@ -61,7 +61,7 @@ const Settings: React.FC<Props> = ({ sessionState }) => {
   const [session, setSession] = sessionState;
   const { path, url } = useRouteMatch();
 
-  const i18n = new I18n({
+  const i18n = getI18n({
     profileSettings: {
       ko: '프로필 설정',
       en: 'Profile settings',

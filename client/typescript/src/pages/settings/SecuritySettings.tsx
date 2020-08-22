@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
+import { Storage } from 'snowball-js';
 
+import { getI18n } from '../../utils/i18n';
+import { localStoragePrivateKey } from '../../constants';
 import * as authApi from '../../api/auth';
 import * as userApi from '../../api/user';
 import { Button, Section, TextField } from '../../components';
-import Secret from '../../utils/secret';
-import I18n from '../../utils/i18n';
 import { SaveStatus, getSaveStatusText } from '../../utils/status';
 
 interface Props {
@@ -47,7 +48,7 @@ const SecuritySettings: React.FC<Props> = ({ userId, userEmail }) => {
   const [newPasswordSaveStatus, setNewPasswordSaveStatus] = useState(SaveStatus.NONE);
   const [newPasswordPassword, setNewPasswordPassword] = useState('');
 
-  const i18n = new I18n({
+  const i18n = getI18n({
     secretKey: {
       ko: '비밀키',
       en: 'Secret key',
@@ -74,7 +75,7 @@ const SecuritySettings: React.FC<Props> = ({ userId, userEmail }) => {
     setNewSecretKeyPassword('');
 
     if (result) {
-      Secret.setPrivateKeyToLocalStorage(newSecretKey);
+      Storage.set(localStoragePrivateKey, newSecretKey);
       setNewSecretKeySaveStatus(SaveStatus.SUCCESS);
     } else {
       setNewSecretKeySaveStatus(SaveStatus.FAILURE);

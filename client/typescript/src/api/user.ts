@@ -1,7 +1,8 @@
 import SHA3 from 'crypto-js/sha3';
+import { Http } from 'snowball-js';
 
-import Http from '../utils/http';
-import I18n from '../utils/i18n';
+import { getI18n } from '../utils/i18n';
+import { serverBaseUrl } from '../constants';
 
 interface CreateUserBody {
   user_public_key: string;
@@ -23,7 +24,7 @@ interface ResetPasswordBody {
 }
 
 async function createUser(user_public_key: string, token_key: string, token_pin: string): Promise<boolean | null> {
-  const url = `${Http.baseUrl}/users`;
+  const url = `${serverBaseUrl}/users`;
 
   const body: CreateUserBody = {
     user_public_key,
@@ -34,7 +35,7 @@ async function createUser(user_public_key: string, token_key: string, token_pin:
   try {
     return await Http.post<CreateUserBody, boolean>(url, body);
   } catch (e) {
-    const i18n = new I18n({
+    const i18n = getI18n({
       error: {
         ko: '이메일 인증에 실패했습니다',
         en: 'Failed to verify email',
@@ -48,7 +49,7 @@ async function createUser(user_public_key: string, token_key: string, token_pin:
 }
 
 async function updateUser(userId: string, password?: string, name?: string, avatar?: string): Promise<boolean | null> {
-  const url = `${Http.baseUrl}/users/${userId}`;
+  const url = `${serverBaseUrl}/users/${userId}`;
 
   const body: UpdateUserBody = {
     password: password ? SHA3(password, { outputLength: 512 }).toString() : undefined,
@@ -59,7 +60,7 @@ async function updateUser(userId: string, password?: string, name?: string, avat
   try {
     return await Http.patch<UpdateUserBody, boolean>(url, body);
   } catch (e) {
-    const i18n = new I18n({
+    const i18n = getI18n({
       error: {
         ko: '변경에 실패했습니다',
         en: 'Failed to update',
@@ -73,7 +74,7 @@ async function updateUser(userId: string, password?: string, name?: string, avat
 }
 
 async function resetPassword(email: string, tokenId: string, temporaryPassword: string, newPassword: string): Promise<boolean | null> {
-  const url = `${Http.baseUrl}/users/password`;
+  const url = `${serverBaseUrl}/users/password`;
 
   const body: ResetPasswordBody = {
     email,
@@ -85,7 +86,7 @@ async function resetPassword(email: string, tokenId: string, temporaryPassword: 
   try {
     return await Http.post<ResetPasswordBody, boolean>(url, body);
   } catch (e) {
-    const i18n = new I18n({
+    const i18n = getI18n({
       error: {
         ko: '변경에 실패했습니다',
         en: 'Failed to reset',

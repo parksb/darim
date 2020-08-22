@@ -3,11 +3,11 @@ import dayjs from 'dayjs';
 import weekOfYear from 'dayjs/plugin/weekOfYear';
 import styled from 'styled-components';
 
+import { getI18n } from '../../utils/i18n';
 import * as api from '../../api/post';
 import { Post, Session } from '../../models';
 import { Button, Container, Section } from '../../components';
 import CalendarItem from './CalendarItem';
-import I18n from '../../utils/i18n';
 
 interface Props {
   session: Session | null;
@@ -74,7 +74,7 @@ const Calendar: React.FC<Props> = ({ session }) => {
   const [calendar, setCalendar] = useState<Week[]>([]);
   const [cursorDate, setCursorDate] = useState(dayjs().date(1));
 
-  const i18n = new I18n({
+  const i18n = getI18n({
     sunday: {
       ko: '일',
       en: 'Sun',

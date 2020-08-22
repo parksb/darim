@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
 
+import { getI18n } from '../../utils/i18n';
 import * as userApi from '../../api/user';
 import * as authApi from '../../api/auth';
 import { Button, Section, TextField } from '../../components';
-import I18n from '../../utils/i18n';
 import { SaveStatus, getSaveStatusText } from '../../utils/status';
 import { Session } from '../../models';
 
@@ -37,7 +37,7 @@ const ProfileSettings: React.FC<Props> = ({ userId, setSession }) => {
   const [newNameSaveStatus, setNewNameSaveStatus] = useState(SaveStatus.NONE);
   const [newAvatarSaveStatus, setNewAvatarSaveStatus] = useState(SaveStatus.NONE);
 
-  const i18n = new I18n({
+  const i18n = getI18n({
     newName: {
       ko: '새 이름',
       en: 'New name',

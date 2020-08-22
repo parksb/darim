@@ -1,7 +1,8 @@
+import { Storage, Http, Secret } from 'snowball-js';
+
+import { getI18n } from '../utils/i18n';
+import { serverBaseUrl, localStoragePrivateKey } from '../constants';
 import Post from '../models/Post';
-import Http from '../utils/http';
-import Secret from '../utils/secret';
-import I18n from '../utils/i18n';
 
 interface CreatePostBody {
   title: string;
@@ -21,10 +22,10 @@ async function fetchPosts(publicKey: string): Promise<Post[]> {
   }
 
   try {
-    const url = `${Http.baseUrl}/posts`;
+    const url = `${serverBaseUrl}/posts`;
     const posts = await Http.get<Post[]>(url);
 
-    const keyFromLocalStorage = Secret.getPrivateKeyFromLocalStorage();
+    const keyFromLocalStorage = Storage.get(localStoragePrivateKey);
     const encryptedPrivateKey = Secret.parseUtf8ToString(keyFromLocalStorage);
     const privateKey = Secret.decryptAES(encryptedPrivateKey, publicKey);
 
@@ -56,11 +57,11 @@ async function fetchPosts(publicKey: string): Promise<Post[]> {
 }
 
 async function fetchPost(id: number, publicKey: string): Promise<Post | null> {
-  const url = `${Http.baseUrl}/posts/${id}`;
+  const url = `${serverBaseUrl}/posts/${id}`;
   const post = await Http.get<Post>(url);
 
   try {
-    const keyFromLocalStorage = Secret.getPrivateKeyFromLocalStorage();
+    const keyFromLocalStorage = Storage.get(localStoragePrivateKey);
     const encryptedPrivateKey = Secret.parseUtf8ToString(keyFromLocalStorage);
     const privateKey = Secret.decryptAES(encryptedPrivateKey, publicKey);
 
@@ -88,14 +89,14 @@ async function createPost(publicKey: string, title: string, date: string, conten
   }
 
   try {
-    const keyFromLocalStorage = Secret.getPrivateKeyFromLocalStorage();
+    const keyFromLocalStorage = Storage.get(localStoragePrivateKey);
     const encryptedPrivateKey = Secret.parseUtf8ToString(keyFromLocalStorage);
 
     const privateKey = Secret.decryptAES(encryptedPrivateKey, publicKey);
     const encryptedTitle = Secret.encryptAES(title, privateKey);
     const encryptedContent = Secret.encryptAES(content, privateKey);
 
-    const url = `${Http.baseUrl}/posts`;
+    const url = `${serverBaseUrl}/posts`;
     const body: CreatePostBody = {
       title: encryptedTitle,
       date,
@@ -104,7 +105,7 @@ async function createPost(publicKey: string, title: string, date: string, conten
 
     return await Http.post<CreatePostBody, number>(url, body);
   } catch (e) {
-    const i18n = new I18n({
+    const i18n = getI18n({
       error: {
         ko: '저장에 실패했습니다',
         en: 'Failed to save',
@@ -123,14 +124,14 @@ async function updatePost(publicKey: string, id: number, title?: string, date?: 
   }
 
   try {
-    const keyFromLocalStorage = Secret.getPrivateKeyFromLocalStorage();
+    const keyFromLocalStorage = Storage.get(localStoragePrivateKey);
     const encryptedPrivateKey = Secret.parseUtf8ToString(keyFromLocalStorage);
 
     const privateKey = Secret.decryptAES(encryptedPrivateKey, publicKey);
     const encryptedTitle = title && Secret.encryptAES(title, privateKey);
     const encryptedContent = content && Secret.encryptAES(content, privateKey);
 
-    const url = `${Http.baseUrl}/posts/${id}`;
+    const url = `${serverBaseUrl}/posts/${id}`;
     const body: UpdatePostBody = {
       title: encryptedTitle,
       date,
@@ -139,7 +140,7 @@ async function updatePost(publicKey: string, id: number, title?: string, date?: 
 
     return await Http.patch<UpdatePostBody, boolean>(url, body);
   } catch (e) {
-    const i18n = new I18n({
+    const i18n = getI18n({
       error: {
         ko: '저장에 실패했습니다',
         en: 'Failed to save',
@@ -154,10 +155,10 @@ async function updatePost(publicKey: string, id: number, title?: string, date?: 
 
 async function deletePost(id: number): Promise<boolean> {
   try {
-    const url = `${Http.baseUrl}/posts/${id}`;
+    const url = `${serverBaseUrl}/posts/${id}`;
     return await Http.delete<boolean>(url);
   } catch (e) {
-     const i18n = new I18n({
+     const i18n = getI18n({
       error: {
         ko: '삭제에 실패했습니다',
         en: 'Failed to delete',

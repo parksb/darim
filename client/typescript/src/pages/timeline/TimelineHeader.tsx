@@ -2,9 +2,9 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import styled from 'styled-components';
 
+import { getI18n } from '../../utils/i18n';
 import { Button, Container } from '../../components';
 import { ViewMode } from './Timeline';
-import I18n from '../../utils/i18n';
 
 interface Props {
   viewModeState: [ViewMode, React.Dispatch<React.SetStateAction<ViewMode>>]
@@ -21,7 +21,7 @@ const Select = styled.select`
 const TimelineHeader: React.FC<Props> = ({ viewModeState }) => {
   const [viewMode, setViewMode] = viewModeState;
 
-  const i18n = new I18n({
+  const i18n = getI18n({
     listView: {
       ko: '리스트 뷰',
       en: 'List view',

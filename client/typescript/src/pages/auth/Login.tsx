@@ -2,10 +2,10 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import styled from 'styled-components';
 
+import { getI18n } from '../../utils/i18n';
 import * as api from '../../api/auth';
 import { TextField, Button, Container, Section, LoadingDots } from '../../components';
 import { Session } from '../../models';
-import I18n from '../../utils/i18n';
 
 interface Props {
   session_state: [Session | null, React.Dispatch<React.SetStateAction<Session | null>>]
@@ -36,7 +36,7 @@ const Login: React.FC<Props> = ({ session_state }) => {
 
   const [isSigning, setIsSigning] = useState(false);
 
-  const i18n = new I18n({
+  const i18n = getI18n({
     signIn: {
       ko: '로그인 ↗',
       en: 'Sign in ↗',

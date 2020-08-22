@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
 
+import { getI18n } from '../../utils/i18n';
 import * as api from '../../api/auth';
 import { Button, Container, TextField, Section, LoadingDots } from '../../components';
-import I18n from '../../utils/i18n';
 
 const FullWidthTextField = styled(TextField)`
   flex: 1;
@@ -26,7 +26,7 @@ const Join: React.FC = () => {
   const [isSettingToken, setIsSettingToken] = useState(false);
   const [isSetToken, setIsSetToken] = useState(false);
 
-  const i18n = new I18n({
+  const i18n = getI18n({
     info: {
       ko: `이메일 주소를 인증하고 계정을 활성화할 수 있는 인증키가 발송되었습니다. 이메일(${email})을 확인해주세요.`,
       en: `Please check your email (${email}) to verify your email address and activate your account`,

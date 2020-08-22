@@ -3,12 +3,12 @@ import { useParams, useLocation, Redirect } from 'react-router-dom';
 import styled from 'styled-components';
 import dayjs from 'dayjs';
 
+import { getI18n } from '../../utils/i18n';
 import * as api from '../../api/post';
 import { Post, Session } from '../../models';
 import { Button, Container, Section, TextField } from '../../components';
 import Editor from './Editor';
 import Preview from './Preview';
-import I18n from '../../utils/i18n';
 import { SaveStatus, getSaveStatusText } from '../../utils/status';
 
 interface Props {
@@ -75,7 +75,7 @@ const DeleteButton = styled(Button)`
 `;
 
 const Post: React.FC<Props> = ({ session }) => {
-  const i18n = new I18n({
+  const i18n = getI18n({
     title: {
       ko: '제목',
       en: 'Title',

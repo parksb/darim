@@ -1,14 +1,4 @@
-enum I18nLanguages {
-  KO = 'ko',
-  EN = 'en',
-}
-
-interface I18nText {
-  [key: string]: {
-    ko: string
-    en: string
-  };
-}
+import { I18n, I18nText } from 'snowball-js';
 
 const presetTexts: I18nText = {
   email: {
@@ -33,28 +23,8 @@ const presetTexts: I18nText = {
   },
 };
 
-class I18n {
-  private readonly texts: I18nText;
-
-  constructor(texts: I18nText) {
-    this.texts = { ...presetTexts, ...texts };
-  }
-
-  static getUserLanguage(): I18nLanguages {
-    const language = navigator.language;
-    switch (language) {
-      case 'ko-KR':
-        return I18nLanguages.KO;
-      case 'en-US':
-        return I18nLanguages.EN;
-      default:
-        return I18nLanguages.EN;
-    }
-  }
-
-  text(key: string): string {
-    return this.texts[key][I18n.getUserLanguage()] as string;
-  }
+function getI18n(texts: I18nText): I18n {
+  return new I18n({ ...presetTexts, ...texts });
 }
 
-export default I18n;
+export { getI18n };
