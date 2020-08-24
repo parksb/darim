@@ -14,43 +14,7 @@
 * Darim is following the layered architecture.
 * Each layer cannot be cross-referenced. All references between layers can flow in a higher direction. In other words, only the upper layer can invoke the lower layer members.
 
-```
-                 +-----------------------+
-                 | Models                |
-                 +-------+----------+----+
-                         |          |
-+------------+   +-------+------+   |
-| Components |   | API Fetchers |   |
-+------+-----+   +-------+------+   |
-       |                 |          |   
-+------+-----------------+----------+----+
-| Pages                                  |
-+-------------------+--------------------+
-                    |
-+-------------------+--------------------+
-| Client (index.html)                    |
-+-------------------+--------------------+
-                    |
-+-------------------+--------------------+
-| Server (main.rs)                       |
-+-------------------+--------------------+
-                    |
-+-------------------+--------------------+
-| Routes                                 |
-+-------------------+--------------------+
-                    |           
-+-------------------+--------------------+
-| Services                               |
-+-------------------+--------------------+
-                    |
-+-------------------+--------------------+
-| Models                                 |
-+--------+----------------------+--------+
-         |                      |
-+--------+--------+    +--------+--------+
-| MariaDB         |    | Redis           |
-+-----------------+    +-----------------+
-```
+![main transaction flow](https://user-images.githubusercontent.com/6410412/91041313-c4af1b80-e64a-11ea-8e56-8c743fb5b4b5.png)
 
 ### [Client](client)
 
@@ -71,15 +35,7 @@
 
 ### Generate keys
 
-```
-                 +------------+   +----------------------+   +---------------+
-             +-->| Secret key +-->| Encrypted secret key +-->| Local storage |
-+---------+  |   +------------+   +----------------------+   +---------------+
-| Sign-up |--+                               ^
-+---------+  |   +------------+              |       +--------+   +----------+
-             +-->| Public key +--------------+------>| Server +-->| Database |
-                 +------------+                      +--------+   +----------+
-```
+![key generation flow](https://user-images.githubusercontent.com/6410412/91041309-c37dee80-e64a-11ea-9ac0-75dc0d810aa8.png)
 
 1. When a user finishes the sign-up process, the secret key and public key are generated on the client-side.
 1. The client encrypts the secret key by public key and saevs the encrypted secret key in local storage.
@@ -87,17 +43,7 @@
 
 ### Read & Write
 
-```
-                                                                   Database
-+----------------------+   +----------------------+   +--------+   +----------------+
-| Plaintext post       +-->| Encrypted post       +-->|        +-->| Encrypted post |
-+----------------------+   +----------------------+   |        |   +----------------+
-                                       ^              | Server |   |                |
-Local storage                          |              |        |   |                |
-+----------------------+   +-----------+----------+   |        |   +----------------+
-| Encrypted secret key +-->| Decrypted secret key |<--+        |<--+ Public key     |
-+----------------------+   +----------------------+   +--------+   +----------------+
-```
+![read and write flow](https://user-images.githubusercontent.com/6410412/91042440-b530d200-e64c-11ea-86f5-dfbcf025bdf4.png)
 
 1. When a user creates the plaintext post, the client requests the public key to the server.
 1. The client decrypts the encrypted secret key in the local storage using the public key from the server.

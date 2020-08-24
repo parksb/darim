@@ -10,31 +10,7 @@
 * [Yoshua Wuyts, "Error Handling Survey", 2019](https://blog.yoshuawuyts.com/error-handling-survey/)
 * Ji-soo Kim, Jong-sub Moon, “A Study on Data Security of Web Local Storage”, _JICS_, vol.17, no. 3, pp. 55-66, Jun, 2016
 
-```
-+-------------------+--------------------+
-|  Server (main.rs)                      |
-+-------------------+--------------------+
-                    |
-+-------------------+--------------------+
-|  Routes                                |
-+--------+--------+--------+-------------+
-|  auth  |  post  |  user  |     ...     |
-+----+---+----+---+----+---+------+------+
-     |        |        |          |
-+----+--------+--------+----------+------+
-|  Services                              |
-+-------------------+--------------------+
-                    |           
-+-------------------+--------------------+
-|  Models                                |
-+--------+--------+--------+-------------+
-|  auth  |  post  |  user  |     ...     |
-+----+---+----+---+----+---+------+------+
-     |        |        |          |
-+----+--------+--------+----------+------+
-|  Database                              |
-+----------------------------------------+
-```
+![server transaction flow](https://user-images.githubusercontent.com/6410412/91041720-78b0a680-e64b-11ea-9dcf-198006a61b1e.png)
 
 * `main.rs` - An entry point of the application. It runs a http server.
 * Routes - A presentation layer that makes API public and passes request/response data to other layers.
