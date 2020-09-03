@@ -1,22 +1,27 @@
-name: ReasonML Client CI
+name: Client CI
 
 on:
   push:
     branches:
       - master
     paths:
-      - 'client/reasonml/**'
+      - 'client/**'
       - '.github/workflows/**'
   pull_request:
     branches:
       - master
     paths:
-      - 'client/reasonml/**'
+      - 'client/**'
       - '.github/workflows/**'
 
 jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - run: cd client && npm install && npm run check
   build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - run: cd client/reasonml && npm install && npm run build
+      - run: cd client && npm install && npm run build
