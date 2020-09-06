@@ -1,5 +1,3 @@
-use diesel::result::Error;
-
 use crate::models::auth::{
     PasswordToken, PasswordTokenRepository, SignUpToken, SignUpTokenRepository,
 };
@@ -15,58 +13,46 @@ impl UserService {
     pub fn get_one(id: u64) -> Result<UserDTO, ServiceError> {
         let user = {
             let user_repository = UserRepository::new();
-            user_repository.find_by_id(id)
+            user_repository.find_by_id(id)?
         };
 
-        match user {
-            Ok(user) => Ok(UserDTO {
-                id: user.id,
-                name: user.name,
-                email: user.email,
-                avatar_url: user.avatar_url,
-                updated_at: user.updated_at,
-                created_at: user.created_at,
-            }),
-            Err(error) => match error {
-                Error::NotFound => Err(get_service_error(ServiceError::NotFound(id.to_string()))),
-                _ => Err(get_service_error(ServiceError::QueryExecutionFailure)),
-            },
-        }
+        Ok(UserDTO {
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            avatar_url: user.avatar_url,
+            updated_at: user.updated_at,
+            created_at: user.created_at,
+        })
     }
 
     /// Finds all users.
     pub fn get_list() -> Result<Vec<UserDTO>, ServiceError> {
         let user_list = {
             let user_repository = UserRepository::new();
-            user_repository.find_all()
+            user_repository.find_all()?
         };
 
-        if let Ok(user_list) = user_list {
-            let user_to_show_list = user_list
-                .iter()
-                .map(|user| -> UserDTO {
-                    UserDTO {
-                        id: user.id,
-                        name: user.name.clone(),
-                        email: user.email.clone(),
-                        avatar_url: user.avatar_url.clone(),
-                        created_at: user.created_at,
-                        updated_at: user.updated_at,
-                    }
-                })
-                .collect();
-
-            Ok(user_to_show_list)
-        } else {
-            Err(get_service_error(ServiceError::QueryExecutionFailure))
-        }
+        Ok(user_list
+            .iter()
+            .map(|user| -> UserDTO {
+                UserDTO {
+                    id: user.id,
+                    name: user.name.clone(),
+                    email: user.email.clone(),
+                    avatar_url: user.avatar_url.clone(),
+                    created_at: user.created_at,
+                    updated_at: user.updated_at,
+                }
+            })
+            .collect())
     }
 
     /// Creates a new user.
     ///
     /// 1. Finds serialized token by token key from arguments.
-    /// 1. Deserializes the found token and compares pin from token and it from arguments.
-    /// 1. If the pins are equal, deletes the token from redis and creates a new user.
+    /// 2. Deserializes the found token and compares pin from token and it from arguments.
+    /// 3. If the pins are equal, deletes the token from redis and creates a new user.
     pub fn create(
         user_public_key: &str,
         token_key: &str,
@@ -74,13 +60,7 @@ impl UserService {
     ) -> Result<bool, ServiceError> {
         let token: SignUpToken = {
             let mut token_repository = SignUpTokenRepository::new();
-            let serialized_token = if let Ok(serialized_token) = token_repository.find(token_key) {
-                serialized_token
-            } else {
-                return Err(get_service_error(ServiceError::NotFound(
-                    token_key.to_string(),
-                )));
-            };
+            let serialized_token = token_repository.find(token_key)?;
 
             let deserialized_token: SignUpToken =
                 if let Ok(deserialized_token) = serde_json::from_str(&serialized_token) {
@@ -90,68 +70,34 @@ impl UserService {
                 };
 
             if token_pin == deserialized_token.pin {
-                let _ = token_repository.delete(token_key);
+                let _ = token_repository.delete(token_key)?;
                 deserialized_token
             } else {
                 return Err(get_service_error(ServiceError::Unauthorized));
             }
         };
 
-        let (created_count, user) = {
+        let user = {
             let user_repository = UserRepository::new();
 
-            let created_count = user_repository.create(
+            user_repository.create(
                 &token.name,
                 &token.email,
                 &token.password,
                 &token.avatar_url,
-            );
-            let user = user_repository.find_by_email(&token.email);
+            )?;
 
-            (created_count, user)
+            user_repository.find_by_email(&token.email)?
         };
 
-        // FIXME: Improve error handling.
-        if let (Ok(created_count), Ok(user)) = (created_count, user) {
-            if created_count > 0 {
-                let user_key_created_count = {
-                    let user_key_repository = UserKeyRepository::new();
-                    user_key_repository.create(user.id, user_public_key)
-                };
-
-                if let Ok(user_key_created_count) = user_key_created_count {
-                    if user_key_created_count > 0 {
-                        Ok(true)
-                    } else {
-                        Err(get_service_error(ServiceError::QueryExecutionFailure))
-                    }
-                } else {
-                    Err(get_service_error(ServiceError::QueryExecutionFailure))
-                }
-            } else {
-                Err(get_service_error(ServiceError::QueryExecutionFailure))
-            }
-        } else {
-            Err(get_service_error(ServiceError::QueryExecutionFailure))
-        }
+        let user_key_repository = UserKeyRepository::new();
+        user_key_repository.create(user.id, user_public_key)
     }
 
     /// Deletes a user.
     pub fn delete(id: u64) -> Result<bool, ServiceError> {
-        let deleted_count = {
-            let user_repository = UserRepository::new();
-            user_repository.delete(id)
-        };
-
-        if let Ok(deleted_count) = deleted_count {
-            if deleted_count > 0 {
-                Ok(true)
-            } else {
-                Err(get_service_error(ServiceError::QueryExecutionFailure))
-            }
-        } else {
-            Err(get_service_error(ServiceError::QueryExecutionFailure))
-        }
+        let user_repository = UserRepository::new();
+        user_repository.delete(id)
     }
 
     /// Updates a new user.
@@ -172,27 +118,14 @@ impl UserService {
             }
         }
 
-        let updated_count = {
-            let user_repository = UserRepository::new();
-
-            let hashed_password = if let Some(password) = password {
-                Some(password_util::get_hashed_password(&password))
-            } else {
-                None
-            };
-
-            user_repository.update(id, name, &hashed_password, avatar_url)
+        let hashed_password = if let Some(password) = password {
+            Some(password_util::get_hashed_password(&password))
+        } else {
+            None
         };
 
-        if let Ok(updated_count) = updated_count {
-            if updated_count > 0 {
-                Ok(true)
-            } else {
-                Err(get_service_error(ServiceError::QueryExecutionFailure))
-            }
-        } else {
-            Err(get_service_error(ServiceError::QueryExecutionFailure))
-        }
+        let user_repository = UserRepository::new();
+        user_repository.update(id, name, &hashed_password, avatar_url)
     }
 
     // Reset the password.
@@ -203,47 +136,26 @@ impl UserService {
         new_password: &str,
     ) -> Result<bool, ServiceError> {
         let user_repository = UserRepository::new();
-        let user = if let Ok(user) = user_repository.find_by_email(email) {
-            user
-        } else {
-            return Err(get_service_error(ServiceError::UserNotFound(
-                email.to_string(),
-            )));
-        };
+        let user = user_repository.find_by_email(email)?;
 
         let mut token_repository = PasswordTokenRepository::new(user.id);
         let token: PasswordToken = {
-            if let Ok(serialized_token) = token_repository.find() {
-                if let Ok(deserialized_token) = serde_json::from_str(&serialized_token) {
-                    deserialized_token
-                } else {
-                    return Err(get_service_error(ServiceError::InvalidFormat));
-                }
+            let serialized_token = token_repository.find()?;
+            if let Ok(deserialized_token) = serde_json::from_str(&serialized_token) {
+                deserialized_token
             } else {
-                return Err(get_service_error(ServiceError::NotFound(
-                    user.id.to_string(),
-                )));
+                return Err(get_service_error(ServiceError::InvalidFormat));
             }
         };
 
         if token.id == token_id && token.password == temporary_password {
             let hashed_password = password_util::get_hashed_password(new_password);
-            if let Ok(count_updated) =
-                user_repository.update(user.id, &None, &Some(hashed_password), &None)
-            {
-                if count_updated > 0 {
-                    let _ = token_repository.delete();
-                    Ok(true)
-                } else {
-                    Err(get_service_error(ServiceError::QueryExecutionFailure))
-                }
-            } else {
-                Err(get_service_error(ServiceError::UserNotFound(
-                    email.to_string(),
-                )))
-            }
+            user_repository.update(user.id, &None, &Some(hashed_password), &None)?;
+            token_repository.delete()
         } else {
-            Err(get_service_error(ServiceError::Unauthorized))
+            Err(get_service_error(ServiceError::UserNotFound(
+                email.to_string(),
+            )))
         }
     }
 }

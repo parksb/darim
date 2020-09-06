@@ -4,6 +4,7 @@ use diesel::result::Error;
 use serde::{Deserialize, Serialize};
 
 use crate::models::connection;
+use crate::models::error::{get_service_error, ServiceError};
 use crate::schema::{posts, posts::dsl};
 
 /// Post representing `posts` table.
@@ -55,32 +56,46 @@ impl PostRepository {
     }
 
     /// Finds a post by user id and post id.
-    pub fn find(&self, user_id: u64, post_id: u64) -> Result<Post, Error> {
-        let post: Post = dsl::posts
+    pub fn find(&self, user_id: u64, post_id: u64) -> Result<Post, ServiceError> {
+        let post: Result<Post, Error> = dsl::posts
             .find(post_id)
             .filter(dsl::user_id.eq(user_id))
-            .get_result::<Post>(&self.conn)?;
+            .get_result::<Post>(&self.conn);
 
-        Ok(post)
+        match post {
+            Ok(post) => Ok(post),
+            Err(error) => match error {
+                Error::NotFound => Err(get_service_error(ServiceError::NotFound(
+                    post_id.to_string(),
+                ))),
+                _ => Err(get_service_error(ServiceError::QueryExecutionFailure)),
+            },
+        }
     }
 
     /// Finds all post written by specific user.
-    pub fn find_all(&self, user_id: u64) -> Result<Vec<Post>, Error> {
-        let post_list: Vec<Post> = dsl::posts
+    pub fn find_all(&self, user_id: u64) -> Result<Vec<Post>, ServiceError> {
+        let post_list: Result<Vec<Post>, Error> = dsl::posts
             .filter(dsl::user_id.eq(user_id))
-            .load::<Post>(&self.conn)?;
+            .load::<Post>(&self.conn);
 
-        Ok(post_list)
+        match post_list {
+            Ok(post_list) => Ok(post_list),
+            Err(_) => Err(get_service_error(ServiceError::QueryExecutionFailure)),
+        }
     }
 
     /// Finds all post written by specific user in desc date order.
-    pub fn find_all_in_desc_date_order(&self, user_id: u64) -> Result<Vec<Post>, Error> {
-        let post_list: Vec<Post> = dsl::posts
+    pub fn find_all_in_desc_date_order(&self, user_id: u64) -> Result<Vec<Post>, ServiceError> {
+        let post_list: Result<Vec<Post>, Error> = dsl::posts
             .filter(dsl::user_id.eq(user_id))
             .order((dsl::date.desc(), dsl::id.desc()))
-            .load::<Post>(&self.conn)?;
+            .load::<Post>(&self.conn);
 
-        Ok(post_list)
+        match post_list {
+            Ok(post_list) => Ok(post_list),
+            Err(_) => Err(get_service_error(ServiceError::QueryExecutionFailure)),
+        }
     }
 
     /// Creates a new post.
@@ -90,7 +105,7 @@ impl PostRepository {
         title: &str,
         content: &str,
         date: &NaiveDateTime,
-    ) -> Result<usize, Error> {
+    ) -> Result<bool, ServiceError> {
         let post_to_create = PostDAO {
             id: None,
             user_id: Some(user_id),
@@ -102,9 +117,17 @@ impl PostRepository {
 
         let count = diesel::insert_into(dsl::posts)
             .values(post_to_create)
-            .execute(&self.conn)?;
+            .execute(&self.conn);
 
-        Ok(count)
+        if let Ok(count) = count {
+            if count > 0 {
+                Ok(true)
+            } else {
+                Err(get_service_error(ServiceError::QueryExecutionFailure))
+            }
+        } else {
+            Err(get_service_error(ServiceError::QueryExecutionFailure))
+        }
     }
 
     /// Updates a post written by specific user.
@@ -115,7 +138,7 @@ impl PostRepository {
         title: &Option<String>,
         content: &Option<String>,
         date: &Option<NaiveDateTime>,
-    ) -> Result<usize, Error> {
+    ) -> Result<bool, ServiceError> {
         let post_to_update = PostDAO {
             id: Some(post_id),
             user_id: None,
@@ -128,17 +151,45 @@ impl PostRepository {
         let target_post = dsl::posts.find(post_id).filter(dsl::user_id.eq(user_id));
         let count = diesel::update(target_post)
             .set(post_to_update)
-            .execute(&self.conn)?;
+            .execute(&self.conn);
 
-        Ok(count)
+        match count {
+            Ok(count) => {
+                if count > 0 {
+                    Ok(true)
+                } else {
+                    Err(get_service_error(ServiceError::QueryExecutionFailure))
+                }
+            }
+            Err(error) => match error {
+                Error::NotFound => Err(get_service_error(ServiceError::NotFound(
+                    post_id.to_string(),
+                ))),
+                _ => Err(get_service_error(ServiceError::QueryExecutionFailure)),
+            },
+        }
     }
 
     /// Deletes a post written by specific user.
-    pub fn delete(&self, user_id: u64, post_id: u64) -> Result<usize, Error> {
+    pub fn delete(&self, user_id: u64, post_id: u64) -> Result<bool, ServiceError> {
         let target_post = dsl::posts.find(post_id).filter(dsl::user_id.eq(user_id));
-        let count = diesel::delete(target_post).execute(&self.conn)?;
+        let count = diesel::delete(target_post).execute(&self.conn);
 
-        Ok(count)
+        match count {
+            Ok(count) => {
+                if count > 0 {
+                    Ok(true)
+                } else {
+                    Err(get_service_error(ServiceError::QueryExecutionFailure))
+                }
+            }
+            Err(error) => match error {
+                Error::NotFound => Err(get_service_error(ServiceError::NotFound(
+                    post_id.to_string(),
+                ))),
+                _ => Err(get_service_error(ServiceError::QueryExecutionFailure)),
+            },
+        }
     }
 }
 

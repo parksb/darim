@@ -1,5 +1,4 @@
 use chrono::NaiveDateTime;
-use diesel::result::Error;
 
 use crate::models::error::{get_service_error, ServiceError};
 use crate::models::post::*;
@@ -11,51 +10,39 @@ impl PostService {
     pub fn get(user_id: u64, id: u64) -> Result<PostDTO, ServiceError> {
         let post = {
             let post_repository = PostRepository::new();
-            post_repository.find(user_id, id)
+            post_repository.find(user_id, id)?
         };
 
-        match post {
-            Ok(post) => Ok(PostDTO {
-                id: post.id,
-                title: post.title,
-                content: post.content,
-                date: post.date,
-                updated_at: post.updated_at,
-                created_at: post.created_at,
-            }),
-            Err(error) => match error {
-                Error::NotFound => Err(get_service_error(ServiceError::NotFound(id.to_string()))),
-                _ => Err(get_service_error(ServiceError::QueryExecutionFailure)),
-            },
-        }
+        Ok(PostDTO {
+            id: post.id,
+            title: post.title,
+            content: post.content,
+            date: post.date,
+            updated_at: post.updated_at,
+            created_at: post.created_at,
+        })
     }
 
     /// Finds all post written by specific user.
     pub fn get_list(user_id: u64) -> Result<Vec<PostDTO>, ServiceError> {
         let post_list = {
             let post_repository = PostRepository::new();
-            post_repository.find_all_in_desc_date_order(user_id)
+            post_repository.find_all_in_desc_date_order(user_id)?
         };
 
-        if let Ok(post_list) = post_list {
-            let post_to_show_list = post_list
-                .iter()
-                .map(|post| -> PostDTO {
-                    PostDTO {
-                        id: post.id,
-                        title: post.title.clone(),
-                        content: post.content.clone(),
-                        date: post.date,
-                        created_at: post.created_at,
-                        updated_at: post.updated_at,
-                    }
-                })
-                .collect();
-
-            Ok(post_to_show_list)
-        } else {
-            Err(get_service_error(ServiceError::QueryExecutionFailure))
-        }
+        Ok(post_list
+            .iter()
+            .map(|post| -> PostDTO {
+                PostDTO {
+                    id: post.id,
+                    title: post.title.clone(),
+                    content: post.content.clone(),
+                    date: post.date,
+                    created_at: post.created_at,
+                    updated_at: post.updated_at,
+                }
+            })
+            .collect())
     }
 
     /// Creates a new post and returns id of the created post.
@@ -69,41 +56,19 @@ impl PostService {
             return Err(get_service_error(ServiceError::InvalidArgument));
         }
 
-        let post_repository = PostRepository::new();
-        let created_count = post_repository.create(user_id, title, content, date);
+        let post_list = {
+            let post_repository = PostRepository::new();
+            post_repository.create(user_id, title, content, date)?;
+            post_repository.find_all(user_id)?
+        };
 
-        if let Ok(created_count) = created_count {
-            if created_count > 0 {
-                if let Ok(post_list) = post_repository.find_all(user_id) {
-                    let created_post = &post_list[post_list.len() - 1];
-                    Ok(created_post.id)
-                } else {
-                    Err(get_service_error(ServiceError::QueryExecutionFailure))
-                }
-            } else {
-                Err(get_service_error(ServiceError::QueryExecutionFailure))
-            }
-        } else {
-            Err(get_service_error(ServiceError::QueryExecutionFailure))
-        }
+        Ok(post_list[post_list.len() - 1].id)
     }
 
     /// Deletes a post written by specific user.
     pub fn delete(id: u64, user_id: u64) -> Result<bool, ServiceError> {
-        let deleted_count = {
-            let post_repository = PostRepository::new();
-            post_repository.delete(user_id, id)
-        };
-
-        if let Ok(deleted_count) = deleted_count {
-            if deleted_count > 0 {
-                Ok(true)
-            } else {
-                Err(get_service_error(ServiceError::NotFound(id.to_string())))
-            }
-        } else {
-            Err(get_service_error(ServiceError::QueryExecutionFailure))
-        }
+        let post_repository = PostRepository::new();
+        post_repository.delete(user_id, id)
     }
 
     /// Updates a post written by specific user.
@@ -130,19 +95,7 @@ impl PostService {
             }
         }
 
-        let updated_count = {
-            let post_repository = PostRepository::new();
-            post_repository.update(user_id, id, title, content, date)
-        };
-
-        if let Ok(updated_count) = updated_count {
-            if updated_count > 0 {
-                Ok(true)
-            } else {
-                Err(get_service_error(ServiceError::NotFound(id.to_string())))
-            }
-        } else {
-            Err(get_service_error(ServiceError::QueryExecutionFailure))
-        }
+        let post_repository = PostRepository::new();
+        post_repository.update(user_id, id, title, content, date)
     }
 }

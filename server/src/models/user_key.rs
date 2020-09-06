@@ -4,6 +4,7 @@ use diesel::result::Error;
 use serde::{Deserialize, Serialize};
 
 use crate::models::connection;
+use crate::models::error::{get_service_error, ServiceError};
 use crate::schema::{user_keys, user_keys::dsl};
 
 /// User key representing `user_keys` table.
@@ -41,15 +42,24 @@ impl UserKeyRepository {
     }
 
     /// Finds a user key by user id.
-    pub fn find_by_user_id(&self, user_id: u64) -> Result<UserKey, Error> {
-        let user_key: UserKey = dsl::user_keys
+    pub fn find_by_user_id(&self, user_id: u64) -> Result<UserKey, ServiceError> {
+        let user_key = dsl::user_keys
             .filter(dsl::user_id.eq(user_id))
-            .get_result::<UserKey>(&self.conn)?;
-        Ok(user_key)
+            .get_result::<UserKey>(&self.conn);
+
+        match user_key {
+            Ok(user) => Ok(user),
+            Err(error) => match error {
+                Error::NotFound => Err(get_service_error(ServiceError::NotFound(
+                    user_id.to_string(),
+                ))),
+                _ => Err(get_service_error(ServiceError::QueryExecutionFailure)),
+            },
+        }
     }
 
     /// Creates a new user key.
-    pub fn create(&self, user_id: u64, public_key: &str) -> Result<usize, Error> {
+    pub fn create(&self, user_id: u64, public_key: &str) -> Result<bool, ServiceError> {
         let user_key_to_create = UserKeyDAO {
             user_id,
             public_key: public_key.to_string(),
@@ -58,9 +68,17 @@ impl UserKeyRepository {
 
         let count = diesel::insert_into(dsl::user_keys)
             .values(user_key_to_create)
-            .execute(&self.conn)?;
+            .execute(&self.conn);
 
-        Ok(count)
+        if let Ok(count) = count {
+            if count > 0 {
+                Ok(true)
+            } else {
+                Err(get_service_error(ServiceError::QueryExecutionFailure))
+            }
+        } else {
+            Err(get_service_error(ServiceError::QueryExecutionFailure))
+        }
     }
 }
 

@@ -3,6 +3,7 @@ use redis::{Commands, RedisError};
 use serde::{Deserialize, Serialize};
 
 use crate::models::connection;
+use crate::models::error::{get_service_error, ServiceError};
 
 /// Session containing information of the logged-in user.
 #[derive(Serialize, Deserialize)]
@@ -40,24 +41,35 @@ impl SignUpTokenRepository {
     }
 
     /// Finds a token by key.
-    pub fn find(&mut self, key: &str) -> Result<String, RedisError> {
-        self.client.get::<&str, String>(key)
+    pub fn find(&mut self, key: &str) -> Result<String, ServiceError> {
+        match self.client.get::<&str, String>(key) {
+            Ok(token) => Ok(token),
+            Err(_) => Err(get_service_error(ServiceError::QueryExecutionFailure)),
+        }
     }
 
     /// Deletes a token by key.
-    pub fn delete(&mut self, key: &str) -> Result<bool, RedisError> {
-        self.client.del::<&str, _>(key)
+    pub fn delete(&mut self, key: &str) -> Result<bool, ServiceError> {
+        match self.client.del::<&str, _>(key) {
+            Ok(result) => Ok(result),
+            Err(_) => Err(get_service_error(ServiceError::QueryExecutionFailure)),
+        }
     }
 
     /// Creates a new token.
-    pub fn save(&mut self, serialized_token: &str) -> Result<bool, RedisError> {
+    pub fn save(&mut self, serialized_token: &str) -> Result<bool, ServiceError> {
         let key: String = thread_rng().sample_iter(&Alphanumeric).take(32).collect();
         let ttl_seconds = 180; // 3 min
 
-        let _ = self.client.set::<&str, &str, _>(&key, &serialized_token)?;
-        let _ = self.client.expire::<&str, _>(&key, ttl_seconds)?;
-
-        Ok(true)
+        let result: Result<bool, RedisError> =
+            self.client.set::<&str, &str, _>(&key, &serialized_token);
+        match result {
+            Ok(_) => match self.client.expire::<&str, _>(&key, ttl_seconds) {
+                Ok(result) => Ok(result),
+                Err(_) => Err(get_service_error(ServiceError::QueryExecutionFailure)),
+            },
+            Err(_) => Err(get_service_error(ServiceError::QueryExecutionFailure)),
+        }
     }
 }
 
@@ -91,24 +103,34 @@ impl PasswordTokenRepository {
     }
 
     /// Finds a token by key.
-    pub fn find(&mut self) -> Result<String, RedisError> {
-        self.client.get::<&str, String>(&self.key)
+    pub fn find(&mut self) -> Result<String, ServiceError> {
+        match self.client.get::<&str, String>(&self.key) {
+            Ok(token) => Ok(token),
+            Err(_) => Err(get_service_error(ServiceError::QueryExecutionFailure)),
+        }
     }
 
     /// Deletes a token by key.
-    pub fn delete(&mut self) -> Result<bool, RedisError> {
-        self.client.del::<&str, _>(&self.key)
+    pub fn delete(&mut self) -> Result<bool, ServiceError> {
+        match self.client.del::<&str, _>(&self.key) {
+            Ok(result) => Ok(result),
+            Err(_) => Err(get_service_error(ServiceError::QueryExecutionFailure)),
+        }
     }
 
     /// Creates a new token.
-    pub fn save(&mut self, serialized_token: &str) -> Result<bool, RedisError> {
+    pub fn save(&mut self, serialized_token: &str) -> Result<bool, ServiceError> {
         let ttl_seconds = 180; // 3 min
 
-        let _ = self
+        let result: Result<bool, RedisError> = self
             .client
-            .set::<&str, &str, _>(&self.key, &serialized_token)?;
-        let _ = self.client.expire::<&str, _>(&self.key, ttl_seconds)?;
-
-        Ok(true)
+            .set::<&str, &str, _>(&self.key, &serialized_token);
+        match result {
+            Ok(_) => match self.client.expire::<&str, _>(&self.key, ttl_seconds) {
+                Ok(result) => Ok(result),
+                Err(_) => Err(get_service_error(ServiceError::QueryExecutionFailure)),
+            },
+            Err(_) => Err(get_service_error(ServiceError::QueryExecutionFailure)),
+        }
     }
 }

@@ -1,5 +1,4 @@
 use actix_session::Session;
-use diesel::result::Error;
 use rand::{distributions::Alphanumeric, thread_rng, Rng};
 
 use crate::models::error::{get_service_error, ServiceError};
@@ -13,53 +12,32 @@ impl AuthService {
     /// Signs in to set user session.
     ///
     /// 1. Finds password of the user by email from arguments.
-    /// 1. Compares password from the found user and it from the arguments.
-    /// 1. If the passwords are equal, returns the found user.
+    /// 2. Compares password from the found user and it from the arguments.
+    /// 3. If the passwords are equal, returns the found user.
     pub fn login(email: &str, password: &str) -> Result<UserSession, ServiceError> {
         let user = {
             let user_repository = UserRepository::new();
-            let found_password = user_repository.find_password_by_email(email);
+            let found_password = user_repository.find_password_by_email(email)?;
 
-            match found_password {
-                Ok(found_password) => {
-                    if password_util::check_password(password, &found_password) {
-                        user_repository.find_by_email(email)
-                    } else {
-                        Err(Error::NotFound)
-                    }
-                }
-                Err(error) => Err(error),
+            if password_util::check_password(password, &found_password) {
+                user_repository.find_by_email(email)?
+            } else {
+                return Err(ServiceError::Unauthorized);
             }
         };
 
-        let logged_in_user_session = match user {
-            Ok(user) => {
-                let user_key = {
-                    let user_repository = UserKeyRepository::new();
-                    user_repository.find_by_user_id(user.id)
-                };
+        let logged_in_user_session = {
+            let user_public_key = {
+                let user_repository = UserKeyRepository::new();
+                user_repository.find_by_user_id(user.id)?.public_key
+            };
 
-                let user_public_key = if let Ok(user_key) = user_key {
-                    user_key.public_key
-                } else {
-                    return Err(get_service_error(ServiceError::NotFound(email.to_string())));
-                };
-
-                UserSession {
-                    user_id: user.id,
-                    user_email: user.email,
-                    user_name: user.name,
-                    user_public_key,
-                    user_avatar_url: user.avatar_url,
-                }
-            }
-            Err(error) => {
-                return match error {
-                    Error::NotFound => {
-                        Err(get_service_error(ServiceError::NotFound(email.to_string())))
-                    }
-                    _ => Err(get_service_error(ServiceError::QueryExecutionFailure)),
-                }
+            UserSession {
+                user_id: user.id,
+                user_email: user.email,
+                user_name: user.name,
+                user_public_key,
+                user_avatar_url: user.avatar_url,
             }
         };
 
@@ -73,28 +51,22 @@ impl AuthService {
         if let Some(user_session) = user_session {
             let user = {
                 let user_repository = UserRepository::new();
-                user_repository.find_by_id(user_session.user_id)
+                user_repository.find_by_id(user_session.user_id)?
             };
 
-            if let Ok(user) = user {
-                session_util::set_session(
-                    &mut session,
-                    user_session.user_id,
-                    &user_session.user_email,
-                    &user.name,
-                    &user_session.user_public_key,
-                    &user.avatar_url,
-                );
+            session_util::set_session(
+                &mut session,
+                user_session.user_id,
+                &user_session.user_email,
+                &user.name,
+                &user_session.user_public_key,
+                &user.avatar_url,
+            );
 
-                if let Some(refreshed_user_session) = session_util::get_session(&session) {
-                    Ok(refreshed_user_session)
-                } else {
-                    Err(get_service_error(ServiceError::Unauthorized))
-                }
+            if let Some(refreshed_user_session) = session_util::get_session(&session) {
+                Ok(refreshed_user_session)
             } else {
-                Err(get_service_error(ServiceError::UserNotFound(
-                    user_session.user_id.to_string(),
-                )))
+                Err(get_service_error(ServiceError::Unauthorized))
             }
         } else {
             Err(get_service_error(ServiceError::Unauthorized))
@@ -104,8 +76,8 @@ impl AuthService {
     /// Sets token for sign up process.
     ///
     /// 1. Generates a random string called pin.
-    /// 1. Creates a new token containing the pin and information of the user from arguments.
-    /// 1. Serializes the token and inserts it to redis.
+    /// 2. Creates a new token containing the pin and information of the user from arguments.
+    /// 3. Serializes the token and inserts it to redis.
     pub fn set_sign_up_token(
         name: &str,
         email: &str,
@@ -136,7 +108,7 @@ impl AuthService {
 
         let result = {
             let mut token_repository = SignUpTokenRepository::new();
-            token_repository.save(&serialized_token)
+            token_repository.save(&serialized_token)?
         };
 
         // TODO: Specify the link.
@@ -146,23 +118,14 @@ impl AuthService {
             &format!("Hello {} :)\n\nYou’ve joined Darim.\n\nPlease visit the link to finish the sign up processs:\n{}", token.name, token.pin),
         );
 
-        match result {
-            Ok(_) => Ok(true),
-            Err(_) => Err(get_service_error(ServiceError::QueryExecutionFailure)),
-        }
+        Ok(result)
     }
 
     /// Sets token for temporary password deposition in password finding process.
     pub fn set_password_token(email: &str) -> Result<bool, ServiceError> {
         let user = {
             let user_repository = UserRepository::new();
-            if let Ok(user) = user_repository.find_by_email(email) {
-                user
-            } else {
-                return Err(get_service_error(ServiceError::UserNotFound(
-                    email.to_string(),
-                )));
-            }
+            user_repository.find_by_email(email)?
         };
 
         let token = PasswordToken {
@@ -179,7 +142,7 @@ impl AuthService {
 
         let result = {
             let mut token_repository = PasswordTokenRepository::new(user.id);
-            token_repository.save(&serialized_token)
+            token_repository.save(&serialized_token)?
         };
 
         // TODO: Specify the link.
@@ -189,9 +152,6 @@ impl AuthService {
             &format!("Hello :)\n\nPlease copy the temporary password:\n{}\n\nand visit the link to reset your password:\n{}", token.password, token.id),
         );
 
-        match result {
-            Ok(_) => Ok(true),
-            Err(_) => Err(get_service_error(ServiceError::QueryExecutionFailure)),
-        }
+        Ok(result)
     }
 }
