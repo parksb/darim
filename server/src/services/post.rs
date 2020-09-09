@@ -144,3 +144,44 @@ impl Default for PostService {
         Self::new()
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use chrono::Utc;
+    use mockall::predicate::*;
+
+    use super::*;
+    use crate::models::post::MockPostRepositoryTrait;
+
+    #[test]
+    fn test_get_list() {
+        let mut mocked_post_repository = MockPostRepositoryTrait::new();
+
+        let id = 3;
+        let user_id = 5;
+
+        mocked_post_repository
+            .expect_find_all_in_desc_date_order()
+            .with(eq(user_id))
+            .times(1)
+            .returning(move |passed_user_id| {
+                let now = Utc::now().naive_utc();
+                let post = Post {
+                    id,
+                    user_id: passed_user_id,
+                    title: String::from("Title"),
+                    content: String::from("Content"),
+                    date: now.clone(),
+                    created_at: now.clone(),
+                    updated_at: None,
+                };
+
+                Ok(vec![post])
+            });
+
+        let mut post_service = PostService::new_with_repository(mocked_post_repository);
+        let post_list: Vec<PostDTO> = post_service.get_list(user_id).unwrap();
+
+        assert_eq!(post_list.first().unwrap().id, id);
+    }
+}
