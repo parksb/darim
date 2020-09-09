@@ -39,7 +39,7 @@ impl PostRoute {
     /// ```
     pub fn get_post(session: Session, id: web::Path<u64>) -> impl Responder {
         let response = if let Some(user_session) = session_util::get_session(&session) {
-            PostService::get(user_session.user_id, id.into_inner())
+            PostService::new().get(user_session.user_id, id.into_inner())
         } else {
             Err(ServiceError::Unauthorized)
         };
@@ -82,7 +82,7 @@ impl PostRoute {
     /// ```
     pub fn get_posts(session: Session) -> impl Responder {
         let response = if let Some(user_session) = session_util::get_session(&session) {
-            PostService::get_list(user_session.user_id)
+            PostService::new().get_list(user_session.user_id)
         } else {
             Err(ServiceError::Unauthorized)
         };
@@ -125,7 +125,7 @@ impl PostRoute {
                 content,
                 date,
             } = args.into_inner();
-            PostService::create(user_session.user_id, &title, &content, &date)
+            PostService::new().create(user_session.user_id, &title, &content, &date)
         } else {
             Err(ServiceError::Unauthorized)
         };
@@ -151,7 +151,7 @@ impl PostRoute {
     /// ```
     pub fn delete_post(session: Session, id: web::Path<u64>) -> impl Responder {
         let response = if let Some(user_session) = session_util::get_session(&session) {
-            PostService::delete(id.into_inner(), user_session.user_id)
+            PostService::new().delete(id.into_inner(), user_session.user_id)
         } else {
             Err(ServiceError::Unauthorized)
         };
@@ -196,7 +196,7 @@ impl PostRoute {
                 content,
                 date,
             } = args.into_inner();
-            PostService::update(
+            PostService::new().update(
                 id.into_inner(),
                 user_session.user_id,
                 &title,

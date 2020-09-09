@@ -1,6 +1,7 @@
 use chrono::{NaiveDateTime, Utc};
 use diesel::prelude::*;
 use diesel::result::Error;
+use mockall::automock;
 use serde::{Deserialize, Serialize};
 
 use crate::models::connection;
@@ -45,6 +46,29 @@ struct PostDAO {
 /// A core data repository for post.
 pub struct PostRepository {
     conn: MysqlConnection,
+}
+
+#[automock]
+pub trait PostRepositoryTrait {
+    fn find(&self, user_id: u64, post_id: u64) -> Result<Post, ServiceError>;
+    fn find_all(&self, user_id: u64) -> Result<Vec<Post>, ServiceError>;
+    fn find_all_in_desc_date_order(&self, user_id: u64) -> Result<Vec<Post>, ServiceError>;
+    fn create(
+        &self,
+        user_id: u64,
+        title: &str,
+        content: &str,
+        date: &NaiveDateTime,
+    ) -> Result<bool, ServiceError>;
+    fn update(
+        &self,
+        user_id: u64,
+        post_id: u64,
+        title: &Option<String>,
+        content: &Option<String>,
+        date: &Option<NaiveDateTime>,
+    ) -> Result<bool, ServiceError>;
+    fn delete(&self, user_id: u64, post_id: u64) -> Result<bool, ServiceError>;
 }
 
 impl PostRepository {
