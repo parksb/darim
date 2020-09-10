@@ -27,6 +27,12 @@
 //! * Services - A business layer that processes the transaction.
 //! * Models - A data layer that can access the database and define data structures.
 
+#[macro_use]
+mod macros;
+
+#[macro_use]
+extern crate diesel;
+
 /// A data layer that can access the database and define data structures.
 pub mod models {
     /// Model related to authentication.
@@ -77,6 +83,3 @@ pub mod utils {
 
 /// A database schema.
 pub mod schema;
-
-#[macro_use]
-extern crate diesel;
