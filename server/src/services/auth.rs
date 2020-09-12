@@ -1,26 +1,126 @@
 use actix_session::Session;
+use cfg_if::cfg_if;
 use rand::{distributions::Alphanumeric, thread_rng, Rng};
 
+use crate::models::auth::*;
 use crate::models::error::{get_service_error, ServiceError};
-use crate::models::user_key::UserKeyRepository;
-use crate::models::{auth::*, user::*};
 use crate::utils::{email_util, password_util, session_util};
 
-pub struct AuthService {}
+cfg_if! {
+    if #[cfg(test)] {
+        use crate::models::user_key::*;
+        use crate::models::user::*;
+        use crate::models::auth::MockSignUpTokenRepositoryTrait as SignUpTokenRepository;
+        use crate::models::auth::MockPasswordTokenRepositoryTrait as PasswordTokenRepository;
+        use crate::models::user_key::MockUserKeyRepositoryTrait as UserKeyRepository;
+        use crate::models::user::MockUserRepositoryTrait as UserRepository;
+    } else {
+        use crate::models::auth::SignUpTokenRepository;
+        use crate::models::auth::PasswordTokenRepository;
+        use crate::models::user_key::UserKeyRepository;
+        use crate::models::user::UserRepository;
+    }
+}
+
+pub struct AuthService {
+    sign_up_token_repository: Option<SignUpTokenRepository>,
+    password_token_repository: Option<PasswordTokenRepository>,
+    user_key_repository: Option<UserKeyRepository>,
+    user_repository: Option<UserRepository>,
+}
 
 impl AuthService {
+    pub fn new() -> Self {
+        Self {
+            sign_up_token_repository: None,
+            password_token_repository: None,
+            user_key_repository: None,
+            user_repository: None,
+        }
+    }
+
+    cfg_if! {
+        if #[cfg(test)] {
+            pub fn new_with_repository(
+                sign_up_token_repository: SignUpTokenRepository,
+                password_token_repository: PasswordTokenRepository,
+                user_key_repository: UserKeyRepository,
+                user_repository: UserRepository,
+            ) -> Self {
+                Self {
+                    sign_up_token_repository: Some(sign_up_token_repository),
+                    password_token_repository: Some(password_token_repository),
+                    user_key_repository: Some(user_key_repository),
+                    user_repository: Some(user_repository),
+                }
+            }
+        }
+    }
+
+    fn sign_up_token_repository(
+        &mut self,
+        new_repository: Option<SignUpTokenRepository>,
+    ) -> &mut SignUpTokenRepository {
+        match new_repository {
+            Some(_) => {
+                self.sign_up_token_repository = new_repository;
+                self.sign_up_token_repository.as_mut().unwrap()
+            }
+            None => self.sign_up_token_repository.as_mut().unwrap(),
+        }
+    }
+
+    fn password_token_repository(
+        &mut self,
+        new_repository: Option<PasswordTokenRepository>,
+    ) -> &mut PasswordTokenRepository {
+        match new_repository {
+            Some(_) => {
+                self.password_token_repository = new_repository;
+                self.password_token_repository.as_mut().unwrap()
+            }
+            None => self.password_token_repository.as_mut().unwrap(),
+        }
+    }
+
+    fn user_key_repository(
+        &mut self,
+        new_repository: Option<UserKeyRepository>,
+    ) -> &UserKeyRepository {
+        match new_repository {
+            Some(_) => {
+                self.user_key_repository = new_repository;
+                self.user_key_repository.as_ref().unwrap()
+            }
+            None => self.user_key_repository.as_ref().unwrap(),
+        }
+    }
+
+    fn user_repository(&mut self, new_repository: Option<UserRepository>) -> &UserRepository {
+        match new_repository {
+            Some(_) => {
+                self.user_repository = new_repository;
+                self.user_repository.as_ref().unwrap()
+            }
+            None => self.user_repository.as_ref().unwrap(),
+        }
+    }
+
     /// Signs in to set user session.
     ///
     /// 1. Finds password of the user by email from arguments.
     /// 2. Compares password from the found user and it from the arguments.
     /// 3. If the passwords are equal, returns the found user.
-    pub fn login(email: &str, password: &str) -> Result<UserSession, ServiceError> {
+    pub fn login(&mut self, email: &str, password: &str) -> Result<UserSession, ServiceError> {
         let user = {
-            let user_repository = UserRepository::new();
-            let found_password = user_repository.find_password_by_email(email)?;
+            let fallback_repository =
+                some_if_true!(self.user_repository.is_none() => UserRepository::new());
+            let found_password = self
+                .user_repository(fallback_repository)
+                .find_password_by_email(email)?;
 
             if password_util::check_password(password, &found_password) {
-                user_repository.find_by_email(email)?
+                self.user_repository(None).find_by_email(email)?
             } else {
                 return Err(ServiceError::Unauthorized);
             }
@@ -28,8 +128,11 @@ impl AuthService {
 
         let logged_in_user_session = {
             let user_public_key = {
-                let user_repository = UserKeyRepository::new();
-                user_repository.find_by_user_id(user.id)?.public_key
+                let fallback_repository =
+                    some_if_true!(self.user_key_repository.is_none() => UserKeyRepository::new());
+                self.user_key_repository(fallback_repository)
+                    .find_by_user_id(user.id)?
+                    .public_key
             };
 
             UserSession {
@@ -45,13 +148,18 @@ impl AuthService {
     }
 
     /// Refreshes the user session.
-    pub fn refresh_user_session(mut session: Session) -> Result<UserSession, ServiceError> {
+    pub fn refresh_user_session(
+        &mut self,
+        mut session: Session,
+    ) -> Result<UserSession, ServiceError> {
         let user_session = session_util::get_session(&session);
 
         if let Some(user_session) = user_session {
             let user = {
-                let user_repository = UserRepository::new();
-                user_repository.find_by_id(user_session.user_id)?
+                let fallback_repository =
+                    some_if_true!(self.user_repository.is_none() => UserRepository::new());
+                self.user_repository(fallback_repository)
+                    .find_by_id(user_session.user_id)?
             };
 
             session_util::set_session(
@@ -79,6 +187,7 @@ impl AuthService {
     /// 2. Creates a new token containing the pin and information of the user from arguments.
     /// 3. Serializes the token and inserts it to redis.
     pub fn set_sign_up_token(
+        &mut self,
         name: &str,
         email: &str,
         password: &str,
@@ -107,8 +216,9 @@ impl AuthService {
         };
 
         let result = {
-            let mut token_repository = SignUpTokenRepository::new();
-            token_repository.save(&serialized_token)?
+            let fallback_repository = some_if_true!(self.sign_up_token_repository.is_none() => SignUpTokenRepository::new());
+            self.sign_up_token_repository(fallback_repository)
+                .save(&serialized_token)?
         };
 
         // TODO: Specify the link.
@@ -122,10 +232,12 @@ impl AuthService {
     }
 
     /// Sets token for temporary password deposition in password finding process.
-    pub fn set_password_token(email: &str) -> Result<bool, ServiceError> {
+    pub fn set_password_token(&mut self, email: &str) -> Result<bool, ServiceError> {
         let user = {
-            let user_repository = UserRepository::new();
-            user_repository.find_by_email(email)?
+            let fallback_repository =
+                some_if_true!(self.user_repository.is_none() => UserRepository::new());
+            self.user_repository(fallback_repository)
+                .find_by_email(email)?
         };
 
         let token = PasswordToken {
@@ -141,8 +253,9 @@ impl AuthService {
         };
 
         let result = {
-            let mut token_repository = PasswordTokenRepository::new(user.id);
-            token_repository.save(&serialized_token)?
+            let fallback_repository = some_if_true!(self.password_token_repository.is_none() => PasswordTokenRepository::new(user.id));
+            self.password_token_repository(fallback_repository)
+                .save(&serialized_token)?
         };
 
         // TODO: Specify the link.
@@ -153,5 +266,11 @@ impl AuthService {
         );
 
         Ok(result)
+    }
+}
+
+impl Default for AuthService {
+    fn default() -> Self {
+        Self::new()
     }
 }

@@ -1,6 +1,7 @@
 use chrono::{NaiveDateTime, Utc};
 use diesel::prelude::*;
 use diesel::result::Error;
+use mockall::automock;
 use serde::{Deserialize, Serialize};
 
 use crate::models::connection;
@@ -45,6 +46,29 @@ struct UserDAO {
 /// A core data repository for user.
 pub struct UserRepository {
     conn: MysqlConnection,
+}
+
+#[automock]
+pub trait UserRepositoryTrait {
+    fn find_by_id(&self, id: u64) -> Result<User, ServiceError>;
+    fn find_by_email(&self, email: &str) -> Result<User, ServiceError>;
+    fn find_password_by_email(&self, email: &str) -> Result<String, ServiceError>;
+    fn find_all(&self) -> Result<Vec<User>, ServiceError>;
+    fn create(
+        &self,
+        name: &str,
+        email: &str,
+        password: &str,
+        avatar_url: &Option<String>,
+    ) -> Result<bool, ServiceError>;
+    fn update(
+        &self,
+        id: u64,
+        name: &Option<String>,
+        password: &Option<String>,
+        avatar_url: &Option<String>,
+    ) -> Result<bool, ServiceError>;
+    fn delete(&self, id: u64) -> Result<bool, ServiceError>;
 }
 
 impl UserRepository {

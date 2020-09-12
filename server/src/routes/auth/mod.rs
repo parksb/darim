@@ -65,7 +65,7 @@ impl AuthRoute {
     /// }
     /// ```
     pub fn refresh_auth(session: Session) -> impl Responder {
-        let user_session = AuthService::refresh_user_session(session);
+        let user_session = AuthService::new().refresh_user_session(session);
         http_util::get_response::<UserSession>(user_session)
     }
 
@@ -108,7 +108,7 @@ impl AuthRoute {
             password,
             avatar_url,
         } = args.into_inner();
-        let response = AuthService::set_sign_up_token(&name, &email, &password, &avatar_url);
+        let response = AuthService::new().set_sign_up_token(&name, &email, &password, &avatar_url);
         http_util::get_response::<bool>(response)
     }
 
@@ -140,7 +140,7 @@ impl AuthRoute {
     /// ```
     pub fn set_password_token(args: web::Json<SetPasswordTokenArgs>) -> impl Responder {
         let SetPasswordTokenArgs { email } = args.into_inner();
-        let response = AuthService::set_password_token(&email);
+        let response = AuthService::new().set_password_token(&email);
         http_util::get_response::<bool>(response)
     }
 
@@ -178,7 +178,7 @@ impl AuthRoute {
     /// ```
     pub fn login(mut session: Session, args: web::Json<LoginArgs>) -> impl Responder {
         let LoginArgs { email, password } = args.into_inner();
-        let user_session = AuthService::login(&email, &password);
+        let user_session = AuthService::new().login(&email, &password);
 
         match user_session {
             Ok(response) => {

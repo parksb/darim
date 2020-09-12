@@ -1,3 +1,4 @@
+use mockall::automock;
 use rand::{distributions::Alphanumeric, thread_rng, Rng};
 use redis::{Commands, RedisError};
 use serde::{Deserialize, Serialize};
@@ -30,6 +31,13 @@ pub struct SignUpToken {
 /// A core data repository for token.
 pub struct SignUpTokenRepository {
     client: redis::Connection,
+}
+
+#[automock]
+pub trait SignUpTokenRepositoryTrait {
+    fn find(&mut self, key: &str) -> Result<String, ServiceError>;
+    fn delete(&mut self, key: &str) -> Result<bool, ServiceError>;
+    fn save(&mut self, serialized_token: &str) -> Result<bool, ServiceError>;
 }
 
 impl SignUpTokenRepository {
@@ -93,6 +101,14 @@ pub struct PasswordTokenRepository {
     client: redis::Connection,
 }
 
+#[automock]
+pub trait PasswordTokenRepositoryTrait {
+    fn new(user_id: u64) -> Self;
+    fn find(&mut self) -> Result<String, ServiceError>;
+    fn delete(&mut self) -> Result<bool, ServiceError>;
+    fn save(&mut self, serialized_token: &str) -> Result<bool, ServiceError>;
+}
+
 impl PasswordTokenRepository {
     /// Creates a new token repository.
     pub fn new(user_id: u64) -> Self {
@@ -110,14 +126,6 @@ impl PasswordTokenRepository {
         }
     }
 
-    /// Deletes a token by key.
-    pub fn delete(&mut self) -> Result<bool, ServiceError> {
-        match self.client.del::<&str, _>(&self.key) {
-            Ok(result) => Ok(result),
-            Err(_) => Err(get_service_error(ServiceError::QueryExecutionFailure)),
-        }
-    }
-
     /// Creates a new token.
     pub fn save(&mut self, serialized_token: &str) -> Result<bool, ServiceError> {
         let ttl_seconds = 180; // 3 min
@@ -130,6 +138,14 @@ impl PasswordTokenRepository {
                 Ok(result) => Ok(result),
                 Err(_) => Err(get_service_error(ServiceError::QueryExecutionFailure)),
             },
+            Err(_) => Err(get_service_error(ServiceError::QueryExecutionFailure)),
+        }
+    }
+
+    /// Deletes a token by key.
+    pub fn delete(&mut self) -> Result<bool, ServiceError> {
+        match self.client.del::<&str, _>(&self.key) {
+            Ok(result) => Ok(result),
             Err(_) => Err(get_service_error(ServiceError::QueryExecutionFailure)),
         }
     }

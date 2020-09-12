@@ -1,6 +1,7 @@
 use chrono::NaiveDateTime;
 use diesel::prelude::*;
 use diesel::result::Error;
+use mockall::automock;
 use serde::{Deserialize, Serialize};
 
 use crate::models::connection;
@@ -31,6 +32,12 @@ pub struct UserKeyDAO {
 /// A core data repository for user key.
 pub struct UserKeyRepository {
     conn: MysqlConnection,
+}
+
+#[automock]
+pub trait UserKeyRepositoryTrait {
+    fn find_by_user_id(&self, user_id: u64) -> Result<UserKey, ServiceError>;
+    fn create(&self, user_id: u64, public_key: &str) -> Result<bool, ServiceError>;
 }
 
 impl UserKeyRepository {
