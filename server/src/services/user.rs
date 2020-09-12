@@ -1,19 +1,115 @@
-use crate::models::auth::{
-    PasswordToken, PasswordTokenRepository, SignUpToken, SignUpTokenRepository,
-};
+use cfg_if::cfg_if;
+
+use crate::models::auth::*;
 use crate::models::error::{get_service_error, ServiceError};
 use crate::models::user::*;
-use crate::models::user_key::UserKeyRepository;
 use crate::utils::password_util;
 
-pub struct UserService {}
+cfg_if! {
+    if #[cfg(test)] {
+        use crate::models::user_key::*;
+        use crate::models::auth::MockSignUpTokenRepositoryTrait as SignUpTokenRepository;
+        use crate::models::auth::MockPasswordTokenRepositoryTrait as PasswordTokenRepository;
+        use crate::models::user_key::MockUserKeyRepositoryTrait as UserKeyRepository;
+        use crate::models::user::MockUserRepositoryTrait as UserRepository;
+    } else {
+        use crate::models::auth::SignUpTokenRepository;
+        use crate::models::auth::PasswordTokenRepository;
+        use crate::models::user_key::UserKeyRepository;
+        use crate::models::user::UserRepository;
+    }
+}
+
+pub struct UserService {
+    sign_up_token_repository: Option<SignUpTokenRepository>,
+    password_token_repository: Option<PasswordTokenRepository>,
+    user_key_repository: Option<UserKeyRepository>,
+    user_repository: Option<UserRepository>,
+}
 
 impl UserService {
+    pub fn new() -> Self {
+        Self {
+            sign_up_token_repository: None,
+            password_token_repository: None,
+            user_key_repository: None,
+            user_repository: None,
+        }
+    }
+
+    cfg_if! {
+        if #[cfg(test)] {
+            pub fn new_with_repository(
+                sign_up_token_repository: SignUpTokenRepository,
+                password_token_repository: PasswordTokenRepository,
+                user_key_repository: UserKeyRepository,
+                user_repository: UserRepository,
+            ) -> Self {
+                Self {
+                    sign_up_token_repository: Some(sign_up_token_repository),
+                    password_token_repository: Some(password_token_repository),
+                    user_key_repository: Some(user_key_repository),
+                    user_repository: Some(user_repository),
+                }
+            }
+        }
+    }
+
+    fn sign_up_token_repository(
+        &mut self,
+        new_repository: Option<SignUpTokenRepository>,
+    ) -> &mut SignUpTokenRepository {
+        match new_repository {
+            Some(_) => {
+                self.sign_up_token_repository = new_repository;
+                self.sign_up_token_repository.as_mut().unwrap()
+            }
+            None => self.sign_up_token_repository.as_mut().unwrap(),
+        }
+    }
+
+    fn password_token_repository(
+        &mut self,
+        new_repository: Option<PasswordTokenRepository>,
+    ) -> &mut PasswordTokenRepository {
+        match new_repository {
+            Some(_) => {
+                self.password_token_repository = new_repository;
+                self.password_token_repository.as_mut().unwrap()
+            }
+            None => self.password_token_repository.as_mut().unwrap(),
+        }
+    }
+
+    fn user_key_repository(
+        &mut self,
+        new_repository: Option<UserKeyRepository>,
+    ) -> &UserKeyRepository {
+        match new_repository {
+            Some(_) => {
+                self.user_key_repository = new_repository;
+                self.user_key_repository.as_ref().unwrap()
+            }
+            None => self.user_key_repository.as_ref().unwrap(),
+        }
+    }
+
+    fn user_repository(&mut self, new_repository: Option<UserRepository>) -> &UserRepository {
+        match new_repository {
+            Some(_) => {
+                self.user_repository = new_repository;
+                self.user_repository.as_ref().unwrap()
+            }
+            None => self.user_repository.as_ref().unwrap(),
+        }
+    }
+
     /// Finds a user by id.
-    pub fn get_one(id: u64) -> Result<UserDTO, ServiceError> {
+    pub fn get_one(&mut self, id: u64) -> Result<UserDTO, ServiceError> {
         let user = {
-            let user_repository = UserRepository::new();
-            user_repository.find_by_id(id)?
+            let fallback_repository =
+                some_if_true!(self.user_repository.is_none() => UserRepository::new());
+            self.user_repository(fallback_repository).find_by_id(id)?
         };
 
         Ok(UserDTO {
@@ -27,10 +123,11 @@ impl UserService {
     }
 
     /// Finds all users.
-    pub fn get_list() -> Result<Vec<UserDTO>, ServiceError> {
+    pub fn get_list(&mut self) -> Result<Vec<UserDTO>, ServiceError> {
         let user_list = {
-            let user_repository = UserRepository::new();
-            user_repository.find_all()?
+            let fallback_repository =
+                some_if_true!(self.user_repository.is_none() => UserRepository::new());
+            self.user_repository(fallback_repository).find_all()?
         };
 
         Ok(user_list
@@ -54,13 +151,17 @@ impl UserService {
     /// 2. Deserializes the found token and compares pin from token and it from arguments.
     /// 3. If the pins are equal, deletes the token from redis and creates a new user.
     pub fn create(
+        &mut self,
         user_public_key: &str,
         token_key: &str,
         token_pin: &str,
     ) -> Result<bool, ServiceError> {
         let token: SignUpToken = {
-            let mut token_repository = SignUpTokenRepository::new();
-            let serialized_token = token_repository.find(token_key)?;
+            let fallback_repository = some_if_true!(self.sign_up_token_repository.is_none() => SignUpTokenRepository::new());
+
+            let serialized_token = self
+                .sign_up_token_repository(fallback_repository)
+                .find(token_key)?;
 
             let deserialized_token: SignUpToken =
                 if let Ok(deserialized_token) = serde_json::from_str(&serialized_token) {
@@ -70,7 +171,7 @@ impl UserService {
                 };
 
             if token_pin == deserialized_token.pin {
-                let _ = token_repository.delete(token_key)?;
+                let _ = self.sign_up_token_repository(None).delete(token_key)?;
                 deserialized_token
             } else {
                 return Err(get_service_error(ServiceError::Unauthorized));
@@ -78,7 +179,9 @@ impl UserService {
         };
 
         let user = {
-            let user_repository = UserRepository::new();
+            let fallback_repository =
+                some_if_true!(self.user_repository.is_none() => UserRepository::new());
+            let user_repository = self.user_repository(fallback_repository);
 
             user_repository.create(
                 &token.name,
@@ -90,18 +193,22 @@ impl UserService {
             user_repository.find_by_email(&token.email)?
         };
 
-        let user_key_repository = UserKeyRepository::new();
-        user_key_repository.create(user.id, user_public_key)
+        let fallback_repository =
+            some_if_true!(self.user_key_repository.is_none() => UserKeyRepository::new());
+        self.user_key_repository(fallback_repository)
+            .create(user.id, user_public_key)
     }
 
     /// Deletes a user.
-    pub fn delete(id: u64) -> Result<bool, ServiceError> {
-        let user_repository = UserRepository::new();
-        user_repository.delete(id)
+    pub fn delete(&mut self, id: u64) -> Result<bool, ServiceError> {
+        let fallback_repository =
+            some_if_true!(self.user_repository.is_none() => UserRepository::new());
+        self.user_repository(fallback_repository).delete(id)
     }
 
     /// Updates a new user.
     pub fn update(
+        &mut self,
         id: u64,
         name: &Option<String>,
         password: &Option<String>,
@@ -124,23 +231,29 @@ impl UserService {
             None
         };
 
-        let user_repository = UserRepository::new();
-        user_repository.update(id, name, &hashed_password, avatar_url)
+        let fallback_repository =
+            some_if_true!(self.user_repository.is_none() => UserRepository::new());
+        self.user_repository(fallback_repository)
+            .update(id, name, &hashed_password, avatar_url)
     }
 
     // Reset the password.
     pub fn reset_password(
+        &mut self,
         email: &str,
         token_id: &str,
         temporary_password: &str,
         new_password: &str,
     ) -> Result<bool, ServiceError> {
-        let user_repository = UserRepository::new();
-        let user = user_repository.find_by_email(email)?;
+        let fallback_repository =
+            some_if_true!(self.user_repository.is_none() => UserRepository::new());
+        let user = self
+            .user_repository(fallback_repository)
+            .find_by_email(email)?;
 
-        let mut token_repository = PasswordTokenRepository::new(user.id);
+        let fallback_repository = some_if_true!(self.password_token_repository.is_none() => PasswordTokenRepository::new(user.id));
         let token: PasswordToken = {
-            let serialized_token = token_repository.find()?;
+            let serialized_token = self.password_token_repository(fallback_repository).find()?;
             if let Ok(deserialized_token) = serde_json::from_str(&serialized_token) {
                 deserialized_token
             } else {
@@ -150,12 +263,19 @@ impl UserService {
 
         if token.id == token_id && token.password == temporary_password {
             let hashed_password = password_util::get_hashed_password(new_password);
-            user_repository.update(user.id, &None, &Some(hashed_password), &None)?;
-            token_repository.delete()
+            self.user_repository(None)
+                .update(user.id, &None, &Some(hashed_password), &None)?;
+            self.password_token_repository(None).delete()
         } else {
             Err(get_service_error(ServiceError::UserNotFound(
                 email.to_string(),
             )))
         }
+    }
+}
+
+impl Default for UserService {
+    fn default() -> Self {
+        Self::new()
     }
 }

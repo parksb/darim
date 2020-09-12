@@ -48,7 +48,7 @@ impl UserRoute {
             token_key,
             token_pin,
         } = args.into_inner();
-        let response = UserService::create(&user_public_key, &token_key, &token_pin);
+        let response = UserService::new().create(&user_public_key, &token_key, &token_pin);
         http_util::get_response::<bool>(response)
     }
 
@@ -74,7 +74,7 @@ impl UserRoute {
             if id_in_path != user_session.user_id {
                 Err(ServiceError::Unauthorized)
             } else {
-                UserService::delete(id_in_path)
+                UserService::new().delete(id_in_path)
             }
         } else {
             Err(ServiceError::Unauthorized)
@@ -128,7 +128,7 @@ impl UserRoute {
                     password,
                     avatar_url,
                 } = args.into_inner();
-                UserService::update(id_in_path, &name, &password, &avatar_url)
+                UserService::new().update(id_in_path, &name, &password, &avatar_url)
             }
         } else {
             Err(ServiceError::Unauthorized)
@@ -176,8 +176,12 @@ impl UserRoute {
             temporary_password,
             new_password,
         } = args.into_inner();
-        let response =
-            UserService::reset_password(&email, &token_id, &temporary_password, &new_password);
+        let response = UserService::new().reset_password(
+            &email,
+            &token_id,
+            &temporary_password,
+            &new_password,
+        );
         http_util::get_response::<bool>(response)
     }
 }
