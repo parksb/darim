@@ -1,12 +1,32 @@
 use actix_session::Session;
 use actix_web::{get, post, web, Responder};
+use serde::{Deserialize, Serialize};
 
 use crate::models::{auth::*, error::*};
 use crate::services::auth::AuthService;
 use crate::utils::{http_util, session_util};
 
-mod models;
-use models::*;
+/// Arguments for `GET /auth` API.
+#[derive(Serialize, Deserialize)]
+pub struct LoginArgs {
+    pub email: String,
+    pub password: String,
+}
+
+/// Arguments for `POST /auth/token` API.
+#[derive(Serialize, Deserialize)]
+pub struct SetSignUpTokenArgs {
+    pub name: String,
+    pub email: String,
+    pub password: String,
+    pub avatar_url: Option<String>,
+}
+
+/// Arguments for `POST /auth/token/password` API.
+#[derive(Serialize, Deserialize)]
+pub struct SetPasswordTokenArgs {
+    pub email: String,
+}
 
 /// Auth route.
 pub struct AuthRoute {}

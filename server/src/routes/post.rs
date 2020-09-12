@@ -1,12 +1,27 @@
 use actix_session::Session;
 use actix_web::{delete, get, patch, post, web, Responder};
+use chrono::NaiveDateTime;
+use serde::{Deserialize, Serialize};
 
 use crate::models::{error::*, post::*};
 use crate::services::post::PostService;
 use crate::utils::{http_util, session_util};
 
-mod models;
-use models::*;
+/// Arguments for `POST /posts` API.
+#[derive(Serialize, Deserialize)]
+pub struct CreateArgs {
+    pub title: String,
+    pub content: String,
+    pub date: NaiveDateTime,
+}
+
+/// Arguments for `PATCH /posts/:id` API.
+#[derive(Serialize, Deserialize)]
+pub struct UpdateArgs {
+    pub title: Option<String>,
+    pub content: Option<String>,
+    pub date: Option<NaiveDateTime>,
+}
 
 /// Post route.
 pub struct PostRoute {}

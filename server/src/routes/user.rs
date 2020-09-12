@@ -1,12 +1,35 @@
 use actix_session::Session;
 use actix_web::{delete, patch, post, web, Responder};
+use serde::{Deserialize, Serialize};
 
 use crate::models::error::*;
 use crate::services::user::UserService;
 use crate::utils::{http_util, session_util};
 
-mod models;
-use models::*;
+/// Arguments for `POST /users` API.
+#[derive(Serialize, Deserialize)]
+pub struct CreateArgs {
+    pub user_public_key: String,
+    pub token_key: String,
+    pub token_pin: String,
+}
+
+/// Arguments for `PATCH /users/:id` API.
+#[derive(Serialize, Deserialize)]
+pub struct UpdateArgs {
+    pub name: Option<String>,
+    pub password: Option<String>,
+    pub avatar_url: Option<String>,
+}
+
+/// Arguments for `POST /users/password` API.
+#[derive(Serialize, Deserialize)]
+pub struct ResetPasswordArgs {
+    pub email: String,
+    pub token_id: String,
+    pub temporary_password: String,
+    pub new_password: String,
+}
 
 /// User route
 pub struct UserRoute {}
