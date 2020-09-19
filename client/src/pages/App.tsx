@@ -6,7 +6,8 @@ import * as api from '../api/auth';
 import { Header, Container } from '../components';
 import { Session } from '../models';
 import { Timeline } from './timeline';
-import { Login, Join, Token, PasswordReset } from './auth';
+import { Join, Token, PasswordReset } from './auth';
+import { Landing } from './landing';
 import { Post } from './post';
 import { Settings } from './settings';
 
@@ -70,7 +71,7 @@ const App: React.FC = () => {
             </Container>
           </Route>
           <Route path='/'>
-            {session ? <Timeline session={session} /> : <Login session_state={[session, setSession]} />}
+            {session ? <Timeline session={session} /> : <Landing session_state={[session, setSession]} />}
           </Route>
           <Redirect to='/' />
         </Switch>
