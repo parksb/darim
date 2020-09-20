@@ -14,7 +14,7 @@
 * Darim is following the layered architecture.
 * Each layer cannot be cross-referenced. All references between layers can flow in a higher direction. In other words, only the upper layer can invoke the lower layer members.
 
-![main transaction flow](https://user-images.githubusercontent.com/6410412/91041313-c4af1b80-e64a-11ea-8e56-8c743fb5b4b5.png)
+![main transaction flow](https://user-images.githubusercontent.com/6410412/93713894-dc21eb80-fb99-11ea-8b3c-f689bbf05876.png)
 
 ### [Client](client)
 
