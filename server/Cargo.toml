@@ -7,9 +7,9 @@ edition = "2018"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-actix-web = "^2.0"
-actix-cors = "^0.2"
-actix-session = "^0.3"
+actix-web = { version = "^3.0", features = ["rustls"] }
+actix-cors = "^0.3"
+actix-session = "^0.4"
 actix-rt = "^1.0"
 chrono = { version = "^0.4", features = ["serde"] }
 dotenv = "^0.15"
@@ -24,3 +24,5 @@ cfg-if = "^0.1.10"
 lettre = "^0.9"
 lettre_email = "^0.9"
 mockall = "^0.8"
+rustls = "^0.18"
+time = "^0.2"
