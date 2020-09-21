@@ -4,12 +4,14 @@ on:
   push:
     branches:
       - master
+      - development
     paths:
       - 'client/**'
       - '.github/workflows/**'
   pull_request:
     branches:
       - master
+      - development
     paths:
       - 'client/**'
       - '.github/workflows/**'
