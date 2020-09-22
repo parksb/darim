@@ -33,6 +33,8 @@ async fn main() -> std::io::Result<()> {
     let mut keys = rsa_private_keys(key_file).unwrap();
     config.set_single_cert(cert_chain, keys.remove(0)).unwrap();
 
+    println!("Server running at {}", address);
+
     HttpServer::new(|| {
         App::new()
             .wrap(Cors::new().supports_credentials().finish())
