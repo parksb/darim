@@ -1,28 +1,25 @@
-use lettre::error::Error;
-use lettre::{SmtpClient, Transport};
-use lettre_email::EmailBuilder;
+use lettre::{Message, SmtpTransport, Transport};
+use std::env;
 
-pub fn send_email(to: &str, subject: &str, body: &str) -> Result<bool, Error> {
-    let email = EmailBuilder::new()
-        .from("root@harooo.com")
-        .to((to, ""))
+use crate::models::error::ServiceError;
+
+pub fn send_email(to: &str, subject: &str, body: &str) -> Result<bool, ServiceError> {
+    let email_address = env::var("EMAIL_ADDRESS").expect("EMAIL_ADDRESS not found");
+    let smtp_relay_address = env::var("SMTP_RELAY_ADDRESS").expect("SMTP_RELAY_ADDRESS not found");
+
+    let parsed_email_address = email_address.parse().unwrap();
+
+    let email = Message::builder()
+        .from(parsed_email_address)
+        .to(to.parse().unwrap())
         .subject(subject)
         .body(body)
-        .build();
+        .unwrap();
 
-    if let Ok(email) = email {
-        let smtp_client = SmtpClient::new_unencrypted_localhost();
-        if let Ok(smtp_client) = smtp_client {
-            let result = smtp_client.transport().send(email.into());
-            if result.is_ok() {
-                Ok(true)
-            } else {
-                Ok(false)
-            }
-        } else {
-            Ok(false)
-        }
-    } else {
-        Ok(false)
+    let mailer = SmtpTransport::relay(&smtp_relay_address).unwrap().build();
+
+    match mailer.send(&email) {
+        Ok(_) => Ok(true),
+        Err(_) => Err(ServiceError::EmailFailure(to.to_string())),
     }
 }

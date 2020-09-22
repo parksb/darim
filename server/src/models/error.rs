@@ -36,6 +36,9 @@ pub enum ServiceError {
 
     #[error("user for id `{0}` not found")]
     UserNotFound(String),
+
+    #[error("failed to send email to `{0}`")]
+    EmailFailure(String),
 }
 
 /// Logs and returns service error passed by parameter.

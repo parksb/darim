@@ -223,9 +223,9 @@ impl AuthService {
 
         // TODO: Specify the link.
         let _ = email_util::send_email(
-            &token.email,
+            &format!("{} <{}>", &token.name, &token.email),
             &String::from("Welcome to Darim"),
-            &format!("Hello {} :)\n\nYou’ve joined Darim.\n\nPlease visit the link to finish the sign up processs:\n{}", token.name, token.pin),
+            &format!("Hello {} :)\n\nYou’ve joined Darim.\n\nPlease visit the link to finish the sign up process:\n{}", token.name, token.pin),
         );
 
         Ok(result)
@@ -260,7 +260,7 @@ impl AuthService {
 
         // TODO: Specify the link.
         let _ = email_util::send_email(
-            email,
+            &format!("{} <{}>", user.name, email),
             &String::from("Please reset your password"),
             &format!("Hello :)\n\nPlease copy the temporary password:\n{}\n\nand visit the link to reset your password:\n{}", token.password, token.id),
         );
