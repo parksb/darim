@@ -1,4 +1,6 @@
-use lettre::{Message, SendmailTransport, Transport};
+use lettre::header::ContentType;
+use lettre::message::{Message, SinglePart};
+use lettre::{SendmailTransport, Transport};
 use std::env;
 
 use crate::models::error::ServiceError;
@@ -10,7 +12,11 @@ pub fn send_email(to: &str, subject: &str, body: &str) -> Result<bool, ServiceEr
         .from(parsed_email_address)
         .to(to.parse().unwrap())
         .subject(subject)
-        .body(body)
+        .singlepart(
+            SinglePart::builder()
+                .header(ContentType("text/html; charset=utf8".parse().unwrap()))
+                .body(body),
+        )
         .unwrap();
 
     let sender = SendmailTransport::new();
