@@ -215,10 +215,11 @@ impl AuthService {
             return Err(get_service_error(ServiceError::InvalidFormat));
         };
 
+        // FIXME: The compiler doesn't consider it string type when running test.
         let result = {
             let fallback_repository = some_if_true!(self.sign_up_token_repository.is_none() => SignUpTokenRepository::new());
             self.sign_up_token_repository(fallback_repository)
-                .save(&serialized_token)?
+                .save(&serialized_token)?.to_string()
         };
 
         let _ = email_util::send_email(
