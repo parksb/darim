@@ -77,9 +77,9 @@ impl AuthRoute {
     /// {
     ///     "data": {
     ///         "user_id": 0,
-    //         "user_email": "park@email.com"
-    ///        "user_name": "park",
-    ///        "user_avatar_url": "avatar.jpg"
+    //          "user_email": "park@email.com"
+    ///         "user_name": "park",
+    ///         "user_avatar_url": "avatar.jpg"
     ///     },
     ///     "error": null
     /// }
@@ -117,7 +117,7 @@ impl AuthRoute {
     ///
     /// ```json
     /// {
-    ///     "data": true,
+    ///     "data": a1lam9cBko,
     ///     "error": null
     /// }
     /// ```
@@ -129,7 +129,7 @@ impl AuthRoute {
             avatar_url,
         } = args.into_inner();
         let response = AuthService::new().set_sign_up_token(&name, &email, &password, &avatar_url);
-        http_util::get_response::<bool>(response)
+        http_util::get_response::<String>(response)
     }
 
     /// Sets token for resetting password.

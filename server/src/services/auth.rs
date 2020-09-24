@@ -192,7 +192,7 @@ impl AuthService {
         email: &str,
         password: &str,
         avatar_url: &Option<String>,
-    ) -> Result<bool, ServiceError> {
+    ) -> Result<String, ServiceError> {
         if name.trim().is_empty() || email.trim().is_empty() || password.trim().is_empty() {
             return Err(get_service_error(ServiceError::InvalidArgument));
         }
@@ -221,11 +221,10 @@ impl AuthService {
                 .save(&serialized_token)?
         };
 
-        // TODO: Specify the link.
         let _ = email_util::send_email(
             &format!("{} <{}>", &token.name, &token.email),
-            &String::from("Welcome to Darim"),
-            &format!("Hello {} :)\n\nYou’ve joined Darim.\n\nPlease visit the link to finish the sign up process:\n{}", token.name, token.pin),
+            &String::from("Welcome to Darim 🎉"),
+            &format!("Hello {} :)<br/><br/>You've joined Darim.br/><br/>Please visit the link to finish the sign up process:<br/>{}", token.name, token.pin),
         );
 
         Ok(result)

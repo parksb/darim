@@ -64,16 +64,16 @@ impl SignUpTokenRepository {
         }
     }
 
-    /// Creates a new token.
-    pub fn save(&mut self, serialized_token: &str) -> Result<bool, ServiceError> {
+    /// Creates a new token and returns key.
+    pub fn save(&mut self, serialized_token: &str) -> Result<String, ServiceError> {
         let key: String = thread_rng().sample_iter(&Alphanumeric).take(32).collect();
         let ttl_seconds = 180; // 3 min
 
         let result: Result<bool, RedisError> =
             self.client.set::<&str, &str, _>(&key, &serialized_token);
         match result {
-            Ok(_) => match self.client.expire::<&str, _>(&key, ttl_seconds) {
-                Ok(result) => Ok(result),
+            Ok(_) => match self.client.expire::<&str, bool>(&key, ttl_seconds) {
+                Ok(_) => Ok(key),
                 Err(_) => Err(get_service_error(ServiceError::QueryExecutionFailure)),
             },
             Err(_) => Err(get_service_error(ServiceError::QueryExecutionFailure)),
