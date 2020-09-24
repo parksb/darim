@@ -40,7 +40,7 @@ const App: React.FC = () => {
           <Header session={session} />
         </HeaderContainer>
         <Switch>
-          <Route path='/join'>
+          <Route path='/join/:key'>
             <Container>
               {session ? <Redirect to="/" /> : <Join />}
             </Container>
@@ -48,11 +48,6 @@ const App: React.FC = () => {
           <Route path='/password_reset'>
             <Container>
               {session ? <Redirect to="/" /> : <PasswordReset />}
-            </Container>
-          </Route>
-          <Route path='/token/:key'>
-            <Container>
-              {session ? <Redirect to="/" /> : <Token />}
             </Container>
           </Route>
           <Route path='/post/:id'>

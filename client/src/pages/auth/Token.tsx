@@ -1,17 +1,15 @@
-import React, { useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import React from 'react';
+import { Link } from 'react-router-dom';
 import styled from 'styled-components';
 import CopyToClipboard from 'react-copy-to-clipboard';
-import { Secret, Storage } from 'snowball-js';
 
-import { localStoragePrivateKey } from '../../constants';
 import { getI18n } from '../../utils/i18n';
-import * as api from '../../api/user';
-import { Button, Container, TextField, Section } from '../../components';
+import { Button, Container, Section } from '../../components';
 
-const FullWidthTextField = styled(TextField)`
-  flex: 1;
-`;
+interface Props {
+  publicKey: string;
+  privateKey: string;
+}
 
 const InfoSection = styled(Section)`
   line-height: 150%;
@@ -30,25 +28,11 @@ const GoToSignInButton = styled(Button)`
   width: 100%;
 `;
 
-const Token: React.FC = () => {
-  const { key } = useParams();
-
-  const [pin, setPin] = useState('');
-  const [privateKey, setPrivateKey] = useState('');
-  const [publicKey, setPublicKey] = useState('');
-
+const Token: React.FC<Props> = ({ publicKey, privateKey }) => {
   const i18n = getI18n({
     info: {
-      ko: '👋 환영합니다! 글을 안전하게 암호화하기 위해 사용할 공개키와 비밀키를 준비했습니다:',
-      en: '👋 Welcome to Darim! This is your public key and secret key that will be used to encrypt your posts:',
-    },
-    verify: {
-      ko: '인증 ↗',
-      en: 'Verify ↗',
-    },
-    pin: {
-      ko: '인증키',
-      en: 'Pin',
+      ko: '👋 환영합니다! 다이어리를 안전하게 암호화하기 위해 사용할 공개키와 비밀키를 준비했습니다:',
+      en: '👋 Welcome to Darim! This is your public key and secret key that will be used to encrypt your diary:',
     },
     downloadPublicKey: {
       ko: '공개키 파일 다운로드',
@@ -76,58 +60,37 @@ const Token: React.FC = () => {
     },
   });
 
-  const verify = async () => {
-    const generatedPublicKey = Secret.getRandomString();
-    const generatedPrivateKey = Secret.getRandomString();
-    const encryptedPrivateKey = Secret.encryptAES(generatedPrivateKey, generatedPublicKey);
-
-    const result = await api.createUser(generatedPublicKey, key, pin);
-    if (result) {
-      Storage.set(localStoragePrivateKey, encryptedPrivateKey);
-      setPrivateKey(encryptedPrivateKey);
-      setPublicKey(generatedPublicKey);
-    }
-  };
-
   const getDownloadURLOfTextFile = (text: string) => {
     const blob = new Blob([text], { type: 'text/plain' });
     return URL.createObjectURL(blob);
   };
 
   return <Container bottom={30}>
-    {!privateKey ? (
-      <Section row>
-        <FullWidthTextField type='text' placeholder={i18n.text('pin')} value={pin} onChange={({ target: { value } }) => setPin(value)} />
-        <Button onClick={verify}>{i18n.text('verify')}</Button>
-      </Section>
-    ) : (
-      <>
-        <InfoSection bottom={20}>
-          <KeySection top={20} row>
-            <a download='darim-public-key.txt' href={getDownloadURLOfTextFile(publicKey)}>
-              <Button>{i18n.text('downloadPublicKey')}</Button>
-            </a>
-            <CopyToClipboard text={publicKey}>
-              <CopyButton>{i18n.text('copyPublicKey')}</CopyButton>
-            </CopyToClipboard>
-          </KeySection>
-          <KeySection top={10} bottom={20} row>
-            <a download='darim-secret-key.txt' href={getDownloadURLOfTextFile(privateKey)}>
-              <Button>{i18n.text('downloadPrivateKey')}</Button>
-            </a>
-            <CopyToClipboard text={privateKey}>
-              <CopyButton>{i18n.text('copyPrivateKey')}</CopyButton>
-            </CopyToClipboard>
-          </KeySection>
-          {i18n.text('notice')}
-        </InfoSection>
-        <Link to='/'>
-          <GoToSignInButton>
-            {i18n.text('goToSignIn')}
-          </GoToSignInButton>
-        </Link>
-      </>
-    )}
+    <InfoSection bottom={20}>
+      <Section>{i18n.text('info')}</Section>
+      <KeySection top={20} row>
+        <a download='darim-public-key.txt' href={getDownloadURLOfTextFile(publicKey)}>
+          <Button>{i18n.text('downloadPublicKey')}</Button>
+        </a>
+        <CopyToClipboard text={publicKey}>
+          <CopyButton>{i18n.text('copyPublicKey')}</CopyButton>
+        </CopyToClipboard>
+      </KeySection>
+      <KeySection top={10} bottom={20} row>
+        <a download='darim-secret-key.txt' href={getDownloadURLOfTextFile(privateKey)}>
+          <Button>{i18n.text('downloadPrivateKey')}</Button>
+        </a>
+        <CopyToClipboard text={privateKey}>
+          <CopyButton>{i18n.text('copyPrivateKey')}</CopyButton>
+        </CopyToClipboard>
+      </KeySection>
+      {i18n.text('notice')}
+    </InfoSection>
+    <Link to='/'>
+      <GoToSignInButton>
+        {i18n.text('goToSignIn')}
+      </GoToSignInButton>
+    </Link>
   </Container>
 };
 

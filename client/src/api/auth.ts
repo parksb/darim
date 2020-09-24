@@ -93,7 +93,7 @@ async function logout(): Promise<boolean | null> {
   return null;
 }
 
-async function setSignUpToken(name: string, email: string, password: string, avatarUrl?: string): Promise<boolean | null> {
+async function setSignUpToken(name: string, email: string, password: string, avatarUrl?: string): Promise<string | null> {
   const url = `${serverBaseUrl}/auth/token/sign_up`;
   const hashedPassword = SHA3(password, { outputLength: 512 }).toString();
 
@@ -105,7 +105,7 @@ async function setSignUpToken(name: string, email: string, password: string, ava
   };
 
   try {
-    return await Http.post<SetSignUpTokenBody, boolean>(url, body);
+    return await Http.post<SetSignUpTokenBody, string>(url, body);
   } catch (e) {
     const i18n = getI18n({
       error: {

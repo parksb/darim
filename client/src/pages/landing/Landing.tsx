@@ -3,9 +3,9 @@ import styled from 'styled-components';
 
 import { getI18n } from '../../utils/i18n';
 import { Container, Section } from '../../components';
-import Login from './Login'
+import LoginForm from './LoginForm'
+import JoinForm from './JoinForm'
 import { Session } from '../../models';
-import { Join } from '../auth';
 
 interface Props {
   session_state: [Session | null, React.Dispatch<React.SetStateAction<Session | null>>]
@@ -50,13 +50,16 @@ const Landing: React.FC<Props> = ({ session_state }) => {
   });
 
   return <Container>
-    <Section>
-      <Login session_state={session_state} />
-      <Section>
-        <Section top={30}>
+    <Section bottom={50}>
+      <JoinForm />
+      <Section top={30}>
+        <Section>
           <Image src='https://user-images.githubusercontent.com/6410412/87238882-579d4900-c443-11ea-8e81-267b3243237c.png' />
         </Section>
-        <Section top={40}>
+        <Section top={30}>
+          <LoginForm sessionState={session_state} />
+        </Section>
+        <Section top={50}>
           <SectionTitle>{i18n.text('keepYourDiaryASecret')}</SectionTitle>
           <SectionContent>{i18n.text('keepYourDiaryASecretDescription')}</SectionContent>
         </Section>
@@ -67,7 +70,7 @@ const Landing: React.FC<Props> = ({ session_state }) => {
         <Section top={50}>
           <SectionTitle>{i18n.text('getStartedNow')}</SectionTitle>
           <Section top={20}>
-            <Join />
+            <JoinForm />
           </Section>
         </Section>
       </Section>

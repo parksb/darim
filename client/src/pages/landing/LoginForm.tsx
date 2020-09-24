@@ -8,14 +8,24 @@ import { TextField, Button, Container, Section, LoadingDots } from '../../compon
 import { Session } from '../../models';
 
 interface Props {
-  session_state: [Session | null, React.Dispatch<React.SetStateAction<Session | null>>]
+  sessionState: [Session | null, React.Dispatch<React.SetStateAction<Session | null>>];
+  hasSignUpButton?: boolean;
 }
 
 const SignUpButton = styled(Button)`
   border-left: 0;
 `;
 
+const SignInButton = styled(Button)`
+  flex: 1;
+`;
+
 const FullWidthTextField = styled(TextField)`
+  flex: 4;
+`;
+
+const Form = styled.form`
+  display: flex;
   flex: 1;
 `;
 
@@ -29,10 +39,10 @@ const ForgotPasswordLink = styled(Link)`
   }
 `;
 
-const Login: React.FC<Props> = ({ session_state }) => {
+const LoginForm: React.FC<Props> = ({ sessionState , hasSignUpButton }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const setSession = session_state[1];
+  const setSession = sessionState[1];
 
   const [isSigning, setIsSigning] = useState(false);
 
@@ -70,12 +80,16 @@ const Login: React.FC<Props> = ({ session_state }) => {
     {!isSigning ? (
       <Section>
         <Section row>
-          <FullWidthTextField type='email' placeholder={i18n.text('email')} value={email} onChange={({ target: { value } }) => setEmail(value)} />
-          <FullWidthTextField type='password' placeholder={i18n.text('password')} value={password} onChange={({ target: { value } }) => setPassword(value)}/>
-          <Button onClick={login}>{i18n.text('signIn')}</Button>
-          <Link to='/join'>
-            <SignUpButton>{i18n.text('signUp')}</SignUpButton>
-          </Link>
+          <Form onSubmit={login}>
+            <FullWidthTextField type='email' placeholder={i18n.text('email')} value={email} onChange={({ target: { value } }) => setEmail(value)} />
+            <FullWidthTextField type='password' placeholder={i18n.text('password')} value={password} onChange={({ target: { value } }) => setPassword(value)}/>
+            <SignInButton onClick={login}>{i18n.text('signIn')}</SignInButton>
+          </Form>
+          {hasSignUpButton &&(
+            <Link to='/join'>
+              <SignUpButton>{i18n.text('signUp')}</SignUpButton>
+            </Link>
+          )}
         </Section>
         <Section top={12}>
           <span><ForgotPasswordLink to='/password_reset'>{i18n.text('forgotPassword')}</ForgotPasswordLink></span>
@@ -90,4 +104,4 @@ const Login: React.FC<Props> = ({ session_state }) => {
   </Container>
 };
 
-export default Login;
+export default LoginForm;
