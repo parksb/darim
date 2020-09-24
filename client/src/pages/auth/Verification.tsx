@@ -2,8 +2,12 @@ import React, { useState } from 'react';
 import styled from 'styled-components';
 import { Secret, Storage } from 'snowball-js';
 
-declare module '*.html';
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
 import privacy from './static/privacy.html';
+
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
 import terms from './static/terms.html';
 
 import { getI18n } from '../../utils/i18n';
