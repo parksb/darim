@@ -7,6 +7,6 @@ CREATE TABLE posts (
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME,
     PRIMARY KEY (id),
-    CONSTRAINT fk_user_id FOREIGN KEY (user_id) REFERENCES users(id)
+    CONSTRAINT fk_posts_user_id FOREIGN KEY (user_id) REFERENCES users(id)
 ) CHARACTER SET 'utf8mb4'
   COLLATE 'utf8mb4_general_ci';

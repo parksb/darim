@@ -5,8 +5,8 @@ CREATE TABLE user_keys (
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME,
     PRIMARY KEY (id),
-    UNIQUE INDEX ux_user_id (user_id),
-    UNIQUE INDEX ux_public_key (public_key),
-    CONSTRAINT fk_user_id FOREIGN KEY (user_id) REFERENCES users(id)
+    UNIQUE INDEX ux_user_keys_user_id (user_id),
+    UNIQUE INDEX ux_user_keys_public_key (public_key),
+    CONSTRAINT fk_user_keys_user_id FOREIGN KEY (user_id) REFERENCES users(id)
 ) CHARACTER SET 'utf8mb4'
   COLLATE 'utf8mb4_general_ci';

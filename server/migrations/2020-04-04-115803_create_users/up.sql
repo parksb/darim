@@ -7,6 +7,6 @@ CREATE TABLE users (
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME,
     PRIMARY KEY (id),
-    UNIQUE INDEX ux_email (email)
+    UNIQUE INDEX ux_users_email (email)
 ) CHARACTER SET 'utf8mb4'
   COLLATE 'utf8mb4_general_ci';
