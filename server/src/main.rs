@@ -40,7 +40,7 @@ async fn main() -> std::io::Result<()> {
             .wrap(Cors::new().supports_credentials().finish())
             .wrap(
                 CookieSession::signed(&[0; 64])
-                    .secure(false) // It should be `true` in production.
+                    .secure(true)
                     .http_only(true)
                     .max_age_time(Duration::days(30)),
             )
