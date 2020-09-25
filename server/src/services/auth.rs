@@ -1,6 +1,7 @@
 use actix_session::Session;
 use cfg_if::cfg_if;
 use rand::{distributions::Alphanumeric, thread_rng, Rng};
+use std::env;
 
 use crate::models::auth::*;
 use crate::models::error::{get_service_error, ServiceError};
@@ -219,13 +220,23 @@ impl AuthService {
         let result = {
             let fallback_repository = some_if_true!(self.sign_up_token_repository.is_none() => SignUpTokenRepository::new());
             self.sign_up_token_repository(fallback_repository)
-                .save(&serialized_token)?.to_string()
+                .save(&serialized_token)?
+                .to_string()
         };
+
+        let email_content = format!(
+            "<h1>🏕 Welcome to Darim</h1>\
+            <h2>Hello {} :)</h2>\
+            You've joined Darim.<br/><br/>\
+            Please copy the key below to finish the sign up process:<br/><br/>\
+            <div style=\"background-color: #f0f0f0; padding: 10px; font-size: 20px; font-weight: bold\">{}</div>",
+            token.name, token.pin,
+        );
 
         let _ = email_util::send_email(
             &format!("{} <{}>", &token.name, &token.email),
             &String::from("Welcome to Darim 🎉"),
-            &format!("Hello {} :)<br/><br/>You've joined Darim.br/><br/>Please visit the link to finish the sign up process:<br/>{}", token.name, token.pin),
+            &email_content,
         );
 
         Ok(result)
@@ -258,11 +269,20 @@ impl AuthService {
                 .save(&serialized_token)?
         };
 
-        // TODO: Specify the link.
+        let client_address = env::var("CLIENT_ADDRESS").expect("CLIENT_ADDRESS not found");
+        let email_content = format!(
+            "Hello :)<br/><br/>\
+            Please copy the temporary password:<br/><br/>\
+            <div style=\"background-color: #f0f0f0; padding: 10px; font-weight: bold\">{}</div><br/><br/>\
+            and visit the link to reset your password:<br/><br/>\
+            <a href=\"{}/password_reset/{}\">{}/password_reset/{}</a>",
+            token.password, client_address, token.id, client_address, token.id,
+        );
+
         let _ = email_util::send_email(
             &format!("{} <{}>", user.name, email),
-            &String::from("Please reset your password"),
-            &format!("Hello :)\n\nPlease copy the temporary password:\n{}\n\nand visit the link to reset your password:\n{}", token.password, token.id),
+            &String::from("Please reset your password 🔒"),
+            &email_content,
         );
 
         Ok(result)
