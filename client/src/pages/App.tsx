@@ -3,13 +3,14 @@ import { BrowserRouter as Router, Switch, Redirect, Route } from 'react-router-d
 import styled from 'styled-components';
 
 import * as api from '../api/auth';
-import { Header, Container } from '../components';
+import { Header, Footer, Container } from '../components';
 import { Session } from '../models';
 import { Timeline } from './timeline';
-import { Join, Token, PasswordReset } from './auth';
+import { Join, PasswordReset } from './auth';
 import { Landing } from './landing';
 import { Post } from './post';
 import { Settings } from './settings';
+import { Static } from './static';
 
 const Wrapper = styled(Container)`
   height: 100%;
@@ -20,6 +21,13 @@ const Wrapper = styled(Container)`
 const HeaderContainer = styled(Container)`
   padding-top: 30px;
 `;
+
+const ContainerWithFooter: React.FC = ({ children }) => {
+  return <Container>
+    {children}
+    <Footer />
+  </Container>;
+};
 
 const App: React.FC = () => {
   const [session, setSession] = useState<Session | null>(null);
@@ -41,32 +49,41 @@ const App: React.FC = () => {
         </HeaderContainer>
         <Switch>
           <Route path='/join/:key'>
-            <Container>
+            <ContainerWithFooter>
               {session ? <Redirect to="/" /> : <Join />}
-            </Container>
+            </ContainerWithFooter>
           </Route>
           <Route path='/password_reset'>
-            <Container>
+            <ContainerWithFooter>
               {session ? <Redirect to="/" /> : <PasswordReset />}
-            </Container>
+            </ContainerWithFooter>
           </Route>
           <Route path='/post/:id'>
-            <Container>
+            <ContainerWithFooter>
               {session && <Post session={session} />}
-            </Container>
+            </ContainerWithFooter>
           </Route>
           <Route path='/post'>
-            <Container>
+            <ContainerWithFooter>
               {session && <Post session={session} />}
-            </Container>
+            </ContainerWithFooter>
           </Route>
           <Route path='/settings'>
-            <Container>
+            <ContainerWithFooter>
               {session ? <Settings sessionState={[session, setSession]} /> : <Redirect to='/' />}
-            </Container>
+            </ContainerWithFooter>
+          </Route>
+          <Route path='/static'>
+            <ContainerWithFooter>
+              <Static />
+            </ContainerWithFooter>
           </Route>
           <Route path='/'>
-            {session ? <Timeline session={session} /> : <Landing session_state={[session, setSession]} />}
+            {session ? <Timeline session={session} /> : (
+              <ContainerWithFooter>
+                <Landing session_state={[session, setSession]} />
+              </ContainerWithFooter>
+            )}
           </Route>
           <Redirect to='/' />
         </Switch>

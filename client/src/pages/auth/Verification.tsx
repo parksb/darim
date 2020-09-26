@@ -5,11 +5,11 @@ import ReCAPTCHA from 'react-google-recaptcha';
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
-import privacy from './static/privacy.html';
+import privacy from '../../../public/static/privacy.html';
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
-import terms from './static/terms.html';
+import terms from '../../../public/static/terms.html';
 
 import * as api from '../../api/user';
 import { getI18n } from '../../utils/i18n';

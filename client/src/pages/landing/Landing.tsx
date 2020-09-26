@@ -62,39 +62,37 @@ const Landing: React.FC<Props> = ({ session_state }) => {
   });
 
   return <Container>
-    <Section bottom={50}>
+    <Section>
+      <SectionTitle>{i18n.text('secureDiary')}</SectionTitle>
+    </Section>
+    <Section top={30}>
+      <JoinForm />
+    </Section>
+    <Section top={30}>
       <Section>
-        <SectionTitle>{i18n.text('secureDiary')}</SectionTitle>
+        <Image src='https://user-images.githubusercontent.com/6410412/87238882-579d4900-c443-11ea-8e81-267b3243237c.png' />
       </Section>
       <Section top={30}>
-        <JoinForm />
+        <LoginForm sessionState={session_state} />
       </Section>
-      <Section top={30}>
-        <Section>
-          <Image src='https://user-images.githubusercontent.com/6410412/87238882-579d4900-c443-11ea-8e81-267b3243237c.png' />
+      <Section top={50}>
+        <SectionTitle>{i18n.text('keepYourDiaryASecret')}</SectionTitle>
+        <Section top={10}>
+          <Image src='https://user-images.githubusercontent.com/6410412/94341507-c94d6200-0044-11eb-8a46-9103a49a6b13.jpg' />
         </Section>
-        <Section top={30}>
-          <LoginForm sessionState={session_state} />
+        <SectionContent>{i18n.text('keepYourDiaryASecretDescription')}</SectionContent>
+      </Section>
+      <Section top={50}>
+        <SectionTitle>{i18n.text('youCanUseVariousFormatsUsingMarkdown')}</SectionTitle>
+        <Section top={10}>
+          <Image src='https://user-images.githubusercontent.com/6410412/94343688-c65a6d80-0054-11eb-8ac0-2bf206167c29.jpg' />
         </Section>
-        <Section top={50}>
-          <SectionTitle>{i18n.text('keepYourDiaryASecret')}</SectionTitle>
-          <Section top={10}>
-            <Image src='https://user-images.githubusercontent.com/6410412/94341507-c94d6200-0044-11eb-8a46-9103a49a6b13.jpg' />
-          </Section>
-          <SectionContent>{i18n.text('keepYourDiaryASecretDescription')}</SectionContent>
-        </Section>
-        <Section top={50}>
-          <SectionTitle>{i18n.text('youCanUseVariousFormatsUsingMarkdown')}</SectionTitle>
-          <Section top={10}>
-            <Image src='https://user-images.githubusercontent.com/6410412/94343688-c65a6d80-0054-11eb-8ac0-2bf206167c29.jpg' />
-          </Section>
-          <SectionContent>{i18n.text('youCanUseVariousFormatsUsingMarkdownDescription')}</SectionContent>
-        </Section>
-        <Section top={50}>
-          <SectionTitle>{i18n.text('getStartedNow')}</SectionTitle>
-          <Section top={20}>
-            <JoinForm />
-          </Section>
+        <SectionContent>{i18n.text('youCanUseVariousFormatsUsingMarkdownDescription')}</SectionContent>
+      </Section>
+      <Section top={50}>
+        <SectionTitle>{i18n.text('getStartedNow')}</SectionTitle>
+        <Section top={20}>
+          <JoinForm />
         </Section>
       </Section>
     </Section>
