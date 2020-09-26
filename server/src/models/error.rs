@@ -43,6 +43,6 @@ pub enum ServiceError {
 
 /// Logs and returns service error passed by parameter.
 pub fn get_service_error(error: ServiceError) -> ServiceError {
-    println!("[{}] {}", Utc::now(), ServiceError::QueryExecutionFailure);
+    println!("[{}] {}", Utc::now(), error);
     error
 }
