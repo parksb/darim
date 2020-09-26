@@ -18,7 +18,8 @@ const SectionTitle = styled.h2`
 `;
 
 const SectionContent = styled.p`
-  margin-top: 20px;
+  margin-top: 10px;
+  line-height: 180%;
 `;
 
 const Image = styled.img`
@@ -27,21 +28,32 @@ const Image = styled.img`
 
 const Landing: React.FC<Props> = ({ session_state }) => {
   const i18n = getI18n({
+    secureDiary: {
+      ko: '📒 안전한 온라인 다이어리',
+      en: '📒 Secure online diary',
+    },
     keepYourDiaryASecret: {
-      ko: '🔏 다이어리의 비밀을 지키세요',
-      en: '🔏 Keep your diary a secret'
+      ko: '🔏 다이어리의 내용을 안전하게 보호하세요',
+      en: '🔏 Keep your diary secure'
     },
     keepYourDiaryASecretDescription: {
-      ko: '암호화를 통해 다이어리 내용을 보호할 수 있습니다. 심지어 개발자도 알아낼 수 없습니다.',
-      en: 'You can keep your diary a secret via encryption. Even the developer can\'t figure out it',
+      ko: `암호화를 통해 다이어리 내용을 보호할 수 있습니다.
+        작성한 다이어리 내용은 저장할 때 비밀키를 이용해 암호화되기 때문에 작성자 외 누구도 그 내용을 읽을 수 없습니다.
+        심지어 개발자도 알아낼 수 없습니다.`,
+      en: `You can keep your diary a secret via encryption.
+         No one but you can read your diary because a diary is encrypted by secret key.
+         Even the developer can't figure out it`,
     },
     youCanUseVariousFormatsUsingMarkdown: {
-      ko: '🛠 마크다운을 이용해 다양한 형식을 사용할 수 있어요',
-      en: '🛠 You can use various formats using markdown',
+      ko: '🎁 다른 서비스에서 쉽게 다이어리를 가져오고, 내보낼 수 있어요',
+      en: '🎁 You can easily import and export a diary from other services',
     },
     youCanUseVariousFormatsUsingMarkdownDescription: {
-      ko: '마크다운 문법을 통해 코드 하이라이팅, 테이블, 각주, KaTeX 등 다양한 형식을 사용할 수 있습니다.',
-      en: 'You can use code highlighting, table, footnotes, KaTeX, and more via markdown syntax.',
+      ko: `범용적인 마크다운 문법을 사용해 노션(Notion), 베어(Bear) 등 다른 서비스에서 다이어리를 가져오거나,
+        내보낼 수 있습니다. 또한 코드 하이라이팅, 테이블, 각주, KaTeX 등 다양한 형식을 사용할 수 있습니다.`,
+      en: `You can import and export a diary from other services such as Notion and Bear
+        using general markdown syntax. Also, you can use code highlighting, table, footnotes, KaTeX,
+        and more.`,
     },
     getStartedNow: {
       ko: '👋 지금 시작해보세요!',
@@ -51,7 +63,12 @@ const Landing: React.FC<Props> = ({ session_state }) => {
 
   return <Container>
     <Section bottom={50}>
-      <JoinForm />
+      <Section>
+        <SectionTitle>{i18n.text('secureDiary')}</SectionTitle>
+      </Section>
+      <Section top={30}>
+        <JoinForm />
+      </Section>
       <Section top={30}>
         <Section>
           <Image src='https://user-images.githubusercontent.com/6410412/87238882-579d4900-c443-11ea-8e81-267b3243237c.png' />
@@ -61,10 +78,16 @@ const Landing: React.FC<Props> = ({ session_state }) => {
         </Section>
         <Section top={50}>
           <SectionTitle>{i18n.text('keepYourDiaryASecret')}</SectionTitle>
+          <Section top={10}>
+            <Image src='https://user-images.githubusercontent.com/6410412/94341507-c94d6200-0044-11eb-8a46-9103a49a6b13.jpg' />
+          </Section>
           <SectionContent>{i18n.text('keepYourDiaryASecretDescription')}</SectionContent>
         </Section>
         <Section top={50}>
           <SectionTitle>{i18n.text('youCanUseVariousFormatsUsingMarkdown')}</SectionTitle>
+          <Section top={10}>
+            <Image src='https://user-images.githubusercontent.com/6410412/94343688-c65a6d80-0054-11eb-8ac0-2bf206167c29.jpg' />
+          </Section>
           <SectionContent>{i18n.text('youCanUseVariousFormatsUsingMarkdownDescription')}</SectionContent>
         </Section>
         <Section top={50}>
