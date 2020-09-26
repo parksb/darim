@@ -8,6 +8,7 @@ interface CreateUserBody {
   user_public_key: string;
   token_key: string;
   token_pin: string;
+  recaptcha_token: string;
 }
 
 interface UpdateUserBody {
@@ -23,13 +24,14 @@ interface ResetPasswordBody {
   new_password: string;
 }
 
-async function createUser(user_public_key: string, token_key: string, token_pin: string): Promise<boolean | null> {
+async function createUser(user_public_key: string, token_key: string, token_pin: string, recaptcha_token: string): Promise<boolean | null> {
   const url = `${serverBaseUrl}/users`;
 
   const body: CreateUserBody = {
     user_public_key,
     token_key,
     token_pin,
+    recaptcha_token,
   };
 
   try {

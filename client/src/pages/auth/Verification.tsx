@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
 import { Secret, Storage } from 'snowball-js';
+import ReCAPTCHA from 'react-google-recaptcha';
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
@@ -10,10 +11,10 @@ import privacy from './static/privacy.html';
 // @ts-ignore
 import terms from './static/terms.html';
 
+import * as api from '../../api/user';
 import { getI18n } from '../../utils/i18n';
 import { Button, Checkbox, Container, TextField, Section } from '../../components';
-import * as api from '../../api/user';
-import { localStoragePrivateKey } from '../../constants';
+import { localStoragePrivateKey, reCAPTCHASiteKey } from '../../constants';
 
 interface Props {
   tokenKey: string;
@@ -40,6 +41,7 @@ const FullWidthTextField = styled(TextField)`
 const Verification: React.FC<Props> = ({ tokenKey, privateKeyState, publicKeyState }) => {
   const [hasAgreedWithPrivacy, setHasAgreedWithPrivacy] = useState(false);
   const [hasAgreedWithTerms, setHasAgreedWithTerms] = useState(false);
+  const [reCAPTCHAToken, setReCAPTCHAToken] = useState('');
 
   const [pin, setPin] = useState('');
   const setPrivateKey = privateKeyState[1];
@@ -51,7 +53,7 @@ const Verification: React.FC<Props> = ({ tokenKey, privateKeyState, publicKeySta
       const generatedPrivateKey = Secret.getRandomString();
       const encryptedPrivateKey = Secret.encryptAES(generatedPrivateKey, generatedPublicKey);
 
-      const result = await api.createUser(generatedPublicKey, tokenKey, pin);
+      const result = await api.createUser(generatedPublicKey, tokenKey, pin, reCAPTCHAToken);
       if (result) {
         Storage.set(localStoragePrivateKey, encryptedPrivateKey);
         setPrivateKey(encryptedPrivateKey);
@@ -95,11 +97,14 @@ const Verification: React.FC<Props> = ({ tokenKey, privateKeyState, publicKeySta
         </Section>
       </Section>
     </BoxContainer>
+    <Section top={30}>
+      <ReCAPTCHA sitekey={reCAPTCHASiteKey} onChange={(value) => { console.log(value); value && setReCAPTCHAToken(value)} } />
+    </Section>
     <Section top={40}>
       <Section>{i18n.text('verificationGuide')}</Section>
       <Section top={10} row>
         <FullWidthTextField type='text' placeholder={i18n.text('pin')} value={pin} onChange={({ target: { value } }) => setPin(value)} />
-        <Button onClick={verify} disabled={!hasAgreedWithTerms || !hasAgreedWithPrivacy}>{i18n.text('verify')}</Button>
+        <Button onClick={verify} disabled={!hasAgreedWithTerms || !hasAgreedWithPrivacy || !reCAPTCHAToken}>{i18n.text('verify')}</Button>
       </Section>
     </Section>
   </Container>

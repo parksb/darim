@@ -12,6 +12,7 @@ pub struct CreateArgs {
     pub user_public_key: String,
     pub token_key: String,
     pub token_pin: String,
+    pub recaptcha_token: String,
 }
 
 /// Arguments for `PATCH /users/:id` API.
@@ -65,13 +66,16 @@ impl UserRoute {
     ///     "error": null
     /// }
     /// ```
-    pub fn create_user(args: web::Json<CreateArgs>) -> impl Responder {
+    pub async fn create_user(args: web::Json<CreateArgs>) -> impl Responder {
         let CreateArgs {
             user_public_key,
             token_key,
             token_pin,
+            recaptcha_token,
         } = args.into_inner();
-        let response = UserService::new().create(&user_public_key, &token_key, &token_pin);
+        let response = UserService::new()
+            .create(&user_public_key, &token_key, &token_pin, &recaptcha_token)
+            .await;
         http_util::get_response::<bool>(response)
     }
 
@@ -211,7 +215,7 @@ impl UserRoute {
 
 #[post("/users")]
 pub async fn create_user_route(args: web::Json<CreateArgs>) -> impl Responder {
-    UserRoute::create_user(args)
+    UserRoute::create_user(args).await
 }
 
 #[delete("/users/{id}")]

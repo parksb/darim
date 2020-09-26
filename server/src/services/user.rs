@@ -1,4 +1,6 @@
 use cfg_if::cfg_if;
+use reqwest::Client;
+use std::env;
 
 use crate::models::auth::*;
 use crate::models::error::{get_service_error, ServiceError};
@@ -145,58 +147,94 @@ impl UserService {
             .collect())
     }
 
+    /// Verifies reCAPTCHA.
+    async fn verify_recaptcha(&self, token: &str) -> Result<bool, ServiceError> {
+        let recaptcha_secret_key = env::var("RECAPTCHA_SECRET_KEY").unwrap();
+        let form = reqwest::multipart::Form::new()
+            .text("secret", recaptcha_secret_key)
+            .text("response", token.to_string());
+
+        let response = Client::new()
+            .post("https://www.google.com/recaptcha/api/siteverify")
+            .multipart(form)
+            .send()
+            .await;
+
+        match response {
+            Ok(response) => {
+                let recaptcha_response = response.json::<ReCaptchaResponse>().await;
+                match recaptcha_response {
+                    Ok(recaptcha_response) => Ok(recaptcha_response.success),
+                    Err(_) => Err(ServiceError::InternalServerError),
+                }
+            }
+            Err(_) => Err(ServiceError::InternalServerError),
+        }
+    }
+
     /// Creates a new user.
     ///
     /// 1. Finds serialized token by token key from arguments.
     /// 2. Deserializes the found token and compares pin from token and it from arguments.
     /// 3. If the pins are equal, deletes the token from redis and creates a new user.
-    pub fn create(
+    pub async fn create(
         &mut self,
         user_public_key: &str,
         token_key: &str,
         token_pin: &str,
+        recaptcha_token: &str,
     ) -> Result<bool, ServiceError> {
-        let token: SignUpToken = {
-            let fallback_repository = some_if_true!(self.sign_up_token_repository.is_none() => SignUpTokenRepository::new());
+        let has_recaptcha_verified = self.verify_recaptcha(&recaptcha_token).await;
+        match has_recaptcha_verified {
+            Ok(has_recaptcha_verified) => {
+                if has_recaptcha_verified {
+                    let token: SignUpToken = {
+                        let fallback_repository = some_if_true!(self.sign_up_token_repository.is_none() => SignUpTokenRepository::new());
 
-            let serialized_token = self
-                .sign_up_token_repository(fallback_repository)
-                .find(token_key)?;
+                        let serialized_token = self
+                            .sign_up_token_repository(fallback_repository)
+                            .find(token_key)?;
 
-            let deserialized_token: SignUpToken =
-                if let Ok(deserialized_token) = serde_json::from_str(&serialized_token) {
-                    deserialized_token
+                        let deserialized_token: SignUpToken = if let Ok(deserialized_token) =
+                            serde_json::from_str(&serialized_token)
+                        {
+                            deserialized_token
+                        } else {
+                            return Err(get_service_error(ServiceError::InvalidFormat));
+                        };
+
+                        if token_pin == deserialized_token.pin {
+                            let _ = self.sign_up_token_repository(None).delete(token_key)?;
+                            deserialized_token
+                        } else {
+                            return Err(get_service_error(ServiceError::Unauthorized));
+                        }
+                    };
+
+                    let user = {
+                        let fallback_repository =
+                            some_if_true!(self.user_repository.is_none() => UserRepository::new());
+                        let user_repository = self.user_repository(fallback_repository);
+
+                        user_repository.create(
+                            &token.name,
+                            &token.email,
+                            &token.password,
+                            &token.avatar_url,
+                        )?;
+
+                        user_repository.find_by_email(&token.email)?
+                    };
+
+                    let fallback_repository = some_if_true!(self.user_key_repository.is_none() => UserKeyRepository::new());
+                    self.user_key_repository(fallback_repository)
+                        .create(user.id, user_public_key)
                 } else {
-                    return Err(get_service_error(ServiceError::InvalidFormat));
-                };
-
-            if token_pin == deserialized_token.pin {
-                let _ = self.sign_up_token_repository(None).delete(token_key)?;
-                deserialized_token
-            } else {
-                return Err(get_service_error(ServiceError::Unauthorized));
+                    Err(ServiceError::Unauthorized)
+                }
             }
-        };
-
-        let user = {
-            let fallback_repository =
-                some_if_true!(self.user_repository.is_none() => UserRepository::new());
-            let user_repository = self.user_repository(fallback_repository);
-
-            user_repository.create(
-                &token.name,
-                &token.email,
-                &token.password,
-                &token.avatar_url,
-            )?;
-
-            user_repository.find_by_email(&token.email)?
-        };
-
-        let fallback_repository =
-            some_if_true!(self.user_key_repository.is_none() => UserKeyRepository::new());
-        self.user_key_repository(fallback_repository)
-            .create(user.id, user_public_key)
+            Err(error) => Err(error),
+        }
     }
 
     /// Deletes a user.

@@ -43,6 +43,11 @@ struct UserDAO {
     updated_at: Option<NaiveDateTime>,
 }
 
+#[derive(Deserialize)]
+pub struct ReCaptchaResponse {
+    pub success: bool,
+}
+
 /// A core data repository for user.
 pub struct UserRepository {
     conn: MysqlConnection,
