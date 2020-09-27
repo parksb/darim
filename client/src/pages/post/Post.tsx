@@ -2,22 +2,17 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useLocation, Redirect } from 'react-router-dom';
 import styled from 'styled-components';
 import dayjs from 'dayjs';
+import SimpleMDE from 'react-simplemde-editor';
+import 'easymde/dist/easymde.min.css';
 
-import { getI18n } from '../../utils/i18n';
 import * as api from '../../api/post';
 import { Post, Session } from '../../models';
 import { Button, Container, Section, TextField } from '../../components';
-import Editor from './Editor';
-import Preview from './Preview';
 import { SaveStatus, getSaveStatusText } from '../../utils/status';
+import { getI18n } from '../../utils/i18n';
 
 interface Props {
   session: Session | null;
-}
-
-enum ContentViewMode {
-  EDITOR,
-  PREVIEW,
 }
 
 const TitleTextField = styled(TextField)`
@@ -54,24 +49,10 @@ const ContentViewModeSection = styled(Section)`
   justify-content: space-between;
 `;
 
-const ContentViewModeForm = styled.form`
-  font-size: 12px;
-  align-self: flex-end;
-`;
-
-const Radio = styled(({ ...other }) => <input type='radio' {...other} />)`
-  margin: 0 3px 0 0;
-`;
-
-const PreviewRadio = styled(Radio)`
-  margin-left: 7px;
-`;
-
 const DeleteButton = styled(Button)`
   font-size: 12px;
   max-width: 50px;
   align-self: flex-end;
-  margin-top: 20px;
 `;
 
 const Post: React.FC<Props> = ({ session }) => {
@@ -120,7 +101,6 @@ const Post: React.FC<Props> = ({ session }) => {
   const [content, setContent] = useState('');
   const [originalPost, setOriginalPost] = useState<Post | null>(null);
 
-  const [contentViewMode, setContentViewMode] = useState(ContentViewMode.EDITOR);
   const [saveStatus, setSaveStatus] = useState(SaveStatus.NONE);
   const [isDeleted, setIsDeleted] = useState(false);
 
@@ -136,12 +116,12 @@ const Post: React.FC<Props> = ({ session }) => {
     }
   };
 
-  const upsertPost = async (newTitle: string | null = null, newDate: string | null = null, newContent: string | null = null) => {
+  const upsertPost = async () => {
     if (postId && originalPost) {
       if (
-        newTitle && newTitle !== originalPost.title ||
-        newDate && newDate !== getFormattedDate(originalPost.date) ||
-        newContent && newContent !== originalPost.content
+        title !== originalPost.title ||
+        date !== getFormattedDate(originalPost.date) ||
+        content !== originalPost.content
       ) {
         const dateWithTime = getFormattedDate(date, true);
 
@@ -183,61 +163,44 @@ const Post: React.FC<Props> = ({ session }) => {
   useEffect(() => {
     if (id) {
       setPostId(id);
-      setContentViewMode(ContentViewMode.PREVIEW);
       load();
     } else {
       setSaveStatus(SaveStatus.NONE);
     }
   }, []);
 
-  return <Container bottom={30}>
+  return <Container>
     <TitleTextField
       placeholder={i18n.text('title')}
       value={title}
-      onBlur={({ target: { value } }) => upsertPost(value)}
+      onBlur={() => upsertPost()}
       onChange={({ target: { value } }) => setTitle(value)}
     />
     <DateField
       value={getFormattedDate(date)}
-      onBlur={({ target: { value } }: { target: { value: string } }) => upsertPost(null, value)}
+      onBlur={() => upsertPost()}
       onChange={({ target: { value } }: { target: { value: string } }) => setDate(value)}
     />
     <ContentViewModeSection top={20} bottom={15} row>
       <Section row>
         <SaveStatusText>{getSaveStatusText(saveStatus)}</SaveStatusText>
-        {saveStatus === SaveStatus.FAILURE && <LinkLikeText onClick={() => upsertPost(title, date, content)}>{i18n.text('retry')}</LinkLikeText>}
+        {saveStatus === SaveStatus.FAILURE && <LinkLikeText onClick={() => upsertPost()}>{i18n.text('retry')}</LinkLikeText>}
       </Section>
-      <ContentViewModeForm>
-        <label>
-          <Radio
-            name='content-view-mode'
-            value={ContentViewMode.EDITOR}
-            checked={contentViewMode === ContentViewMode.EDITOR}
-            onChange={() => setContentViewMode(ContentViewMode.EDITOR)}
-          />
-          {i18n.text('editor')}
-        </label>
-        <label>
-          <PreviewRadio
-            name='content-view-mode'
-            value={ContentViewMode.PREVIEW}
-            checked={contentViewMode === ContentViewMode.PREVIEW}
-            onChange={() => setContentViewMode(ContentViewMode.PREVIEW)}
-          />
-          {i18n.text('preview')}
-        </label>
-      </ContentViewModeForm>
+      {postId && <DeleteButton onClick={deletePost}>{i18n.text('delete')}</DeleteButton>}
     </ContentViewModeSection>
-    {contentViewMode === ContentViewMode.EDITOR ? (
-      <Editor
-        content={content}
-        onBlur={({ target: { value } }) => upsertPost(null, null, value)}
-        onChange={({ target: { value } }) => setContent(value)}
-      />
-    ) : (
-      <Preview content={content} />
-    )}
-    {postId && <DeleteButton onClick={deletePost}>{i18n.text('delete')}</DeleteButton>}
+    <SimpleMDE
+      value={content}
+      onChange={(text) => setContent(text)}
+      onBlur={() => upsertPost()}
+      options={{
+        minHeight: '670px',
+        autofocus: false,
+        spellChecker: false,
+        renderingConfig: {
+          codeSyntaxHighlighting: true,
+        },
+      }}
+    />
     {isDeleted && <Redirect to='/' />}
   </Container>
 };
