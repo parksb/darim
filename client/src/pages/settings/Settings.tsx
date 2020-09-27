@@ -8,6 +8,7 @@ import { Tab, Section } from '../../components';
 import { Session } from '../../models';
 import ProfileSettings from './ProfileSettings';
 import SecuritySettings from './SecuritySettings';
+import { localStoragePrivateKey } from '../../constants';
 
 interface Props {
   sessionState: [Session, React.Dispatch<React.SetStateAction<Session | null>>]
@@ -79,6 +80,7 @@ const Settings: React.FC<Props> = ({ sessionState }) => {
   const signOut = async () => {
     const result = await api.logout();
     if (result) {
+      localStorage.removeItem(localStoragePrivateKey);
       setSession(null);
     }
   };
