@@ -13,7 +13,7 @@ import { Settings } from './settings';
 import { Static } from './static';
 
 const Wrapper = styled(Container)`
-  height: 100%;
+  flex: 1;
   word-break: keep-all;
   font-family: sans-serif;
 `;

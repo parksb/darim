@@ -4,6 +4,7 @@ import React from 'react';
 import { Section } from '../components/index';
 
 const Container = styled(({ fullWidth, fullHeight, top, bottom, ...other }) => <Section {...other} />)`
+  display: flex;
   width: 100%;
   height: ${props => props.fullHeight ? '100%' : 'auto'};
   max-width: ${props => props.fullWidth ? 'none' : '800px'};
