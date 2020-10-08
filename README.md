@@ -1,6 +1,7 @@
 # 🏕 Darim
 
 [![Client CI](https://github.com/ParkSB/darim/workflows/Client%20CI/badge.svg)](https://github.com/ParkSB/darim/actions?query=workflow%3A%22Client+CI%22)
+[![API Gateway CI](https://github.com/parksb/darim/workflows/API%20Gateway%20CI/badge.svg)](https://github.com/parksb/darim/actions?query=workflow%3A%22API+Gateway+CI%22)
 [![Server CI](https://github.com/ParkSB/darim/workflows/Server%20CI/badge.svg)](https://github.com/ParkSB/darim/actions?query=workflow%3A%22Server+CI%22)
 
 * Darim: Diary Improved
@@ -14,7 +15,7 @@
 * Darim is following the layered architecture.
 * Each layer cannot be cross-referenced. All references between layers can flow in a higher direction. In other words, only the upper layer can invoke the lower layer members.
 
-![main transaction flow](https://user-images.githubusercontent.com/6410412/93713894-dc21eb80-fb99-11ea-8b3c-f689bbf05876.png)
+![main transaction flow](https://user-images.githubusercontent.com/6410412/95462994-3650e800-09b3-11eb-8bd6-1000d36ac307.png)
 
 ### [Client](client)
 
@@ -22,7 +23,7 @@
 * Pages - Pages represented by URL. Each page can use general components, API fetchers, and models.
 * Components - Reusable components used on multiple pages.
 
-### [Server](server)
+### [API Gateway](api-gateway) & [Server](server)
 
 * `main.rs` - An entry point of the application. It runs a http server.
 * Routes - A presentation layer that makes API public and passes request/response data to other layers.
