@@ -1,0 +1,39 @@
+name: API Gateway CI
+
+on:
+  push:
+    branches:
+      - master
+      - development
+    paths:
+      - 'gateway-api/**'
+      - '.github/workflows/**'
+  pull_request:
+    branches:
+      - master
+      - development
+    paths:
+      - 'gateway-api/**'
+      - '.github/workflows/**'
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - run: cd api-gateway && cargo check --verbose
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - run: cd api-gateway && cargo test --verbose
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - run: cd api-gateway && cargo build --verbose --release
+  clippy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - run: cd api-gateway && cargo clippy --verbose
