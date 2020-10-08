@@ -55,6 +55,22 @@ const DeleteButton = styled(Button)`
   align-self: flex-end;
 `;
 
+const StyledSimpleMDE = styled(SimpleMDE)`
+  line-height: 170%;
+
+  & .editor-toolbar {
+    border-left: 0;
+    border-right: 0;
+  }
+
+  & .CodeMirror-wrap {
+    padding-top: 0;
+    border-top: 0;
+    border-left: 0;
+    border-right: 0;
+  }
+`;
+
 const Post: React.FC<Props> = ({ session }) => {
   const i18n = getI18n({
     title: {
@@ -188,7 +204,7 @@ const Post: React.FC<Props> = ({ session }) => {
       </Section>
       {postId && <DeleteButton onClick={deletePost}>{i18n.text('delete')}</DeleteButton>}
     </ContentViewModeSection>
-    <SimpleMDE
+    <StyledSimpleMDE
       value={content}
       onChange={(text) => setContent(text)}
       onBlur={() => upsertPost()}
