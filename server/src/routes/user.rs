@@ -39,17 +39,17 @@ pub async fn create_user(args: web::Json<CreateArgs>) -> impl Responder {
         token_pin,
         recaptcha_token,
     } = args.into_inner();
-    let response = UserService::new()
+    let result = UserService::new()
         .create(&user_public_key, &token_key, &token_pin, &recaptcha_token)
         .await;
-    http_util::get_response::<bool>(response)
+    http_util::get_response::<bool>(result)
 }
 
 /// Deletes a user
 #[delete("/users/{id}")]
 pub async fn delete_user(id: web::Path<u64>) -> impl Responder {
-    let response = UserService::new().delete(id.into_inner());
-    http_util::get_response::<bool>(response)
+    let result = UserService::new().delete(id.into_inner());
+    http_util::get_response::<bool>(result)
 }
 
 /// Updates a user
@@ -60,9 +60,8 @@ pub async fn update_user(id: web::Path<u64>, args: web::Json<UpdateArgs>) -> imp
         password,
         avatar_url,
     } = args.into_inner();
-    let response = UserService::new().update(id.into_inner(), &name, &password, &avatar_url);
-
-    http_util::get_response::<bool>(response)
+    let result = UserService::new().update(id.into_inner(), &name, &password, &avatar_url);
+    http_util::get_response::<bool>(result)
 }
 
 /// Resets the password.
@@ -74,9 +73,9 @@ pub async fn reset_password(args: web::Json<ResetPasswordArgs>) -> impl Responde
         temporary_password,
         new_password,
     } = args.into_inner();
-    let response =
+    let result =
         UserService::new().reset_password(&email, &token_id, &temporary_password, &new_password);
-    http_util::get_response::<bool>(response)
+    http_util::get_response::<bool>(result)
 }
 
 /// Initializes the user routes.
