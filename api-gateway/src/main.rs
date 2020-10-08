@@ -1,3 +1,5 @@
+use actix_cors::Cors;
+use actix_session::CookieSession;
 use actix_web::{get, App, HttpResponse, HttpServer, Responder};
 use rustls::internal::pemfile::{certs, rsa_private_keys};
 use rustls::{NoClientAuth, ServerConfig};
@@ -5,8 +7,37 @@ use std::collections::HashMap;
 use std::env;
 use std::fs::File;
 use std::io::BufReader;
+use time::Duration;
 
-use darim::routes;
+/// A layer that defines data structure.
+pub mod models {
+    /// Model related to authentication.
+    pub mod auth;
+    /// Model related to error.
+    pub mod error;
+    /// Model related to post.
+    pub mod post;
+    /// Model related to user.
+    pub mod user;
+}
+
+/// A presentation layer that makes API public and passes request to back-end service.
+pub mod routes {
+    /// API related to authentication.
+    pub mod auth;
+    /// API related to post.
+    pub mod post;
+    /// API related to user.
+    pub mod user;
+}
+
+/// Reusable functions for multiple modules.
+pub mod utils {
+    /// Utilities related to HTTP.
+    pub mod http_util;
+    /// Utilities related to session.
+    pub mod session_util;
+}
 
 /// Health check
 #[get("/")]
@@ -34,10 +65,17 @@ async fn main() -> std::io::Result<()> {
 
     HttpServer::new(|| {
         App::new()
+            .wrap(Cors::new().supports_credentials().finish())
+            .wrap(
+                CookieSession::signed(&[0; 64])
+                    .secure(true)
+                    .http_only(true)
+                    .max_age_time(Duration::days(30)),
+            )
             .service(health_check)
+            .configure(routes::auth::init_routes)
             .configure(routes::post::init_routes)
             .configure(routes::user::init_routes)
-            .configure(routes::auth::init_routes)
     })
     .bind_rustls(address, config)?
     .run()

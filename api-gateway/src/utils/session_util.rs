@@ -1,5 +1,6 @@
-use crate::models::auth::UserSession;
 use actix_session::Session;
+
+use crate::models::auth::UserSession;
 
 /// Sets user session.
 ///

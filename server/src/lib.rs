@@ -77,8 +77,6 @@ pub mod utils {
     pub mod http_util;
     /// Utilities related to password.
     pub mod password_util;
-    /// Utilities related to session.
-    pub mod session_util;
 }
 
 /// A database schema.
