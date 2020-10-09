@@ -6,13 +6,17 @@ import SimpleMDE from 'react-simplemde-editor';
 import 'easymde/dist/easymde.min.css';
 
 import * as api from '../../api/post';
-import { Post, Session } from '../../models';
+import { Post as ApiPost, Session } from '../../models';
 import { Button, Container, Section, TextField } from '../../components';
 import { SaveStatus, getSaveStatusText } from '../../utils/status';
 import { getI18n } from '../../utils/i18n';
 
 interface Props {
   session: Session | null;
+}
+
+interface Post extends Omit<ApiPost, 'id'> {
+  id: number | null;
 }
 
 const TitleTextField = styled(TextField)`
@@ -99,7 +103,7 @@ const Post: React.FC<Props> = ({ session }) => {
     },
   });
 
-  const getFormattedDate = (date?: string, withTime = false) => {
+  const getFormattedDate = (date?: string | null, withTime = false) => {
     const format = withTime ? 'YYYY-MM-DDT00:00:00' : 'YYYY-MM-DD';
     if (date) {
       return dayjs(date).format(format);
@@ -111,54 +115,51 @@ const Post: React.FC<Props> = ({ session }) => {
   const query = new URLSearchParams(useLocation().search);
   const dateFromQuery = query.get('date');
 
-  const [postId, setPostId] = useState<number | null>(null);
-  const [title, setTitle] = useState('');
-  const [date, setDate] = useState(getFormattedDate(dateFromQuery || undefined));
-  const [content, setContent] = useState('');
+  const initialPost: Post = { id: null, title: '', content: '', date: getFormattedDate(dateFromQuery), updated_at: null, created_at: getFormattedDate() };
+  const [post, setPost] = useState<Post>(initialPost);
   const [originalPost, setOriginalPost] = useState<Post | null>(null);
 
   const [saveStatus, setSaveStatus] = useState(SaveStatus.NONE);
   const [isDeleted, setIsDeleted] = useState(false);
 
   const load = async () => {
-    const post = await api.fetchPost(id, session?.user_public_key || '');
+    const fetchedPost = await api.fetchPost(id, session?.user_public_key || '');
 
-    if (post) {
-      const { title, content, date } = post;
+    if (fetchedPost) {
       setOriginalPost(post);
-      setTitle(title);
-      setDate(date);
-      setContent(content);
+      setPost(fetchedPost);
     }
   };
 
   const upsertPost = async () => {
-    if (postId && originalPost) {
+    if (post.id && originalPost) {
       if (
-        title !== originalPost.title ||
-        date !== getFormattedDate(originalPost.date) ||
-        content !== originalPost.content
+        post.title !== originalPost.title ||
+        post.date !== getFormattedDate(originalPost.date) ||
+        post.content !== originalPost.content
       ) {
-        const dateWithTime = getFormattedDate(date, true);
+        const dateWithTime = getFormattedDate(post.date, true);
 
         setSaveStatus(SaveStatus.ONGOING);
-        const result = await api.updatePost(session?.user_public_key || '', postId, title, dateWithTime, content);
+        const result = await api.updatePost(session?.user_public_key || '', post.id, post.title, dateWithTime, post.content);
 
         if (result) {
+          setOriginalPost(post);
           setSaveStatus(SaveStatus.SUCCESS);
         } else {
           setSaveStatus(SaveStatus.FAILURE);
         }
       }
-    } else if (!postId) {
-      if (title && date && content) {
-        const dateWithTime = getFormattedDate(date, true);
+    } else if (!post.id) {
+      if (post.title && post.date && post.content) {
+        const dateWithTime = getFormattedDate(post.date, true);
 
         setSaveStatus(SaveStatus.ONGOING);
-        const result = await api.createPost(session?.user_public_key || '', title, dateWithTime, content);
+        const result = await api.createPost(session?.user_public_key || '', post.title, dateWithTime, post.content);
 
         if (result) {
-          setPostId(result);
+          setPost({ ...post, id: result });
+          setOriginalPost(post);
           setSaveStatus(SaveStatus.SUCCESS);
         } else {
           setSaveStatus(SaveStatus.FAILURE);
@@ -168,8 +169,8 @@ const Post: React.FC<Props> = ({ session }) => {
   };
 
   const deletePost = async () => {
-    if (postId && confirm(i18n.text('deleteConfirm'))) {
-      const result = await api.deletePost(postId);
+    if (post.id && confirm(i18n.text('deleteConfirm'))) {
+      const result = await api.deletePost(post.id);
       if (result) {
         setIsDeleted(true);
       }
@@ -178,7 +179,6 @@ const Post: React.FC<Props> = ({ session }) => {
 
   useEffect(() => {
     if (id) {
-      setPostId(id);
       load();
     } else {
       setSaveStatus(SaveStatus.NONE);
@@ -188,25 +188,25 @@ const Post: React.FC<Props> = ({ session }) => {
   return <Container>
     <TitleTextField
       placeholder={i18n.text('title')}
-      value={title}
+      value={post.title}
       onBlur={() => upsertPost()}
-      onChange={({ target: { value } }) => setTitle(value)}
+      onChange={({ target: { value } }) => setPost({ ...post, title: value })}
     />
     <DateField
-      value={getFormattedDate(date)}
+      value={getFormattedDate(post.date)}
       onBlur={() => upsertPost()}
-      onChange={({ target: { value } }: { target: { value: string } }) => setDate(value)}
+      onChange={({ target: { value } }: { target: { value: string } }) => setPost({ ...post, date: value })}
     />
     <ContentViewModeSection top={20} bottom={15} row>
       <Section row>
         <SaveStatusText>{getSaveStatusText(saveStatus)}</SaveStatusText>
         {saveStatus === SaveStatus.FAILURE && <LinkLikeText onClick={() => upsertPost()}>{i18n.text('retry')}</LinkLikeText>}
       </Section>
-      {postId && <DeleteButton onClick={deletePost}>{i18n.text('delete')}</DeleteButton>}
+      {post.id && <DeleteButton onClick={deletePost}>{i18n.text('delete')}</DeleteButton>}
     </ContentViewModeSection>
     <StyledSimpleMDE
-      value={content}
-      onChange={(text) => setContent(text)}
+      value={post.content}
+      onChange={(text) => setPost({ ...post, content: text })}
       onBlur={() => upsertPost()}
       options={{
         minHeight: '670px',
