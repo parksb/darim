@@ -135,7 +135,7 @@ const Post: React.FC<Props> = ({ session }) => {
     if (post.id && originalPost) {
       if (
         post.title !== originalPost.title ||
-        post.date !== getFormattedDate(originalPost.date) ||
+        post.date !== originalPost.date ||
         post.content !== originalPost.content
       ) {
         const dateWithTime = getFormattedDate(post.date, true);
