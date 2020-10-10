@@ -17,28 +17,24 @@ on:
       - '.github/workflows/**'
 
 jobs:
-  check:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - run: cd api-gateway && cargo check --verbose
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - run: cd api-gateway && cargo test --verbose
   build:
     runs-on: ubuntu-latest
+    env:
+      WORKING_DIRECTORY: ./api-gateway
     steps:
       - uses: actions/checkout@v2
-      - run: cd api-gateway && cargo build --verbose --release
-  fmt:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - run: cd api-gateway && cargo fmt -- --check
-  clippy:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - run: cd api-gateway && cargo clippy --verbose
+      - name: fmt
+        working-directory: ${{ env.WORKING_DIRECTORY }}
+        run: cargo fmt -- --check
+      - name: clippy
+        working-directory: ${{ env.WORKING_DIRECTORY }}
+        run: cargo clippy --verbose
+      - name: test
+        working-directory: ${{ env.WORKING_DIRECTORY }}
+        run: cargo test --verbose
+      - name: check
+        working-directory: ${{ env.WORKING_DIRECTORY }}
+        run: cargo check --verbose
+      - name: build
+        working-directory: ${{ env.WORKING_DIRECTORY }}
+        run: cargo build --verbose --release

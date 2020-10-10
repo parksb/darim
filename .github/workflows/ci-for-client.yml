@@ -17,13 +17,18 @@ on:
       - '.github/workflows/**'
 
 jobs:
-  check:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - run: cd client && npm install && npm run check
   build:
     runs-on: ubuntu-latest
+    env:
+      WORKING_DIRECTORY: ./client
     steps:
       - uses: actions/checkout@v2
-      - run: cd client && npm install && npm run build
+      - name: install
+        working-directory: ${{ env.WORKING_DIRECTORY }}
+        run: npm install
+      - name: check
+        working-directory: ${{ env.WORKING_DIRECTORY }}
+        run: npm run check
+      - name: build
+        working-directory: ${{ env.WORKING_DIRECTORY }}
+        run: npm run build
