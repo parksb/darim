@@ -32,6 +32,11 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - run: cd server && cargo build --verbose --release
+  fmt:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - run: cd server && cargo fmt -- --check
   clippy:
     runs-on: ubuntu-latest
     steps:

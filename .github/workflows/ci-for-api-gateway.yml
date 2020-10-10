@@ -32,6 +32,11 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - run: cd api-gateway && cargo build --verbose --release
+  fmt:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - run: cd api-gateway && cargo fmt -- --check
   clippy:
     runs-on: ubuntu-latest
     steps:
