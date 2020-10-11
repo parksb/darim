@@ -7,6 +7,7 @@ import LoginForm from './LoginForm'
 import JoinForm from './JoinForm'
 import { Session } from '../../models';
 
+import previewCalendarImage from './images/preview-calendar.png';
 import encryptionImage from './images/encryption.svg';
 import markdownImage from './images/markdown.svg';
 
@@ -78,7 +79,7 @@ const Landing: React.FC<Props> = ({ session_state }) => {
     </Section>
     <Section top={30}>
       <Section>
-        <Image src='https://user-images.githubusercontent.com/6410412/87238882-579d4900-c443-11ea-8e81-267b3243237c.png' />
+        <Image src={previewCalendarImage} />
       </Section>
       <Section top={30}>
         <LoginForm sessionState={session_state} />
