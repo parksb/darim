@@ -3,18 +3,13 @@ import styled from 'styled-components';
 import { Secret, Storage } from 'snowball-js';
 import ReCAPTCHA from 'react-google-recaptcha';
 
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
-import privacy from '../../../public/static/privacy.html';
-
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
-import terms from '../../../public/static/terms.html';
-
 import * as api from '../../api/user';
 import { getI18n } from '../../utils/i18n';
 import { Button, Checkbox, Container, TextField, Section } from '../../components';
 import { localStoragePrivateKey, reCAPTCHASiteKey } from '../../constants';
+
+import privacy from '../../../public/static/privacy.html';
+import terms from '../../../public/static/terms.html';
 
 interface Props {
   tokenKey: string;

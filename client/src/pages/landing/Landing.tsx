@@ -7,6 +7,9 @@ import LoginForm from './LoginForm'
 import JoinForm from './JoinForm'
 import { Session } from '../../models';
 
+import encryptionImage from './images/encryption.svg';
+import markdownImage from './images/markdown.svg';
+
 interface Props {
   session_state: [Session | null, React.Dispatch<React.SetStateAction<Session | null>>]
 }
@@ -29,8 +32,12 @@ const Image = styled.img`
 const Landing: React.FC<Props> = ({ session_state }) => {
   const i18n = getI18n({
     secureDiary: {
-      ko: '📒 안전한 온라인 다이어리',
-      en: '📒 Secure online diary',
+      ko: '📖 안전한 온라인 다이어리',
+      en: '📖 Secure online diary',
+    },
+    secureDescription: {
+      ko: '다림은 비밀키 암호화를 사용하는 안전한 온라인 다이어리 서비스입니다.',
+      en: 'Darim is a secure online diary service using secret key encryption.',
     },
     keepYourDiaryASecret: {
       ko: '🔏 다이어리의 내용을 안전하게 보호하세요',
@@ -64,6 +71,7 @@ const Landing: React.FC<Props> = ({ session_state }) => {
   return <Container>
     <Section>
       <SectionTitle>{i18n.text('secureDiary')}</SectionTitle>
+      <SectionContent>{i18n.text('secureDescription')}</SectionContent>
     </Section>
     <Section top={30}>
       <JoinForm />
@@ -77,15 +85,15 @@ const Landing: React.FC<Props> = ({ session_state }) => {
       </Section>
       <Section top={50}>
         <SectionTitle>{i18n.text('keepYourDiaryASecret')}</SectionTitle>
-        <Section top={10}>
-          <Image src='https://user-images.githubusercontent.com/6410412/94341507-c94d6200-0044-11eb-8a46-9103a49a6b13.jpg' />
+        <Section top={30} bottom={20}>
+          <Image src={encryptionImage} />
         </Section>
         <SectionContent>{i18n.text('keepYourDiaryASecretDescription')}</SectionContent>
       </Section>
       <Section top={50}>
         <SectionTitle>{i18n.text('youCanUseVariousFormatsUsingMarkdown')}</SectionTitle>
-        <Section top={10}>
-          <Image src='https://user-images.githubusercontent.com/6410412/94343688-c65a6d80-0054-11eb-8ac0-2bf206167c29.jpg' />
+        <Section top={10} bottom={10}>
+          <Image src={markdownImage} />
         </Section>
         <SectionContent>{i18n.text('youCanUseVariousFormatsUsingMarkdownDescription')}</SectionContent>
       </Section>
