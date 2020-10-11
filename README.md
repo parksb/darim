@@ -8,7 +8,7 @@
 * Darim is a personal diary service that supports encryption, calendar view, and markdown syntax.
 * You can keep your diary a secret even from the developer through client-side encryption.
 
-![Preview](./client/src/pages/landing/images/preview-calendar.png)
+![Preview](./client/src/pages/landing/images/thumb-without-text.svg)
 
 ## Architecture
 

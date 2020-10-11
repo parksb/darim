@@ -7,7 +7,7 @@ import LoginForm from './LoginForm'
 import JoinForm from './JoinForm'
 import { Session } from '../../models';
 
-import previewCalendarImage from './images/preview-calendar.png';
+import previewCalendarImage from './images/thumb-without-text.svg';
 import encryptionImage from './images/encryption.svg';
 import markdownImage from './images/markdown.svg';
 
