@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Switch, Redirect, Route } from 'react-router-dom';
 import styled from 'styled-components';
+import { Storage } from 'snowball-js';
 
+import { localStoragePrivateKey } from '../constants';
 import * as api from '../api/auth';
-import { Header, Footer, Container } from '../components';
+import { Header, Footer, Container, SecretKeyWarningBar } from '../components';
 import { Session } from '../models';
 import { Timeline } from './timeline';
 import { Join, PasswordReset } from './auth';
@@ -44,6 +46,7 @@ const App: React.FC = () => {
   return (
     <Router>
       <Wrapper fullWidth>
+        {session && !Storage.get(localStoragePrivateKey) && <SecretKeyWarningBar />}
         <HeaderContainer>
           <Header session={session} />
         </HeaderContainer>

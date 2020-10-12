@@ -7,7 +7,7 @@ import { localStoragePrivateKey } from '../../constants';
 import * as authApi from '../../api/auth';
 import * as userApi from '../../api/user';
 import { Button, Section, TextField } from '../../components';
-import { SaveStatus, getSaveStatusText } from '../../utils/status';
+import { getSaveStatusText, SaveStatus } from '../../utils/status';
 
 interface Props {
   userId: string;
@@ -39,6 +39,17 @@ const SaveStatusText = styled.span`
   color: #c0c0c0;
 `;
 
+const RefreshLink = styled.span`
+  color: #5f8fff;
+  text-decoration: none;
+  cursor: pointer;
+  margin-left: 5px;
+
+  &:hover {
+    text-decoration: underline;
+  }
+`
+
 const SecuritySettings: React.FC<Props> = ({ userId, userEmail }) => {
   const [newSecretKey, setNewSecretKey] = useState('');
   const [newSecretKeySaveStatus, setNewSecretKeySaveStatus] = useState(SaveStatus.NONE);
@@ -64,7 +75,11 @@ const SecuritySettings: React.FC<Props> = ({ userId, userEmail }) => {
     oldPassword: {
       ko: '기존 비밀번호',
       en: 'Old password',
-    }
+    },
+    refresh: {
+      ko: '새로고침',
+      en: 'Refresh',
+    },
   });
 
   const saveNewPrivateKey = async () => {
@@ -145,7 +160,10 @@ const SecuritySettings: React.FC<Props> = ({ userId, userEmail }) => {
         />
         <NonBorderButton onClick={saveNewPrivateKey}>{i18n.text('save')}</NonBorderButton>
       </Section>
-      <SaveStatusText>{getSaveStatusText(newSecretKeySaveStatus)}</SaveStatusText>
+      <SaveStatusText>
+        {getSaveStatusText(newSecretKeySaveStatus)}
+        {newSecretKeySaveStatus === SaveStatus.SUCCESS && <RefreshLink onClick={() => location.reload()}>Refresh</RefreshLink>}
+      </SaveStatusText>
     </Section>
   </Section>;
 };

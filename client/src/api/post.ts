@@ -26,6 +26,10 @@ async function fetchPosts(publicKey: string): Promise<Post[]> {
     const posts = await Http.get<Post[]>(url);
 
     const keyFromLocalStorage = Storage.get(localStoragePrivateKey);
+    if (!keyFromLocalStorage) {
+      throw new Error('Failed to load posts');
+    }
+
     const encryptedPrivateKey = Secret.parseUtf8ToString(keyFromLocalStorage);
     const privateKey = Secret.decryptAES(encryptedPrivateKey, publicKey);
 
@@ -62,6 +66,10 @@ async function fetchPost(id: number, publicKey: string): Promise<Post | null> {
 
   try {
     const keyFromLocalStorage = Storage.get(localStoragePrivateKey);
+    if (!keyFromLocalStorage) {
+      throw new Error('Failed to load posts');
+    }
+
     const encryptedPrivateKey = Secret.parseUtf8ToString(keyFromLocalStorage);
     const privateKey = Secret.decryptAES(encryptedPrivateKey, publicKey);
 
@@ -90,6 +98,10 @@ async function createPost(publicKey: string, title: string, date: string, conten
 
   try {
     const keyFromLocalStorage = Storage.get(localStoragePrivateKey);
+    if (!keyFromLocalStorage) {
+      throw new Error('Failed to load posts');
+    }
+
     const encryptedPrivateKey = Secret.parseUtf8ToString(keyFromLocalStorage);
 
     const privateKey = Secret.decryptAES(encryptedPrivateKey, publicKey);
@@ -125,6 +137,10 @@ async function updatePost(publicKey: string, id: number, title?: string, date?: 
 
   try {
     const keyFromLocalStorage = Storage.get(localStoragePrivateKey);
+    if (!keyFromLocalStorage) {
+      throw new Error('Failed to load posts');
+    }
+
     const encryptedPrivateKey = Secret.parseUtf8ToString(keyFromLocalStorage);
 
     const privateKey = Secret.decryptAES(encryptedPrivateKey, publicKey);
