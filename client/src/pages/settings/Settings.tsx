@@ -56,6 +56,7 @@ const SignOutTab = styled(SettingsTab)`
 
 const ButtonLink = styled(Link)`
   display: contents;
+  text-decoration: none;
 `;
 
 const Settings: React.FC<Props> = ({ sessionState }) => {
