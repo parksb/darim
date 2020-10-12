@@ -1,6 +1,7 @@
-use actix_web::{delete, patch, post, web, Responder};
+use actix_web::{delete, get, patch, post, web, Responder};
 use serde::{Deserialize, Serialize};
 
+use crate::models::user::UserDTO;
 use crate::services::user::UserService;
 use crate::utils::http_util;
 
@@ -28,6 +29,13 @@ pub struct ResetPasswordArgs {
     pub token_id: String,
     pub temporary_password: String,
     pub new_password: String,
+}
+
+/// Responds a user information
+#[get("/users/{id}")]
+pub async fn get_user(id: web::Path<u64>) -> impl Responder {
+    let user = UserService::new().get_one(id.into_inner());
+    http_util::get_response::<UserDTO>(user)
 }
 
 /// Creates a new user
@@ -80,6 +88,7 @@ pub async fn reset_password(args: web::Json<ResetPasswordArgs>) -> impl Responde
 
 /// Initializes the user routes.
 pub fn init_routes(cfg: &mut web::ServiceConfig) {
+    cfg.service(get_user);
     cfg.service(create_user);
     cfg.service(delete_user);
     cfg.service(update_user);

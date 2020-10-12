@@ -68,27 +68,39 @@ pub async fn get_auth(session: Session) -> impl Responder {
 pub async fn refresh_session(mut session: Session) -> impl Responder {
     let user_session = session_util::get_session(&session);
     if let Some(user_session) = user_session {
-        let user: UserDTO = reqwest::get(&http_util::get_url(&format!(
+        let response = reqwest::get(&http_util::get_url(&format!(
             "/users/{}",
             user_session.user_id
         )))
         .await
-        .unwrap()
-        .json::<UserDTO>()
-        .await
         .unwrap();
 
-        session_util::set_session(
-            &mut session,
-            user_session.user_id,
-            &user_session.user_email,
-            &user.name,
-            &user_session.user_public_key,
-            &user.avatar_url,
-        );
+        let result = http_util::parse_data_from_service_response::<UserDTO>(response).await;
+        if let Ok(user) = result {
+            if let Some(user) = user {
+                session_util::set_session(
+                    &mut session,
+                    user_session.user_id,
+                    &user_session.user_email,
+                    &user.name,
+                    &user_session.user_public_key,
+                    &user.avatar_url,
+                );
 
-        if let Some(refreshed_user_session) = session_util::get_session(&session) {
-            http_util::get_ok_response::<UserSession>(refreshed_user_session)
+                if let Some(refreshed_user_session) = session_util::get_session(&session) {
+                    http_util::get_ok_response::<UserSession>(refreshed_user_session)
+                } else {
+                    http_util::get_err_response::<UserSession>(
+                        StatusCode::UNAUTHORIZED,
+                        &get_api_error_message(ApiGatewayError::Unauthorized),
+                    )
+                }
+            } else {
+                http_util::get_err_response::<UserSession>(
+                    StatusCode::INTERNAL_SERVER_ERROR,
+                    &get_api_error_message(ApiGatewayError::ServiceResponseParsingFailure),
+                )
+            }
         } else {
             http_util::get_err_response::<UserSession>(
                 StatusCode::UNAUTHORIZED,
