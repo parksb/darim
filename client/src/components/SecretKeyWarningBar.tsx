@@ -6,7 +6,6 @@ import { getI18n } from '../utils/i18n';
 import { Section } from './index';
 
 const StyledSection = styled(Section)`
-  height: 15px;
   background-color: #e01060;
   justify-content: center;
   padding: 10px;

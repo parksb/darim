@@ -22,7 +22,7 @@ const Frame = styled(Section)`
   overflow-y: scroll;
   border: 1px solid #000;
   padding: 30px;
-  max-width: 325px;
+  max-width: 370px;
 `;
 
 const BoxContainer = styled(Section)`
@@ -78,8 +78,8 @@ const Verification: React.FC<Props> = ({ tokenKey, privateKeyState, publicKeySta
 
   return <Container>
     <Section>{i18n.text('info')}</Section>
-    <BoxContainer top={30} row>
-      <Section>
+    <BoxContainer top={30} bottom={10} row>
+      <Section bottom={15}>
         <Frame dangerouslySetInnerHTML={{__html: privacy}} />
         <Section top={10}>
           <Checkbox text='개인정보처리방침에 동의합니다.' valueState={[hasAgreedWithPrivacy, setHasAgreedWithPrivacy]} />
@@ -92,10 +92,10 @@ const Verification: React.FC<Props> = ({ tokenKey, privateKeyState, publicKeySta
         </Section>
       </Section>
     </BoxContainer>
-    <Section top={30}>
+    <Section top={10}>
       <ReCAPTCHA sitekey={reCAPTCHASiteKey} onChange={(value) => { console.log(value); value && setReCAPTCHAToken(value)} } />
     </Section>
-    <Section top={40}>
+    <Section top={30}>
       <Section>{i18n.text('verificationGuide')}</Section>
       <Section top={10} row>
         <FullWidthTextField type='text' placeholder={i18n.text('pin')} value={pin} onChange={({ target: { value } }) => setPin(value)} />

@@ -16,17 +16,8 @@ const SignUpButton = styled(Button)`
   border-left: 0;
 `;
 
-const SignInButton = styled(Button)`
-  flex: 1;
-`;
-
 const FullWidthTextField = styled(TextField)`
   flex: 4;
-`;
-
-const Form = styled.form`
-  display: flex;
-  flex: 1;
 `;
 
 const ForgotPasswordLink = styled(Link)`
@@ -79,13 +70,15 @@ const LoginForm: React.FC<Props> = ({ sessionState , hasSignUpButton }) => {
   return <Container>
     {!isSigning ? (
       <Section>
-        <Section row>
-          <Form onSubmit={login}>
-            <FullWidthTextField type='email' placeholder={i18n.text('email')} value={email} onChange={({ target: { value } }) => setEmail(value)} />
-            <FullWidthTextField type='password' placeholder={i18n.text('password')} value={password} onChange={({ target: { value } }) => setPassword(value)}/>
-            <SignInButton onClick={login}>{i18n.text('signIn')}</SignInButton>
-          </Form>
-          {hasSignUpButton &&(
+        <Section>
+          <form onSubmit={login}>
+            <Section row>
+              <FullWidthTextField type='email' placeholder={i18n.text('email')} value={email} onChange={({ target: { value } }) => setEmail(value)} />
+              <FullWidthTextField type='password' placeholder={i18n.text('password')} value={password} onChange={({ target: { value } }) => setPassword(value)}/>
+              <Button onClick={login}>{i18n.text('signIn')}</Button>
+            </Section>
+          </form>
+          {hasSignUpButton && (
             <Link to='/join'>
               <SignUpButton>{i18n.text('signUp')}</SignUpButton>
             </Link>

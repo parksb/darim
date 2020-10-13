@@ -21,7 +21,6 @@ const SectionTitle = styled.h2`
 
 const FullWidthTextField = styled(TextField)`
   flex: 1;
-  height: 21px;
 `;
 
 const SaveStatusText = styled.span`

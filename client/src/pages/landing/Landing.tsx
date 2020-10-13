@@ -19,6 +19,7 @@ const SectionTitle = styled.h2`
   font-size: 22px;
   font-weight: bold;
   color: #303030;
+  line-height: 150%;
 `;
 
 const SectionContent = styled.p`
@@ -26,8 +27,9 @@ const SectionContent = styled.p`
   line-height: 180%;
 `;
 
-const Image = styled.img`
-  width: 100%;
+const SVG = styled.object`
+  width: 800px;
+  max-width: 100%;
 `;
 
 const Landing: React.FC<Props> = ({ session_state }) => {
@@ -79,22 +81,22 @@ const Landing: React.FC<Props> = ({ session_state }) => {
     </Section>
     <Section top={30}>
       <Section>
-        <Image src={previewCalendarImage} />
+        <SVG type='image/svg+xml' data={previewCalendarImage} />
       </Section>
       <Section top={30}>
         <LoginForm sessionState={session_state} />
       </Section>
       <Section top={50}>
         <SectionTitle>{i18n.text('keepYourDiaryASecret')}</SectionTitle>
-        <Section top={30} bottom={20}>
-          <Image src={encryptionImage} />
+        <Section top={30} bottom={10}>
+          <SVG type='image/svg+xml' data={encryptionImage} />
         </Section>
         <SectionContent>{i18n.text('keepYourDiaryASecretDescription')}</SectionContent>
       </Section>
       <Section top={50}>
         <SectionTitle>{i18n.text('youCanUseVariousFormatsUsingMarkdown')}</SectionTitle>
-        <Section top={10} bottom={10}>
-          <Image src={markdownImage} />
+        <Section top={20} bottom={10}>
+          <SVG type='image/svg+xml' data={markdownImage} />
         </Section>
         <SectionContent>{i18n.text('youCanUseVariousFormatsUsingMarkdownDescription')}</SectionContent>
       </Section>

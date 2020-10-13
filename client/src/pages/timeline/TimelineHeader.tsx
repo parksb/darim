@@ -12,6 +12,7 @@ interface Props {
 
 const MainContainer = styled(Container)`
   justify-content: space-between;
+  padding: 0 20px 0 20px;
 `;
 
 const Select = styled.select`

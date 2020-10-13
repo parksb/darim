@@ -63,10 +63,6 @@ const MonthControlButton = styled(Button)`
   }
 `;
 
-const DaysSection = styled(Section)`
-  height: 100%;
-`;
-
 const Calendar: React.FC<Props> = ({ session }) => {
   dayjs.extend(weekOfYear);
 
@@ -174,7 +170,7 @@ const Calendar: React.FC<Props> = ({ session }) => {
         return <WeekDay key={weekDay}>{weekDay}</WeekDay>
       })}
     </WeekDayLine>
-    <DaysSection>
+    <Section fullHeight>
       {calendar.map((week) => {
         return <WeekLine key={week.week} row>
           {week.days.map((day) => {
@@ -184,7 +180,7 @@ const Calendar: React.FC<Props> = ({ session }) => {
           })}
         </WeekLine>;
       })}
-    </DaysSection>
+    </Section>
   </Container>
 };
 

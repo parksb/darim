@@ -18,17 +18,22 @@ const Wrapper = styled(Container)`
   flex: 1;
   word-break: keep-all;
   font-family: sans-serif;
+  max-width: 100%;
 `;
 
 const HeaderContainer = styled(Container)`
-  padding-top: 30px;
+  padding: 30px 20px 0 20px;
+`;
+
+const PaddingContainer = styled(Container)`
+  padding: 0 20px 0 20px;
 `;
 
 const ContainerWithFooter: React.FC = ({ children }) => {
-  return <Container>
+  return <PaddingContainer>
     {children}
     <Footer />
-  </Container>;
+  </PaddingContainer>;
 };
 
 const App: React.FC = () => {
