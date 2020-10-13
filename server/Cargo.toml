@@ -1,5 +1,5 @@
 [package]
-name = "darim"
+name = "darim-server"
 version = "0.1.0"
 authors = ["parksb <parkgds@gmail.com>"]
 edition = "2018"
