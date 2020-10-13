@@ -118,27 +118,6 @@ const SecuritySettings: React.FC<Props> = ({ userId, userEmail }) => {
 
   return <Section>
     <Section bottom={30}>
-      <SectionTitle>{i18n.text('password')}</SectionTitle>
-      <FullWidthTextField
-        type='password'
-        placeholder={i18n.text('newPassword')}
-        value={newPassword}
-        onChange={({ target: { value } }) => setNewPassword(value)}
-        autoComplete='new-password'
-      />
-      <Section row>
-        <NonBorderFullWidthTextField
-          type='password'
-          placeholder={i18n.text('oldPassword')}
-          value={newPasswordPassword}
-          onChange={({ target: { value } }) => setNewPasswordPassword(value)}
-          autoComplete='off'
-        />
-        <NonBorderButton onClick={saveNewPassword}>{i18n.text('save')}</NonBorderButton>
-      </Section>
-      <SaveStatusText>{getSaveStatusText(newPasswordSaveStatus)}</SaveStatusText>
-    </Section>
-    <Section bottom={30}>
       <SectionTitle>{i18n.text('secretKey')}</SectionTitle>
       <Section row>
         <FullWidthTextField
@@ -163,6 +142,27 @@ const SecuritySettings: React.FC<Props> = ({ userId, userEmail }) => {
         {getSaveStatusText(newSecretKeySaveStatus)}
         {newSecretKeySaveStatus === SaveStatus.SUCCESS && <RefreshLink onClick={() => location.reload()}>Refresh</RefreshLink>}
       </SaveStatusText>
+    </Section>
+    <Section bottom={30}>
+      <SectionTitle>{i18n.text('password')}</SectionTitle>
+      <FullWidthTextField
+        type='password'
+        placeholder={i18n.text('newPassword')}
+        value={newPassword}
+        onChange={({ target: { value } }) => setNewPassword(value)}
+        autoComplete='new-password'
+      />
+      <Section row>
+        <NonBorderFullWidthTextField
+          type='password'
+          placeholder={i18n.text('oldPassword')}
+          value={newPasswordPassword}
+          onChange={({ target: { value } }) => setNewPasswordPassword(value)}
+          autoComplete='off'
+        />
+        <NonBorderButton onClick={saveNewPassword}>{i18n.text('save')}</NonBorderButton>
+      </Section>
+      <SaveStatusText>{getSaveStatusText(newPasswordSaveStatus)}</SaveStatusText>
     </Section>
   </Section>;
 };
