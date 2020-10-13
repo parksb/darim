@@ -38,9 +38,12 @@ const ContainerWithFooter: React.FC = ({ children }) => {
 
 const App: React.FC = () => {
   const [session, setSession] = useState<Session | null>(null);
+  const [isFetchingSession, setIsFetchingSession] = useState<boolean>(false);
 
   const load = async () => {
+    setIsFetchingSession(true);
     const session = await api.fetchSession();
+    setIsFetchingSession(false);
     setSession(session);
   };
 
@@ -87,7 +90,7 @@ const App: React.FC = () => {
             </ContainerWithFooter>
           </Route>
           <Route path='/'>
-            {session ? <Timeline session={session} /> : (
+            {session ? <Timeline session={session} /> : !isFetchingSession && (
               <ContainerWithFooter>
                 <Landing session_state={[session, setSession]} />
               </ContainerWithFooter>
