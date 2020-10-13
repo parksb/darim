@@ -68,7 +68,10 @@ async fn health_check() -> impl Responder {
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     dotenv::dotenv().expect("Failed to read .env file");
-    let address = env::var("ADDRESS").expect("ADDRESS not found");
+
+    let host = env::var("HOST").expect("HOST not found"); // 0.0.0.0
+    let port = env!("PORT"); // 0000
+    let address = format!("{}:{}", host, port);
 
     println!("Server running at {}", address);
 

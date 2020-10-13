@@ -50,7 +50,11 @@ async fn health_check() -> impl Responder {
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     dotenv::dotenv().expect("Failed to read .env file");
-    let address = env::var("ADDRESS").expect("ADDRESS not found");
+
+    let host = env::var("HOST").expect("HOST not found");
+    let port = env::var("PORT").expect("PORT not found");
+    let address = format!("{}:{}", host, port);
+
     let cert_file_path = env::var("TLS_CERT_FILE_PATH").expect("TLS_CERT_FILE_PATH not found");
     let key_file_path = env::var("TLS_KEY_FILE_PATH").expect("TLS_KEY_FILE_PATH not found");
 
