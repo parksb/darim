@@ -55,7 +55,6 @@ const ContentViewModeSection = styled(Section)`
 
 const DeleteButton = styled(Button)`
   font-size: 12px;
-  max-width: 50px;
   align-self: flex-end;
 `;
 
