@@ -18,8 +18,7 @@ const Container = styled(({ is_current_month, ...other }) => <Section {...other}
   border-right: 1px solid #000000;
   background-color: ${props => props.is_current_month ? '#ffffff' : '#f5f5f5'};
   min-width: 0;
-  overflow: scroll;
-  padding-bottom: 5px;
+  max-height: 100%;
 
   &:nth-child(even) {
     border-right: 0;
@@ -37,7 +36,7 @@ const ItemHead = styled(Section)`
 
 const Date = styled.time`
   font-size: 12px;
-  padding: 10px 10px 10px;
+  padding: 5px 0 0 10px;
 `;
 
 const PostContainer = styled.div`
@@ -72,31 +71,35 @@ const NewPostLink = styled(Link)`
   color: #000000;
 `;
 
+const OverflowSection = styled(Section)`
+  overflow: auto;
+`;
+
 const CalendarItem: React.FC<Props> = ({ posts, day, cursorDate }) => {
   const displayed_date = day.date() === 1 ? day.format('MM / DD') : day.format('D');
   const is_today = day.format('YYYY-MM-DD') === dayjs().format('YYYY-MM-DD');
 
   return <Container is_current_month={day.month() === cursorDate.month()}>
-    <Section>
-      <ItemHead row>
-        <Date dateTime={day.format('YYYY-MM-DD')}>
-          {displayed_date}
-          {is_today && '📌'}
-        </Date>
-        <NewPostLink to={`/post?date=${day.format('YYYY-MM-DD')}`}>
-          <NewPostButton>+</NewPostButton>
-        </NewPostLink>
-      </ItemHead>
-      {posts && posts.map((post) => {
-        return (
-          <PostLink key={post.id} to={`/post/${post.id}`}>
-            <PostContainer>
-              {post.title}
-            </PostContainer>
-          </PostLink>
-        );
-      })}
-    </Section>
+    <ItemHead row>
+      <Date dateTime={day.format('YYYY-MM-DD')}>
+        {displayed_date}
+        {is_today && '📌'}
+      </Date>
+      <NewPostLink to={`/post?date=${day.format('YYYY-MM-DD')}`}>
+        <NewPostButton>+</NewPostButton>
+      </NewPostLink>
+    </ItemHead>
+    <OverflowSection>
+    {posts && posts.map((post) => {
+      return (
+        <PostLink key={post.id} to={`/post/${post.id}`}>
+          <PostContainer>
+            {post.title}
+          </PostContainer>
+        </PostLink>
+      );
+    })}
+    </OverflowSection>
   </Container>
 };
 

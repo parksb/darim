@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import styled from 'styled-components';
 
 import * as api from '../../api/post';
 import ListItem from './ListItem';
@@ -8,6 +9,10 @@ import { Container } from '../../components';
 interface Props {
   session: Session | null;
 }
+
+const StyledContainer = styled(Container)`
+  padding: 0 20px 0 20px;
+`;
 
 const List: React.FC<Props> = ({ session }) => {
   const [posts, setPosts] = useState<Post[]>([]);
@@ -21,11 +26,11 @@ const List: React.FC<Props> = ({ session }) => {
     load();
   }, []);
 
-  return <Container top={50}>
+  return <StyledContainer top={50}>
     {posts.map((post: Post) => {
       return <ListItem key={post.id} post={post}/>
     })}
-  </Container>
+  </StyledContainer>
 };
 
 export default List;

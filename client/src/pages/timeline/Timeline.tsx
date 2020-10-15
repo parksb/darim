@@ -22,15 +22,11 @@ const Timeline: React.FC<Props> = ({ session }) => {
     switch (mode) {
       case ViewMode.CALENDAR:
         return (
-          <Container fullWidth fullHeight>
-            <Calendar session={session} />
-          </Container>
+          <Calendar session={session} />
         );
       case ViewMode.LIST:
         return (
-          <Container>
-            <List session={session} />
-          </Container>
+          <List session={session} />
         );
     }
   };

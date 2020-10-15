@@ -27,6 +27,8 @@ const WeekLine = styled(Section)`
   max-width: 100%;
   border-top: 1px solid #000000;
   border-bottom: 1px solid #000000;
+  overflow: auto;
+  height: 0;
 
    &:nth-child(n+2) {
     border-top: 0;
@@ -61,6 +63,10 @@ const MonthControlButton = styled(Button)`
     background-color: #ffce05;
     color: #000000;
   }
+`;
+
+const OverflowContainer = styled(Container)`
+  overflow: auto;
 `;
 
 const Calendar: React.FC<Props> = ({ session }) => {
@@ -155,7 +161,7 @@ const Calendar: React.FC<Props> = ({ session }) => {
     calculateCalendar();
   }, [cursorDate]);
 
-  return <Container fullWidth fullHeight>
+  return <OverflowContainer fullWidth fullHeight>
     <MonthControlContainer bottom={30} row>
       <MonthControlButton onClick={() => setCursorDate(cursorDate.subtract(1, 'month'))}>
         ＜
@@ -181,7 +187,7 @@ const Calendar: React.FC<Props> = ({ session }) => {
         </WeekLine>;
       })}
     </Section>
-  </Container>
+  </OverflowContainer>
 };
 
 export default Calendar;
