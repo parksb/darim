@@ -21,6 +21,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       WORKING_DIRECTORY: ./server
+      PORT: 0000
     steps:
       - uses: actions/checkout@v2
       - name: fmt
