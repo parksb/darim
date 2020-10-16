@@ -28,9 +28,8 @@ const WeekLine = styled(Section)`
   border-top: 1px solid #000000;
   border-bottom: 1px solid #000000;
   overflow: auto;
-  height: 0;
 
-   &:nth-child(n+2) {
+  &:nth-child(n+2) {
     border-top: 0;
   };
 `;
