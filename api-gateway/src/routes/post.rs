@@ -131,12 +131,18 @@ pub async fn get_posts(session: Session) -> impl Responder {
 pub async fn create_post(session: Session, args: web::Json<CreateArgs>) -> impl Responder {
     if let Some(user_session) = session_util::get_session(&session) {
         let args = {
-            let args: CreateArgs = args.into_inner();
+            let CreateArgs {
+                title,
+                content,
+                date,
+            } = args.into_inner();
             ServiceCreateArgs {
+                create_args: CreateArgs {
+                    title,
+                    content,
+                    date,
+                },
                 user_id: user_session.user_id,
-                title: args.title,
-                content: args.content,
-                date: args.date,
             }
         };
 
@@ -224,12 +230,18 @@ pub async fn update_post(
 ) -> impl Responder {
     if let Some(user_session) = session_util::get_session(&session) {
         let args = {
-            let args: UpdateArgs = args.into_inner();
+            let UpdateArgs {
+                title,
+                content,
+                date,
+            } = args.into_inner();
             ServiceUpdateArgs {
+                update_args: UpdateArgs {
+                    title,
+                    content,
+                    date,
+                },
                 user_id: user_session.user_id,
-                title: args.title,
-                content: args.content,
-                date: args.date,
             }
         };
 
