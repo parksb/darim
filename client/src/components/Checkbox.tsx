@@ -6,14 +6,10 @@ interface Props {
   valueState: [boolean, React.Dispatch<React.SetStateAction<boolean>>];
 }
 
-const Label = styled.label`
-  cursor: pointer;
-`;
-
 const Input = styled.input`
   margin: 0 3px 0 0;
-  width: 15px;
-  height: 15px;
+  width: 18px;
+  height: 18px;
 `;
 
 const Checkbox: React.FC<Props> = ({ text, valueState }) => {
@@ -23,10 +19,10 @@ const Checkbox: React.FC<Props> = ({ text, valueState }) => {
     setValue(!value);
   };
 
-  return <Label>
+  return <label>
     <Input type='checkbox' checked={value} onChange={change} />
     {text}
-  </Label>
+  </label>
 };
 
 export default Checkbox;
