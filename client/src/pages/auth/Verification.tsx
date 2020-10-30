@@ -24,8 +24,12 @@ const LinkSpan = styled.span`
 `;
 
 const StyledLink = styled(Link)`
-  color: #0366d6;
+  color: #000000;
   font-weight: bold;
+
+  &:hover {
+    background-color: #ffce05;
+  }
 `;
 
 const Verification: React.FC<Props> = ({ tokenKey, privateKeyState, publicKeyState }) => {
