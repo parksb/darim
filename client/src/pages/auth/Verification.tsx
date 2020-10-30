@@ -95,7 +95,7 @@ const Verification: React.FC<Props> = ({ tokenKey, privateKeyState, publicKeySta
       </LinkSpan>
     </Section>
     <Section top={20}>
-      <ReCAPTCHA sitekey={reCAPTCHASiteKey} onChange={(value) => { console.log(value); value && setReCAPTCHAToken(value)} } />
+      <ReCAPTCHA sitekey={reCAPTCHASiteKey} onChange={(value) => { value && setReCAPTCHAToken(value)} } />
     </Section>
     <Section top={30}>
       <Section>{i18n.text('verificationGuide')}</Section>
