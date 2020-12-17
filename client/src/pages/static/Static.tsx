@@ -1,9 +1,12 @@
 import React from 'react';
-import { Redirect, Switch, Route, useRouteMatch } from 'react-router-dom';
+import { Redirect, Route, Switch, useRouteMatch } from 'react-router-dom';
 import styled from 'styled-components';
+import { I18n, I18nLanguages } from 'snowball-js';
 
-import privacy from '../../../public/static/privacy.md';
-import terms from '../../../public/static/terms.md';
+import privacyKo from '../../../public/static/privacy_ko.md';
+import termsKo from '../../../public/static/terms_ko.md';
+import privacyEn from '../../../public/static/privacy_en.md';
+import termsEn from '../../../public/static/terms_en.md';
 
 import { Section } from '../../components';
 
@@ -25,14 +28,33 @@ const Frame = styled(Section)`
 
 const Static: React.FC = () => {
   const { path } = useRouteMatch();
+  const userLanguage = I18n.getUserLanguage()
+
+  const getTerms = () => {
+    switch (userLanguage) {
+      case I18nLanguages.KO:
+        return termsKo;
+      default:
+        return termsEn;
+    }
+  }
+
+  const getPrivacy = () => {
+    switch (userLanguage) {
+      case I18nLanguages.KO:
+        return privacyKo;
+      default:
+        return privacyEn;
+    }
+  }
 
   return <Section>
       <Switch>
         <Route path={`${path}/terms`}>
-          <Frame dangerouslySetInnerHTML={{__html: terms}} />
+          <Frame dangerouslySetInnerHTML={{__html: getTerms()}} />
         </Route>
         <Route path={`${path}/privacy`}>
-          <Frame dangerouslySetInnerHTML={{__html: privacy}} />
+          <Frame dangerouslySetInnerHTML={{__html: getPrivacy()}} />
         </Route>
         <Redirect to='/' />
       </Switch>
