@@ -1,4 +1,4 @@
-use lettre::header::ContentType;
+use lettre::message::header::ContentType;
 use lettre::message::{Message, SinglePart};
 use lettre::{SendmailTransport, Transport};
 use std::env;
@@ -15,7 +15,7 @@ pub fn send_email(to: &str, subject: &str, body: &str) -> Result<bool, ServiceEr
         .singlepart(
             SinglePart::builder()
                 .header(ContentType("text/html; charset=utf8".parse().unwrap()))
-                .body(body),
+                .body(body.to_string()),
         )
         .unwrap();
 
