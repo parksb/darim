@@ -137,11 +137,9 @@ pub async fn create_post(session: Session, args: web::Json<CreateArgs>) -> impl 
                 date,
             } = args.into_inner();
             ServiceCreateArgs {
-                create_args: CreateArgs {
-                    title,
-                    content,
-                    date,
-                },
+                title,
+                content,
+                date,
                 user_id: user_session.user_id,
             }
         };
@@ -236,11 +234,9 @@ pub async fn update_post(
                 date,
             } = args.into_inner();
             ServiceUpdateArgs {
-                update_args: UpdateArgs {
-                    title,
-                    content,
-                    date,
-                },
+                title,
+                content,
+                date,
                 user_id: user_session.user_id,
             }
         };
