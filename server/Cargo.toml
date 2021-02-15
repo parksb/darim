@@ -22,3 +22,4 @@ lettre = "0.10.0-alpha.2"
 mockall = "^0.8"
 time = "^0.2"
 reqwest = { version = "^0.10", features = ["json"] }
+funty = "=1.1.0"
