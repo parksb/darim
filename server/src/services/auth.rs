@@ -1,26 +1,11 @@
-use cfg_if::cfg_if;
 use rand::{distributions::Alphanumeric, thread_rng, Rng};
 use std::env;
 
 use crate::models::auth::*;
 use crate::models::error::{get_service_error, ServiceError};
+use crate::models::user::UserRepository;
+use crate::models::user_key::UserKeyRepository;
 use crate::utils::{email_util, password_util};
-
-cfg_if! {
-    if #[cfg(test)] {
-        use crate::models::user_key::*;
-        use crate::models::user::*;
-        use crate::models::auth::MockSignUpTokenRepositoryTrait as SignUpTokenRepository;
-        use crate::models::auth::MockPasswordTokenRepositoryTrait as PasswordTokenRepository;
-        use crate::models::user_key::MockUserKeyRepositoryTrait as UserKeyRepository;
-        use crate::models::user::MockUserRepositoryTrait as UserRepository;
-    } else {
-        use crate::models::auth::SignUpTokenRepository;
-        use crate::models::auth::PasswordTokenRepository;
-        use crate::models::user_key::UserKeyRepository;
-        use crate::models::user::UserRepository;
-    }
-}
 
 pub struct AuthService {
     sign_up_token_repository: Option<SignUpTokenRepository>,
@@ -36,24 +21,6 @@ impl AuthService {
             password_token_repository: None,
             user_key_repository: None,
             user_repository: None,
-        }
-    }
-
-    cfg_if! {
-        if #[cfg(test)] {
-            pub fn new_with_repository(
-                sign_up_token_repository: SignUpTokenRepository,
-                password_token_repository: PasswordTokenRepository,
-                user_key_repository: UserKeyRepository,
-                user_repository: UserRepository,
-            ) -> Self {
-                Self {
-                    sign_up_token_repository: Some(sign_up_token_repository),
-                    password_token_repository: Some(password_token_repository),
-                    user_key_repository: Some(user_key_repository),
-                    user_repository: Some(user_repository),
-                }
-            }
         }
     }
 
@@ -257,5 +224,26 @@ impl AuthService {
 impl Default for AuthService {
     fn default() -> Self {
         Self::new()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    impl AuthService {
+        pub fn new_with_repository(
+            sign_up_token_repository: SignUpTokenRepository,
+            password_token_repository: PasswordTokenRepository,
+            user_key_repository: UserKeyRepository,
+            user_repository: UserRepository,
+        ) -> Self {
+            Self {
+                sign_up_token_repository: Some(sign_up_token_repository),
+                password_token_repository: Some(password_token_repository),
+                user_key_repository: Some(user_key_repository),
+                user_repository: Some(user_repository),
+            }
+        }
     }
 }
