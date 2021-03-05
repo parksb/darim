@@ -1,6 +1,7 @@
 use lettre::message::header::ContentType;
 use lettre::message::{Message, SinglePart};
-use lettre::{SendmailTransport, Transport};
+use lettre::transport::sendmail::SendmailTransport;
+use lettre::Transport;
 use std::env;
 
 use crate::models::error::ServiceError;
