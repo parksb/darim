@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useParams } from 'react-router-dom';
 
 import Calendar from './Calendar';
 import List from './List';
@@ -16,18 +17,26 @@ export enum ViewMode {
 }
 
 const Timeline: React.FC<Props> = ({ session }) => {
-  const [viewMode, setViewMode] = useState(ViewMode.CALENDAR);
+  const getInitialViewMode = () => {
+    const { viewMode } = useParams();
+    switch (viewMode) {
+      case 'calendar':
+        return ViewMode.CALENDAR;
+      case 'list':
+        return ViewMode.LIST;
+      default:
+        return ViewMode.CALENDAR;
+    }
+  }
+
+  const [viewMode, setViewMode] = useState(getInitialViewMode());
 
   const viewTimelineBody = (mode: ViewMode) => {
     switch (mode) {
       case ViewMode.CALENDAR:
-        return (
-          <Calendar session={session} />
-        );
+        return <Calendar session={session} />;
       case ViewMode.LIST:
-        return (
-          <List session={session} />
-        );
+        return <List session={session} />;
     }
   };
 

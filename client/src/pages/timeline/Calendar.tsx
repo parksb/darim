@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import dayjs from 'dayjs';
 import weekOfYear from 'dayjs/plugin/weekOfYear';
 import styled from 'styled-components';
+import { useParams, withRouter } from 'react-router-dom';
 
 import { getI18n } from '../../utils/i18n';
 import * as api from '../../api/post';
@@ -71,9 +72,16 @@ const OverflowContainer = styled(Container)`
 const Calendar: React.FC<Props> = ({ session }) => {
   dayjs.extend(weekOfYear);
 
+  const getInitialCursorDate = () => {
+    const { year, month } = useParams();
+    const initialYear = year ?? dayjs().year();
+    const initialMonth = (month ?? (dayjs().month() + 1)) - 1;
+    return dayjs().year(initialYear).month(initialMonth).date(1);
+  };
+
   const [postMap, setPostMap] = useState<DateToPostsMap>({});
   const [calendar, setCalendar] = useState<Week[]>([]);
-  const [cursorDate, setCursorDate] = useState(dayjs().date(1));
+  const [cursorDate, setCursorDate] = useState(getInitialCursorDate());
 
   const i18n = getI18n({
     sunday: {
@@ -151,6 +159,24 @@ const Calendar: React.FC<Props> = ({ session }) => {
     setPostMap(dateToPostsMap);
   };
 
+  const composeMonthControlURL = (date: dayjs.Dayjs) => `/calendar/${date.year()}/${date.month() + 1}`;
+
+  const PrevMonthControlButton = withRouter(({ history }) => (
+    <MonthControlButton onClick={() => {
+      const date = cursorDate.subtract(1, 'month');
+      setCursorDate(date);
+      history.push(composeMonthControlURL(date));
+    }}>＜</MonthControlButton>
+  ));
+
+  const NextMonthControlButton = withRouter(({ history }) => (
+    <MonthControlButton onClick={() => {
+      const date = cursorDate.add(1, 'month');
+      setCursorDate(date);
+      history.push(composeMonthControlURL(date));
+    }}>＞</MonthControlButton>
+  ));
+
   useEffect(() => {
     load();
     calculateCalendar();
@@ -162,13 +188,9 @@ const Calendar: React.FC<Props> = ({ session }) => {
 
   return <OverflowContainer fullWidth fullHeight>
     <MonthControlContainer bottom={30} row>
-      <MonthControlButton onClick={() => setCursorDate(cursorDate.subtract(1, 'month'))}>
-        ＜
-      </MonthControlButton>
+      <PrevMonthControlButton />
       <h2>{cursorDate.format(cursorDate.year() === dayjs().year() ? 'MMMM' : 'YYYY MMMM')}</h2>
-      <MonthControlButton onClick={() => setCursorDate(cursorDate.add(1, 'month'))}>
-        ＞
-      </MonthControlButton>
+      <NextMonthControlButton />
     </MonthControlContainer>
     <WeekDayLine row>
       {weekDays.map((weekDay) => {
