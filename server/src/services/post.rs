@@ -1,16 +1,7 @@
-use cfg_if::cfg_if;
 use chrono::NaiveDateTime;
 
 use crate::models::error::{get_service_error, ServiceError};
 use crate::models::post::*;
-
-cfg_if! {
-    if #[cfg(test)] {
-        use crate::models::post::MockPostRepositoryTrait as PostRepository;
-    } else {
-        use crate::models::post::PostRepository;
-    }
-}
 
 pub struct PostService {
     post_repository: Option<PostRepository>,
@@ -20,14 +11,6 @@ impl PostService {
     pub fn new() -> Self {
         Self {
             post_repository: None,
-        }
-    }
-
-    cfg_if! {
-        if #[cfg(test)] {
-            pub fn new_with_repository(post_repository: PostRepository) -> Self {
-                Self { post_repository: Some(post_repository) }
-            }
         }
     }
 
@@ -154,12 +137,23 @@ impl Default for PostService {
 }
 
 #[cfg(test)]
+use crate::models::post::MockPostRepositoryTrait as PostRepository;
+
+#[cfg(test)]
 mod tests {
     use chrono::Utc;
     use mockall::predicate::*;
 
     use super::*;
     use crate::models::post::MockPostRepositoryTrait;
+
+    impl PostService {
+        pub fn new_with_repository(post_repository: PostRepository) -> Self {
+            Self {
+                post_repository: Some(post_repository),
+            }
+        }
+    }
 
     #[test]
     fn test_get_list() {
