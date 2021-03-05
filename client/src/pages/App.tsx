@@ -89,6 +89,12 @@ const App: React.FC = () => {
               <Static />
             </ContainerWithFooter>
           </Route>
+          <Route path='/:viewMode/:year/:month'>
+            {session ? <Timeline session={session} /> : <Redirect to='/' />}
+          </Route>
+          <Route path='/:viewMode'>
+            {session ? <Timeline session={session} /> : <Redirect to='/' />}
+          </Route>
           <Route path='/'>
             {session ? <Timeline session={session} /> : !isFetchingSession && (
               <ContainerWithFooter>
