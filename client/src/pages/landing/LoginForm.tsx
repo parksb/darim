@@ -18,6 +18,7 @@ const SignUpButton = styled(Button)`
 
 const FullWidthTextField = styled(TextField)`
   flex: 4;
+  width: 100%;
 `;
 
 const ForgotPasswordLink = styled(Link)`
@@ -70,7 +71,7 @@ const LoginForm: React.FC<Props> = ({ sessionState , hasSignUpButton }) => {
   return <Container>
     {!isSigning ? (
       <Section>
-        <Section>
+        <Section nowrap>
           <form onSubmit={login}>
             <Section row>
               <FullWidthTextField type='email' placeholder={i18n.text('email')} value={email} onChange={({ target: { value } }) => setEmail(value)} />

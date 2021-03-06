@@ -10,6 +10,7 @@ const Tab = styled.div`
   padding: 5px 10px;
   cursor: pointer;
   text-align: center;
+  max-height: 30px;
 
   &:hover {
     background-color: #ffce05;
