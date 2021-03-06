@@ -1,12 +1,12 @@
 import React from 'react';
 import styled from 'styled-components'
 
-const Section = styled(({ row, top, bottom, fullHeight, ...other }) => <div {...other} />)`
+const Section = styled(({ row, top, bottom, fullHeight, nowrap, ...other }) => <div {...other} />)`
   display: flex;
   flex: ${props => !props.row && props.fullHeight && 1};
-  flex-wrap: ${props => props.row && 'wrap'};
+  flex-wrap: ${props => props.nowrap ? 'nowrap' : 'wrap'};
+  flex-direction: ${props => props.row ? 'row' : 'column'};
   max-width: 100%;
-  flex-direction: ${props => props.row || 'column'};
   margin-top: ${props => props.top ? `${props.top}px` : 0};
   margin-bottom: ${props => props.bottom ? `${props.bottom}px` : 0};
   line-height: 150%;

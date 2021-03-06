@@ -9,6 +9,7 @@ import { Button, Container, Section, TextField } from '../../components';
 
 const FullWidthTextField = styled(TextField)`
   flex: 1;
+  width: 100%;
 `;
 
 const NonBorderFullWidthTextField = styled(FullWidthTextField)`
@@ -71,7 +72,7 @@ const PasswordReset: React.FC = () => {
 
   return <Container bottom={30}>
     {!isSentEmail ? (
-      <Section row>
+      <Section row unwrap>
         <FullWidthTextField type='email' placeholder={i18n.text('email')} value={email} onChange={({ target: { value } }) => setEmail(value)} />
         <Button onClick={() => email && sendEmail()}>{i18n.text('send')}</Button>
       </Section>

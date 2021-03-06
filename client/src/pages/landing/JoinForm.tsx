@@ -8,6 +8,7 @@ import { Button, Container, TextField, Section, LoadingDots } from '../../compon
 
 const FullWidthTextField = styled(TextField)`
   flex: 3;
+  width: 100%;
 `;
 
 const JoinForm: React.FC = () => {
@@ -49,7 +50,7 @@ const JoinForm: React.FC = () => {
     ) : (
       !isSettingToken ? (
         <form onSubmit={setSignUpToken}>
-          <Section row>
+          <Section row nowrap>
             <FullWidthTextField type='email' placeholder={i18n.text('email')} value={email} onChange={({ target: { value } }) => setEmail(value)} />
             <FullWidthTextField type='password' placeholder={i18n.text('password')} value={password} onChange={({ target: { value } }) => setPassword(value)}/>
             <FullWidthTextField type='text' placeholder={i18n.text('name')} value={name} onChange={({ target: { value } }) => setName(value)} />
