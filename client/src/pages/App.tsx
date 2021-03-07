@@ -17,7 +17,7 @@ import { Static } from './static';
 const Wrapper = styled(Container)`
   flex: 1;
   word-break: keep-all;
-  font-family: sans-serif;
+  font-family: 'Spoqa Han Sans Neo', 'Noto Sans CJK KR', 'Noto Sans', sans-serif;
   max-width: 100%;
 `;
 
