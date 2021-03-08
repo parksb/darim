@@ -1,32 +1,22 @@
 import React, { useState } from 'react';
 import { useParams } from 'react-router-dom';
+import { Storage } from 'snowball-js';
 
 import Calendar from './Calendar';
 import List from './List';
 import TimelineHeader from './TimelineHeader';
-import { Session } from '../../models';
+import { Session, ViewMode, ViewModeMethods } from '../../models';
 import { Container } from '../../components'
+import { localStorageViewModeKey } from '../../constants';
 
 interface Props {
   session: Session | null;
 }
 
-export enum ViewMode {
-  CALENDAR,
-  LIST,
-}
-
 const Timeline: React.FC<Props> = ({ session }) => {
   const getInitialViewMode = () => {
     const { viewMode } = useParams();
-    switch (viewMode) {
-      case 'calendar':
-        return ViewMode.CALENDAR;
-      case 'list':
-        return ViewMode.LIST;
-      default:
-        return ViewMode.CALENDAR;
-    }
+    return viewMode ? ViewModeMethods.convertStringToViewMode(viewMode) : ViewModeMethods.convertStringToViewMode(Storage.get(localStorageViewModeKey));
   }
 
   const [viewMode, setViewMode] = useState(getInitialViewMode());
