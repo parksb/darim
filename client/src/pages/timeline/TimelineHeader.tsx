@@ -1,10 +1,12 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import styled from 'styled-components';
+import { Storage } from 'snowball-js';
 
 import { getI18n } from '../../utils/i18n';
 import { Button, Container } from '../../components';
-import { ViewMode } from './Timeline';
+import { localStorageViewModeKey } from '../../constants';
+import { ViewMode, ViewModeMethods } from '../../models';
 
 interface Props {
   viewModeState: [ViewMode, React.Dispatch<React.SetStateAction<ViewMode>>]
@@ -33,22 +35,17 @@ const TimelineHeader: React.FC<Props> = ({ viewModeState }) => {
     }
   });
 
-  const convertStringToViewMode = (mode: string) => {
-    switch (mode) {
-      case '0':
-        return ViewMode.CALENDAR;
-      case '1':
-        return ViewMode.LIST;
-      default:
-        return ViewMode.CALENDAR;
-    }
+  const switchViewMode = (mode: string) => {
+    const viewMode = ViewModeMethods.convertNumberToString(Number(mode));
+    Storage.set(localStorageViewModeKey, ViewModeMethods.convertViewModeToString(viewMode));
+    setViewMode(viewMode);
   };
 
   return <MainContainer row>
     <Link to={'/post'}>
       <Button>New +</Button>
     </Link>
-    <Select value={viewMode} onChange={({ target: { value }}) => setViewMode(convertStringToViewMode(value))}>
+    <Select value={viewMode} onChange={({ target: { value }}) => switchViewMode(value)}>
       <option value={ViewMode.CALENDAR}>{i18n.text('calendarView')}</option>
       <option value={ViewMode.LIST}>{i18n.text('listView')}</option>
     </Select>
