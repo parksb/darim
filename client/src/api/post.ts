@@ -2,7 +2,7 @@ import { Storage, Http, Secret } from 'snowball-js';
 
 import { getI18n } from '../utils/i18n';
 import { serverBaseUrl, localStoragePrivateKey } from '../constants';
-import Post from '../models/Post';
+import { Post, SummarizedPost } from '../models';
 
 interface CreatePostBody {
   title: string;
@@ -16,14 +16,14 @@ interface UpdatePostBody {
   content?: string;
 }
 
-async function fetchPosts(publicKey: string): Promise<Post[]> {
+async function fetchPosts(publicKey: string): Promise<SummarizedPost[]> {
   if (!publicKey) {
     return [];
   }
 
   try {
-    const url = `${serverBaseUrl}/posts`;
-    const posts = await Http.get<Post[]>(url);
+    const url = `${serverBaseUrl}/summarized_posts`;
+    const posts = await Http.get<SummarizedPost[]>(url);
 
     const keyFromLocalStorage = Storage.get(localStoragePrivateKey);
     if (!keyFromLocalStorage) {
@@ -34,24 +34,20 @@ async function fetchPosts(publicKey: string): Promise<Post[]> {
     const privateKey = Secret.decryptAES(encryptedPrivateKey, publicKey);
 
     if (privateKey) {
-      return posts.map((post) => {
-        const { id, title, content, date, created_at, updated_at } = post;
+      return posts.map((post): SummarizedPost | null => {
+        const { id, title, date } = post;
         const decryptedTitle = Secret.decryptAES(title, privateKey);
-        const decryptedContent = Secret.decryptAES(content, privateKey);
 
-        if (decryptedTitle && decryptedContent) {
+        if (decryptedTitle) {
           return {
             id,
             title: decryptedTitle,
-            content: decryptedContent,
             date,
-            created_at,
-            updated_at,
-          } as Post;
+          };
         }
 
         return null;
-      }).filter((post) => post !== null) as Post[];
+      }).filter((post) => post !== null) as SummarizedPost[];
     } else {
       return [];
     }
