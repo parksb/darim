@@ -3,7 +3,7 @@ import styled from 'styled-components';
 
 import * as api from '../../api/post';
 import ListItem from './ListItem';
-import { Post, Session } from '../../models';
+import { SummarizedPost, Session } from '../../models';
 import { Container } from '../../components';
 
 interface Props {
@@ -15,7 +15,7 @@ const StyledContainer = styled(Container)`
 `;
 
 const List: React.FC<Props> = ({ session }) => {
-  const [posts, setPosts] = useState<Post[]>([]);
+  const [posts, setPosts] = useState<SummarizedPost[]>([]);
 
   const load = async () => {
     const post_list = await api.fetchPosts(session?.user_public_key || '');
@@ -27,7 +27,7 @@ const List: React.FC<Props> = ({ session }) => {
   }, []);
 
   return <StyledContainer top={50}>
-    {posts.map((post: Post) => {
+    {posts.map((post) => {
       return <ListItem key={post.id} post={post}/>
     })}
   </StyledContainer>

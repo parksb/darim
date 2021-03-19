@@ -3,11 +3,11 @@ import { Link } from 'react-router-dom';
 import styled from 'styled-components';
 import dayjs from 'dayjs';
 
-import { Post } from '../../models';
+import { SummarizedPost } from '../../models';
 import { Container } from '../../components';
 
 interface Props {
-  post: Post;
+  post: SummarizedPost;
 }
 
 const Title = styled.h3`
