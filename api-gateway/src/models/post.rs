@@ -45,3 +45,11 @@ pub struct PostDTO {
     pub created_at: NaiveDateTime,
     pub updated_at: Option<NaiveDateTime>,
 }
+
+/// Summarized post DTO using between api gateway and the service.
+#[derive(Serialize, Deserialize)]
+pub struct SummarizedPostDTO {
+    pub id: u64,
+    pub title: String,
+    pub date: NaiveDateTime,
+}
