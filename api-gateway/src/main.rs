@@ -35,9 +35,13 @@ pub mod routes {
 pub mod utils {
     /// Utilities related to HTTP.
     pub mod http_util;
+    /// Utilities related to service.
+    pub mod meta_util;
     /// Utilities related to session.
     pub mod session_util;
 }
+
+use utils::meta_util::{MetaInfo, ENV};
 
 /// Health check
 #[get("/")]
@@ -51,23 +55,14 @@ async fn health_check() -> impl Responder {
 async fn main() -> std::io::Result<()> {
     dotenv::dotenv().expect("Failed to read .env file");
 
+    let env = env::var("ENV").expect("ENV not found");
+    let meta_info = MetaInfo::new(ENV::from_string(&env));
+
     let host = env::var("HOST").expect("HOST not found");
     let port = env::var("PORT").expect("PORT not found");
     let address = format!("{}:{}", host, port);
 
-    let cert_file_path = env::var("TLS_CERT_FILE_PATH").expect("TLS_CERT_FILE_PATH not found");
-    let key_file_path = env::var("TLS_KEY_FILE_PATH").expect("TLS_KEY_FILE_PATH not found");
-
-    let mut config = ServerConfig::new(NoClientAuth::new());
-    let cert_file = &mut BufReader::new(File::open(cert_file_path).unwrap());
-    let key_file = &mut BufReader::new(File::open(key_file_path).unwrap());
-    let cert_chain = certs(cert_file).unwrap();
-    let mut keys = pkcs8_private_keys(key_file).unwrap();
-    config.set_single_cert(cert_chain, keys.remove(0)).unwrap();
-
-    println!("Server running at {}", address);
-
-    HttpServer::new(|| {
+    let server = HttpServer::new(|| {
         App::new()
             .wrap(Cors::new().supports_credentials().finish())
             .wrap(
@@ -80,8 +75,25 @@ async fn main() -> std::io::Result<()> {
             .configure(routes::auth::init_routes)
             .configure(routes::post::init_routes)
             .configure(routes::user::init_routes)
-    })
-    .bind_rustls(address, config)?
+    });
+
+    println!("Server running at {}", address);
+
+    if meta_info.is_production() {
+        let cert_file_path = env::var("TLS_CERT_FILE_PATH").expect("TLS_CERT_FILE_PATH not found");
+        let key_file_path = env::var("TLS_KEY_FILE_PATH").expect("TLS_KEY_FILE_PATH not found");
+
+        let mut config = ServerConfig::new(NoClientAuth::new());
+        let cert_file = &mut BufReader::new(File::open(cert_file_path).unwrap());
+        let key_file = &mut BufReader::new(File::open(key_file_path).unwrap());
+        let cert_chain = certs(cert_file).unwrap();
+        let mut keys = pkcs8_private_keys(key_file).unwrap();
+
+        config.set_single_cert(cert_chain, keys.remove(0)).unwrap();
+        server.bind_rustls(address, config)
+    } else {
+        server.bind(address)
+    }?
     .run()
     .await
 }
