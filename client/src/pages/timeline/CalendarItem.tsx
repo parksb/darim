@@ -3,11 +3,11 @@ import { Link } from 'react-router-dom';
 import styled from 'styled-components';
 import dayjs from 'dayjs';
 
-import { Post } from '../../models';
+import { SummarizedPost } from '../../models';
 import { Button, Section } from '../../components';
 
 interface Props {
-  posts?: Post[];
+  posts?: SummarizedPost[];
   day: dayjs.Dayjs;
   cursorDate: dayjs.Dayjs;
 }

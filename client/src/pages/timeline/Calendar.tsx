@@ -6,7 +6,7 @@ import { useParams, withRouter } from 'react-router-dom';
 
 import { getI18n } from '../../utils/i18n';
 import * as api from '../../api/post';
-import { Post, Session } from '../../models';
+import { SummarizedPost, Session } from '../../models';
 import { Button, Container, Section } from '../../components';
 import CalendarItem from './CalendarItem';
 
@@ -20,7 +20,7 @@ interface Week {
 }
 
 interface DateToPostsMap {
-  [date: string]: Post[];
+  [date: string]: SummarizedPost[];
 }
 
 const WeekLine = styled(Section)`
