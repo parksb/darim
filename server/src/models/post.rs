@@ -31,6 +31,14 @@ pub struct PostDTO {
     pub updated_at: Option<NaiveDateTime>,
 }
 
+/// Summarized post DTO using between routes layer and service layer.
+#[derive(Serialize, Deserialize)]
+pub struct SummarizedPostDTO {
+    pub id: u64,
+    pub title: String,
+    pub date: NaiveDateTime,
+}
+
 /// Post DAO using between models layer and RDB.
 #[derive(Insertable, AsChangeset)]
 #[table_name = "posts"]

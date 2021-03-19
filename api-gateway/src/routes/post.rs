@@ -99,6 +99,50 @@ pub async fn get_posts(session: Session) -> impl Responder {
     }
 }
 
+/// Lists summarized posts written by logged-in user
+///
+/// # Request
+///
+/// ```text
+/// GET /summarized_posts
+/// ```
+///
+/// # Response
+///
+/// ```json
+/// {
+///     "data": [
+///         {
+///             "id": 1,
+///             "title": "Lorem ipsum",
+///             "date": "2020-04-12T07:43:03",
+///         },
+///         {
+///             "id": 2,
+///             "title": "Lorem ipsum",
+///             "date": "2020-04-10T07:43:03",
+///         },
+///     ],
+///     "error": null
+/// }
+/// ```
+#[get("/summarized_posts")]
+pub async fn get_summarized_posts(session: Session) -> impl Responder {
+    if let Some(user_session) = session_util::get_session(&session) {
+        let response = reqwest::get(&http_util::get_url(&format!(
+            "/summarized_posts/{}",
+            user_session.user_id
+        )))
+        .await;
+        http_util::pass_response::<Vec<SummarizedPostDTO>>(response).await
+    } else {
+        http_util::get_err_response::<Vec<SummarizedPostDTO>>(
+            StatusCode::UNAUTHORIZED,
+            &get_api_error_message(ApiGatewayError::Unauthorized),
+        )
+    }
+}
+
 /// Creates a new post
 ///
 /// # Request
@@ -260,6 +304,7 @@ pub async fn update_post(
 pub fn init_routes(cfg: &mut web::ServiceConfig) {
     cfg.service(get_post);
     cfg.service(get_posts);
+    cfg.service(get_summarized_posts);
     cfg.service(create_post);
     cfg.service(delete_post);
     cfg.service(update_post);

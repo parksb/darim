@@ -67,6 +67,30 @@ impl PostService {
             .collect())
     }
 
+    /// Finds all summarized post written by specific user.
+    pub fn get_summarized_list(
+        &mut self,
+        user_id: u64,
+    ) -> Result<Vec<SummarizedPostDTO>, ServiceError> {
+        let post_list = {
+            let fallback_repository =
+                some_if_true!(self.post_repository.is_none() => PostRepository::new());
+            self.post_repository(fallback_repository)
+                .find_all_in_desc_date_order(user_id)?
+        };
+
+        Ok(post_list
+            .iter()
+            .map(|post| -> SummarizedPostDTO {
+                SummarizedPostDTO {
+                    id: post.id,
+                    title: post.title.clone(),
+                    date: post.date,
+                }
+            })
+            .collect())
+    }
+
     /// Creates a new post and returns id of the created post.
     pub fn create(
         &mut self,

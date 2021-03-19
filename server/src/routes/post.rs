@@ -31,6 +31,13 @@ pub async fn get_posts(user_id: web::Path<u64>) -> impl Responder {
     http_util::get_response::<Vec<PostDTO>>(posts)
 }
 
+/// Responds a summarized post written by logged-in user
+#[get("/summarized_posts/{user_id}")]
+pub async fn get_summarized_posts(user_id: web::Path<u64>) -> impl Responder {
+    let posts = PostService::new().get_summarized_list(user_id.into_inner());
+    http_util::get_response::<Vec<SummarizedPostDTO>>(posts)
+}
+
 /// Lists posts written by logged-in user
 #[get("/posts/{user_id}/{id}")]
 pub async fn get_post(web::Path((user_id, id)): web::Path<(u64, u64)>) -> impl Responder {
@@ -75,6 +82,7 @@ pub async fn update_post(id: web::Path<u64>, args: web::Json<UpdateArgs>) -> imp
 pub fn init_routes(cfg: &mut web::ServiceConfig) {
     cfg.service(get_post);
     cfg.service(get_posts);
+    cfg.service(get_summarized_posts);
     cfg.service(create_post);
     cfg.service(delete_post);
     cfg.service(update_post);
