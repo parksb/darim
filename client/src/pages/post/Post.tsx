@@ -49,7 +49,7 @@ const LinkLikeText = styled(SaveStatusText)`
   }
 `;
 
-const ContentViewModeSection = styled(Section)`
+const MetaSection = styled(Section)`
   justify-content: space-between;
 `;
 
@@ -62,8 +62,7 @@ const StyledSimpleMDE = styled(SimpleMDE)`
   line-height: 170%;
 
   & .editor-toolbar {
-    border-left: 0;
-    border-right: 0;
+    border: 0;
   }
 
   & .CodeMirror-wrap {
@@ -196,13 +195,6 @@ const Post: React.FC<Props> = ({ session }) => {
       onBlur={() => upsertPost()}
       onChange={({ target: { value } }: { target: { value: string } }) => setPost({ ...post, date: value })}
     />
-    <ContentViewModeSection top={20} bottom={15} row>
-      <Section row>
-        <SaveStatusText>{getSaveStatusText(saveStatus)}</SaveStatusText>
-        {saveStatus === SaveStatus.FAILURE && <LinkLikeText onClick={() => upsertPost()}>{i18n.text('retry')}</LinkLikeText>}
-      </Section>
-      {post.id && <DeleteButton onClick={deletePost}>{i18n.text('delete')}</DeleteButton>}
-    </ContentViewModeSection>
     <StyledSimpleMDE
       value={post.content}
       onChange={(text) => setPost({ ...post, content: text })}
@@ -216,6 +208,13 @@ const Post: React.FC<Props> = ({ session }) => {
         },
       }}
     />
+    <MetaSection row>
+      <Section row>
+        <SaveStatusText>{getSaveStatusText(saveStatus)}</SaveStatusText>
+        {saveStatus === SaveStatus.FAILURE && <LinkLikeText onClick={() => upsertPost()}>{i18n.text('retry')}</LinkLikeText>}
+      </Section>
+      {post.id && <DeleteButton onClick={deletePost}>{i18n.text('delete')}</DeleteButton>}
+    </MetaSection>
     {isDeleted && <Redirect to='/' />}
   </Container>
 };
