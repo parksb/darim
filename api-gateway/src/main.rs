@@ -63,8 +63,19 @@ async fn main() -> std::io::Result<()> {
     let address = format!("{}:{}", host, port);
 
     let server = HttpServer::new(|| {
+        let client_address = env::var("CLIENT_ADDRESS").expect("CLIENT_ADDRESS not found");
         App::new()
-            .wrap(Cors::new().supports_credentials().finish())
+            .wrap(
+                Cors::default()
+                    .allowed_origin(&client_address)
+                    .allowed_methods(vec!["GET", "POST", "PATCH", "DELETE"])
+                    .allowed_headers(vec![
+                        http::header::ACCESS_CONTROL_ALLOW_CREDENTIALS,
+                        http::header::CONTENT_TYPE,
+                    ])
+                    .supports_credentials()
+                    .max_age(3600),
+            )
             .wrap(
                 CookieSession::signed(&[0; 64])
                     .secure(true)
