@@ -13,6 +13,18 @@ pub enum ApiGatewayError {
 
     #[error("failed to parse structure from service response")]
     ServiceResponseParsingFailure,
+
+    #[error("failed to set jwt refresh token")]
+    JwtRefreshTokenSettingFailure,
+
+    #[error("failed to set jwt access token")]
+    JwtAccessTokenSettingFailure,
+
+    #[error("invalid jwt access token")]
+    InvalidJwtAccessToken,
+
+    #[error("expired jwt access token")]
+    ExpiredJwtAccessToken,
 }
 
 /// Logs and returns api gateway error passed by parameter.

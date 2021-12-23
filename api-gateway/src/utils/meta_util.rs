@@ -1,14 +1,14 @@
 #[derive(PartialEq)]
-pub enum ENV {
+pub enum ENVIRONMENT {
     LOCAL,
     PRODUCTION,
 }
 
 pub struct MetaInfo {
-    env: ENV,
+    env: ENVIRONMENT,
 }
 
-impl ENV {
+impl ENVIRONMENT {
     pub fn from_string(env: &str) -> Self {
         match env {
             "local" => Self::LOCAL,
@@ -19,11 +19,11 @@ impl ENV {
 }
 
 impl MetaInfo {
-    pub fn new(env: ENV) -> Self {
+    pub fn new(env: ENVIRONMENT) -> Self {
         Self { env }
     }
 
     pub fn is_production(&self) -> bool {
-        self.env == ENV::PRODUCTION
+        self.env == ENVIRONMENT::PRODUCTION
     }
 }
