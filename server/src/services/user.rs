@@ -81,11 +81,19 @@ impl UserService {
             self.user_repository(fallback_repository).find_by_id(id)?
         };
 
+        let user_key = {
+            let fallback_repository =
+                some_if_true!(self.user_key_repository.is_none() => UserKeyRepository::new());
+            self.user_key_repository(fallback_repository)
+                .find_by_user_id(id)?
+        };
+
         Ok(UserDTO {
             id: user.id,
             name: user.name,
             email: user.email,
             avatar_url: user.avatar_url,
+            public_key: Some(user_key.public_key),
             updated_at: user.updated_at,
             created_at: user.created_at,
         })
@@ -107,6 +115,7 @@ impl UserService {
                     name: user.name.clone(),
                     email: user.email.clone(),
                     avatar_url: user.avatar_url.clone(),
+                    public_key: None,
                     created_at: user.created_at,
                     updated_at: user.updated_at,
                 }

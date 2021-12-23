@@ -27,6 +27,7 @@ pub struct UserDTO {
     pub name: String,
     pub email: String,
     pub avatar_url: Option<String>,
+    pub public_key: Option<String>,
     pub created_at: NaiveDateTime,
     pub updated_at: Option<NaiveDateTime>,
 }
