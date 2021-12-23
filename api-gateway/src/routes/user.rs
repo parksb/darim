@@ -48,6 +48,47 @@ pub async fn create_user(args: web::Json<CreateArgs>) -> impl Responder {
     http_util::pass_response::<bool>(response).await
 }
 
+/// Responds a logged-in user information
+///
+/// # Request
+///
+/// ```text
+/// GET /users/me
+/// ```
+///
+/// # Response
+///
+/// ```json
+/// {
+///     "data": {
+///         "id": 32,
+//          "name": "park",
+///         "email": "park@email.com",
+///         "avatar_url": "avatar.jpg",
+///         "public_key": "Ir5c7y8dS3",
+//          "created_at": 1640272563348,
+//          "updated_at": null
+///     },
+///     "error": null
+/// }
+/// ```
+#[get("/users/me")]
+pub async fn get_user(request: HttpRequest) -> impl Responder {
+    if let Ok(claims) = Claims::from_header_by_access(request) {
+        let response = Client::new()
+            .get(&http_util::get_url(&format!("/users/{}", claims.user_id)))
+            .send()
+            .await;
+
+        http_util::pass_response::<UserDTO>(response).await
+    } else {
+        http_util::get_err_response::<UserDTO>(
+            StatusCode::UNAUTHORIZED,
+            &get_api_error_message(ApiGatewayError::Unauthorized),
+        )
+    }
+}
+
 /// Deletes a user
 ///
 /// # Request
