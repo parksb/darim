@@ -1,11 +1,11 @@
-use actix_session::Session;
-use actix_web::{delete, get, patch, post, web, Responder};
+use actix_web::{delete, get, patch, post, web, HttpRequest, Responder};
 use http::StatusCode;
 use reqwest::Client;
 
+use crate::models::auth::Claims;
 use crate::models::error::*;
 use crate::models::post::*;
-use crate::utils::{http_util, session_util};
+use crate::utils::http_util;
 
 /// Responds a post written by logged-in user
 ///
@@ -33,11 +33,11 @@ use crate::utils::{http_util, session_util};
 /// }
 /// ```
 #[get("/posts/{id}")]
-pub async fn get_post(session: Session, id: web::Path<u64>) -> impl Responder {
-    if let Some(user_session) = session_util::get_session(&session) {
+pub async fn get_post(request: HttpRequest, id: web::Path<u64>) -> impl Responder {
+    if let Ok(claims) = Claims::from_header_by_access(request) {
         let response = reqwest::get(&http_util::get_url(&format!(
             "/posts/{}/{}",
-            user_session.user_id, id
+            claims.user_id, id
         )))
         .await;
         http_util::pass_response::<PostDTO>(response).await
@@ -83,13 +83,10 @@ pub async fn get_post(session: Session, id: web::Path<u64>) -> impl Responder {
 /// }
 /// ```
 #[get("/posts")]
-pub async fn get_posts(session: Session) -> impl Responder {
-    if let Some(user_session) = session_util::get_session(&session) {
-        let response = reqwest::get(&http_util::get_url(&format!(
-            "/posts/{}",
-            user_session.user_id
-        )))
-        .await;
+pub async fn get_posts(request: HttpRequest) -> impl Responder {
+    if let Ok(claims) = Claims::from_header_by_access(request) {
+        let response =
+            reqwest::get(&http_util::get_url(&format!("/posts/{}", claims.user_id))).await;
         http_util::pass_response::<Vec<PostDTO>>(response).await
     } else {
         http_util::get_err_response::<Vec<PostDTO>>(
@@ -127,11 +124,11 @@ pub async fn get_posts(session: Session) -> impl Responder {
 /// }
 /// ```
 #[get("/summarized_posts")]
-pub async fn get_summarized_posts(session: Session) -> impl Responder {
-    if let Some(user_session) = session_util::get_session(&session) {
+pub async fn get_summarized_posts(request: HttpRequest) -> impl Responder {
+    if let Ok(claims) = Claims::from_header_by_access(request) {
         let response = reqwest::get(&http_util::get_url(&format!(
             "/summarized_posts/{}",
-            user_session.user_id
+            claims.user_id
         )))
         .await;
         http_util::pass_response::<Vec<SummarizedPostDTO>>(response).await
@@ -172,8 +169,8 @@ pub async fn get_summarized_posts(session: Session) -> impl Responder {
 /// }
 /// ```
 #[post("/posts")]
-pub async fn create_post(session: Session, args: web::Json<CreateArgs>) -> impl Responder {
-    if let Some(user_session) = session_util::get_session(&session) {
+pub async fn create_post(request: HttpRequest, args: web::Json<CreateArgs>) -> impl Responder {
+    if let Ok(claims) = Claims::from_header_by_access(request) {
         let args = {
             let CreateArgs {
                 title,
@@ -184,7 +181,7 @@ pub async fn create_post(session: Session, args: web::Json<CreateArgs>) -> impl 
                 title,
                 content,
                 date,
-                user_id: user_session.user_id,
+                user_id: claims.user_id,
             }
         };
 
@@ -220,12 +217,12 @@ pub async fn create_post(session: Session, args: web::Json<CreateArgs>) -> impl 
 /// }
 /// ```
 #[delete("/posts/{id}")]
-pub async fn delete_post(session: Session, id: web::Path<u64>) -> impl Responder {
-    if let Some(user_session) = session_util::get_session(&session) {
+pub async fn delete_post(request: HttpRequest, id: web::Path<u64>) -> impl Responder {
+    if let Ok(claims) = Claims::from_header_by_access(request) {
         let response = Client::new()
             .delete(&http_util::get_url(&format!(
                 "/posts/{}/{}",
-                user_session.user_id, id
+                claims.user_id, id
             )))
             .send()
             .await;
@@ -266,11 +263,11 @@ pub async fn delete_post(session: Session, id: web::Path<u64>) -> impl Responder
 /// ```
 #[patch("/posts/{id}")]
 pub async fn update_post(
-    session: Session,
+    request: HttpRequest,
     id: web::Path<u64>,
     args: web::Json<UpdateArgs>,
 ) -> impl Responder {
-    if let Some(user_session) = session_util::get_session(&session) {
+    if let Ok(claims) = Claims::from_header_by_access(request) {
         let args = {
             let UpdateArgs {
                 title,
@@ -281,7 +278,7 @@ pub async fn update_post(
                 title,
                 content,
                 date,
-                user_id: user_session.user_id,
+                user_id: claims.user_id,
             }
         };
 

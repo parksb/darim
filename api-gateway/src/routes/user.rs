@@ -1,11 +1,11 @@
-use actix_session::Session;
-use actix_web::{delete, patch, post, web, Responder};
+use actix_web::{delete, get, patch, post, web, HttpRequest, Responder};
 use http::StatusCode;
 use reqwest::Client;
 
+use crate::models::auth::Claims;
 use crate::models::error::*;
 use crate::models::user::*;
-use crate::utils::{http_util, session_util};
+use crate::utils::http_util;
 
 /// Creates a new user
 ///
@@ -65,10 +65,10 @@ pub async fn create_user(args: web::Json<CreateArgs>) -> impl Responder {
 /// }
 /// ```
 #[delete("/users/{id}")]
-pub async fn delete_user(session: Session, id: web::Path<u64>) -> impl Responder {
-    if let Some(user_session) = session_util::get_session(&session) {
+pub async fn delete_user(request: HttpRequest, id: web::Path<u64>) -> impl Responder {
+    if let Ok(claims) = Claims::from_header_by_access(request) {
         let id_in_path = id.into_inner();
-        if id_in_path == user_session.user_id {
+        if id_in_path == claims.user_id {
             let response = Client::new()
                 .delete(&http_util::get_url(&format!("/users/{}", id_in_path)))
                 .send()
@@ -121,13 +121,13 @@ pub async fn delete_user(session: Session, id: web::Path<u64>) -> impl Responder
 /// ```
 #[patch("/users/{id}")]
 pub async fn update_user(
-    session: Session,
+    request: HttpRequest,
     id: web::Path<u64>,
     args: web::Json<UpdateArgs>,
 ) -> impl Responder {
-    if let Some(user_session) = session_util::get_session(&session) {
+    if let Ok(claims) = Claims::from_header_by_access(request) {
         let id_in_path = id.into_inner();
-        if id_in_path == user_session.user_id {
+        if id_in_path == claims.user_id {
             let response = Client::new()
                 .patch(&http_util::get_url(&format!("/users/{}", id_in_path)))
                 .json(&args.into_inner())
@@ -184,7 +184,7 @@ pub async fn update_user(
 #[post("/users/password")]
 pub async fn reset_password(args: web::Json<ResetPasswordArgs>) -> impl Responder {
     let response = Client::new()
-        .post(&http_util::get_url("/users/passwword"))
+        .post(&http_util::get_url("/users/password"))
         .json(&args.into_inner())
         .send()
         .await;
@@ -194,6 +194,7 @@ pub async fn reset_password(args: web::Json<ResetPasswordArgs>) -> impl Responde
 
 /// Initializes the user routes.
 pub fn init_routes(cfg: &mut web::ServiceConfig) {
+    cfg.service(get_user);
     cfg.service(create_user);
     cfg.service(delete_user);
     cfg.service(update_user);

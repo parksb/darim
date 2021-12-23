@@ -3,9 +3,9 @@ use http::StatusCode;
 use reqwest::Response;
 use serde::de::DeserializeOwned;
 use serde::{Deserialize, Serialize};
-use std::env;
 
 use crate::models::error::ApiGatewayError;
+use crate::utils::env_util::BACK_END_SERVICE_ADDRESS;
 
 /// HTTP response of the API.
 #[derive(Deserialize, Serialize)]
@@ -126,6 +126,5 @@ pub fn get_err_response<T: DeserializeOwned + Serialize>(
 ///
 /// * `resource` - A resource of the service.
 pub fn get_url(resource: &str) -> String {
-    let base_url = env::var("BACK_END_SERVICE_ADDRESS").unwrap();
-    format!("{}{}", base_url, resource)
+    format!("{}{}", *BACK_END_SERVICE_ADDRESS, resource)
 }
