@@ -1,5 +1,6 @@
-import { Storage, Http, Secret } from 'snowball-js';
-
+import Storage from '../utils/storage';
+import Http from '../utils/http';
+import Secret from '../utils/secret';
 import { getI18n } from '../utils/i18n';
 import { serverBaseUrl, localStoragePrivateKey } from '../constants';
 import { Post, SummarizedPost } from '../models';
@@ -16,14 +17,14 @@ interface UpdatePostBody {
   content?: string;
 }
 
-async function fetchPosts(publicKey: string): Promise<SummarizedPost[]> {
+async function fetchPosts(publicKey: string, accessToken: string): Promise<SummarizedPost[]> {
   if (!publicKey) {
     return [];
   }
 
   try {
     const url = `${serverBaseUrl}/summarized_posts`;
-    const posts = await Http.get<SummarizedPost[]>(url);
+    const posts = await Http.get<SummarizedPost[]>(url, accessToken);
 
     const keyFromLocalStorage = Storage.get(localStoragePrivateKey);
     if (!keyFromLocalStorage) {
@@ -56,9 +57,9 @@ async function fetchPosts(publicKey: string): Promise<SummarizedPost[]> {
   }
 }
 
-async function fetchPost(id: number, publicKey: string): Promise<Post | null> {
+async function fetchPost(id: number, publicKey: string, accessToken: string): Promise<Post | null> {
   const url = `${serverBaseUrl}/posts/${id}`;
-  const post = await Http.get<Post>(url);
+  const post = await Http.get<Post>(url, accessToken);
 
   try {
     const keyFromLocalStorage = Storage.get(localStoragePrivateKey);
@@ -87,7 +88,7 @@ async function fetchPost(id: number, publicKey: string): Promise<Post | null> {
   }
 }
 
-async function createPost(publicKey: string, title: string, date: string, content: string): Promise<number | null> {
+async function createPost(publicKey: string, title: string, date: string, content: string, accessToken: string): Promise<number | null> {
   if (!title && !date && !content) {
     return null;
   }
@@ -111,7 +112,7 @@ async function createPost(publicKey: string, title: string, date: string, conten
       content: encryptedContent,
     };
 
-    return await Http.post<CreatePostBody, number>(url, body);
+    return await Http.post<CreatePostBody, number>(url, body, accessToken);
   } catch (e) {
     const i18n = getI18n({
       error: {
@@ -126,7 +127,7 @@ async function createPost(publicKey: string, title: string, date: string, conten
   return null;
 }
 
-async function updatePost(publicKey: string, id: number, title?: string, date?: string, content?: string): Promise<boolean> {
+async function updatePost(publicKey: string, accessToken: string, id: number, title?: string, date?: string, content?: string): Promise<boolean> {
   if (!title && !date && !content) {
     return false;
   }
@@ -150,7 +151,7 @@ async function updatePost(publicKey: string, id: number, title?: string, date?: 
       content: encryptedContent,
     };
 
-    return await Http.patch<UpdatePostBody, boolean>(url, body);
+    return await Http.patch<UpdatePostBody, boolean>(url, body, accessToken);
   } catch (e) {
     const i18n = getI18n({
       error: {
@@ -165,10 +166,10 @@ async function updatePost(publicKey: string, id: number, title?: string, date?: 
   return false;
 }
 
-async function deletePost(id: number): Promise<boolean> {
+async function deletePost(id: number, accessToken: string): Promise<boolean> {
   try {
     const url = `${serverBaseUrl}/posts/${id}`;
-    return await Http.delete<boolean>(url);
+    return await Http.delete<boolean>(url, accessToken);
   } catch (e) {
      const i18n = getI18n({
       error: {

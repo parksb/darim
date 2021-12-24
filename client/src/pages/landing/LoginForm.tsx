@@ -3,7 +3,8 @@ import { Link } from 'react-router-dom';
 import styled from 'styled-components';
 
 import { getI18n } from '../../utils/i18n';
-import * as api from '../../api/auth';
+import * as authApi from '../../api/auth';
+import * as userApi from '../../api/user';
 import { TextField, Button, Container, Section, LoadingDots } from '../../components';
 import { Session } from '../../models';
 
@@ -59,10 +60,16 @@ const LoginForm: React.FC<Props> = ({ sessionState , hasSignUpButton }) => {
 
   const login = async () => {
     setIsSigning(true);
-    const result = await api.login(email, password);
-    if (result) {
-      setIsSigning(false);
-      setSession(result);
+    const accessToken = await authApi.login(email, password);
+    if (accessToken) {
+      const user = await userApi.fetchUser(accessToken);
+      if (user) {
+        const fetchedSession: Session = { user, accessToken };
+        setIsSigning(false);
+        setSession(fetchedSession);
+      } else {
+        setIsSigning(false);
+      }
     } else {
       setIsSigning(false);
     }

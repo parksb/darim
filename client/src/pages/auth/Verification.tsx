@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import styled from 'styled-components';
-import { Secret, Storage } from 'snowball-js';
+import Secret from '../../utils/secret';
+import Storage from '../../utils/storage';
 import ReCAPTCHA from 'react-google-recaptcha';
 
 import * as api from '../../api/user';

@@ -1,4 +1,4 @@
-import { I18n } from 'snowball-js';
+import { I18n } from '../utils/i18n';
 
 enum SaveStatus {
   NONE,

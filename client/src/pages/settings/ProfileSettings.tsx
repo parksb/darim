@@ -3,14 +3,13 @@ import styled from 'styled-components';
 
 import { getI18n } from '../../utils/i18n';
 import * as userApi from '../../api/user';
-import * as authApi from '../../api/auth';
 import { Button, Section, TextField } from '../../components';
 import { SaveStatus, getSaveStatusText } from '../../utils/status';
 import { Session } from '../../models';
 
 interface Props {
   userId: string;
-  setSession: React.Dispatch<React.SetStateAction<Session | null>>;
+  sessionState: [Session, React.Dispatch<React.SetStateAction<Session | null>>]
 }
 
 const SectionTitle = styled.h2`
@@ -29,7 +28,8 @@ const SaveStatusText = styled.span`
   color: #c0c0c0;
 `;
 
-const ProfileSettings: React.FC<Props> = ({ userId, setSession }) => {
+const ProfileSettings: React.FC<Props> = ({ userId, sessionState }) => {
+  const [session, setSession] = sessionState;
   const [newName, setNewName] = useState('');
   const [newAvatar, setNewAvatar] = useState('');
 
@@ -48,8 +48,9 @@ const ProfileSettings: React.FC<Props> = ({ userId, setSession }) => {
   });
 
   const refreshSession = async () => {
-    const refreshedSession = await authApi.refreshSession();
-    if (refreshedSession) {
+    const user = await userApi.fetchUser(session.accessToken);
+    if (user) {
+      const refreshedSession: Session = { user, accessToken: session.accessToken };
       setSession(refreshedSession);
       return true;
     } else {
@@ -59,7 +60,7 @@ const ProfileSettings: React.FC<Props> = ({ userId, setSession }) => {
 
   const saveNewName = async () => {
     setNewNameSaveStatus(SaveStatus.ONGOING);
-    const result = await userApi.updateUser(userId, undefined, newName);
+    const result = await userApi.updateUser(userId, session.accessToken, undefined, newName);
 
     setNewName('');
 
@@ -72,7 +73,7 @@ const ProfileSettings: React.FC<Props> = ({ userId, setSession }) => {
 
   const saveNewAvatar = async () => {
     setNewAvatarSaveStatus(SaveStatus.ONGOING);
-    const result = await userApi.updateUser(userId, undefined, undefined, newAvatar);
+    const result = await userApi.updateUser(userId, session.accessToken, undefined, undefined, newAvatar);
 
     setNewAvatar('');
 

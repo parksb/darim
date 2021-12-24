@@ -1,17 +1,19 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
-import { Storage } from 'snowball-js';
 
+import Storage from '../../utils/storage';
 import { getI18n } from '../../utils/i18n';
 import { localStoragePrivateKey } from '../../constants';
 import * as authApi from '../../api/auth';
 import * as userApi from '../../api/user';
 import { Button, Section, TextField } from '../../components';
 import { getSaveStatusText, SaveStatus } from '../../utils/status';
+import { Session } from '../../models';
 
 interface Props {
   userId: string;
   userEmail: string;
+  session: Session;
 }
 
 const SectionTitle = styled.h2`
@@ -49,7 +51,7 @@ const RefreshLink = styled.span`
   }
 `
 
-const SecuritySettings: React.FC<Props> = ({ userId, userEmail }) => {
+const SecuritySettings: React.FC<Props> = ({ userId, userEmail , session }) => {
   const [newSecretKey, setNewSecretKey] = useState('');
   const [newSecretKeySaveStatus, setNewSecretKeySaveStatus] = useState(SaveStatus.NONE);
   const [newSecretKeyPassword, setNewSecretKeyPassword] = useState('');
@@ -101,7 +103,7 @@ const SecuritySettings: React.FC<Props> = ({ userId, userEmail }) => {
     const result = await authApi.login(userEmail, newPasswordPassword);
 
     if (result) {
-      const updateResult = await userApi.updateUser(userId, newPassword);
+      const updateResult = await userApi.updateUser(userId, session.accessToken, newPassword);
 
       setNewPassword('');
       setNewPasswordPassword('');

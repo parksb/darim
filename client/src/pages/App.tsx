@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Switch, Redirect, Route } from 'react-router-dom';
 import styled from 'styled-components';
-import { Storage } from 'snowball-js';
 
+import Storage from '../utils/storage';
 import { localStoragePrivateKey } from '../constants';
-import * as api from '../api/auth';
+import * as userApi from '../api/user';
+import * as authApi from '../api/auth';
 import { Header, Footer, Container, SecretKeyWarningBar } from '../components';
 import { Session } from '../models';
 import { Timeline } from './timeline';
@@ -42,9 +43,19 @@ const App: React.FC = () => {
 
   const load = async () => {
     setIsFetchingSession(true);
-    const session = await api.fetchSession();
-    setIsFetchingSession(false);
-    setSession(session);
+    const accessToken = await authApi.fetchAccessToken();
+    if (accessToken) {
+      const user = await userApi.fetchUser(accessToken);
+      if (user) {
+        const fetchedSession: Session = { user, accessToken };
+        setIsFetchingSession(false);
+        setSession(fetchedSession);
+      } else {
+        setIsFetchingSession(false);
+      }
+    } else {
+      setIsFetchingSession(false);
+    }
   };
 
   useEffect(() => {
