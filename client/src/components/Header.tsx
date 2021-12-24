@@ -57,7 +57,7 @@ const Header: React.FC<Props> = ({ session }) => {
     </StyledLink>
     {session && (
       <Link to='/settings'>
-        <UserAvatar src={session.user_avatar_url} alt="Your profile"/>
+        <UserAvatar src={session?.user?.avatar_url} alt="Your profile"/>
       </Link>
     )}
   </HeaderContainer>

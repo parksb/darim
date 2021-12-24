@@ -3,6 +3,7 @@ use actix_web::{delete, post, web, HttpRequest, Responder};
 use http::StatusCode;
 use jsonwebtoken::{encode, EncodingKey, Header};
 use reqwest::Client;
+use time::Duration;
 
 use crate::models::auth::*;
 use crate::models::error::ApiGatewayError;
@@ -193,9 +194,15 @@ pub async fn set_jwt_tokens(args: web::Json<LoginArgs>) -> impl Responder {
 /// ```
 #[delete("/auth/token")]
 pub async fn remove_jwt_tokens(request: HttpRequest) -> impl Responder {
-    if Claims::from_header_by_access(request).is_ok() {
+    if Claims::from_cookie_by_refresh(request).is_ok() {
         let mut response = http_util::get_ok_response::<bool>(true);
-        let _ = response.del_cookie(&JWT_COOKIE_KEY);
+        let _ = response.add_cookie(
+            &Cookie::build(&*JWT_COOKIE_KEY, "deleted")
+                .secure(true)
+                .http_only(true)
+                .max_age(Duration::seconds(0))
+                .finish(),
+        );
         response
     } else {
         http_util::get_err_response::<bool>(

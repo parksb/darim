@@ -7,7 +7,7 @@ import { SummarizedPost, Session } from '../../models';
 import { Container } from '../../components';
 
 interface Props {
-  session: Session | null;
+  session: Session;
 }
 
 const StyledContainer = styled(Container)`
@@ -18,7 +18,7 @@ const List: React.FC<Props> = ({ session }) => {
   const [posts, setPosts] = useState<SummarizedPost[]>([]);
 
   const load = async () => {
-    const post_list = await api.fetchPosts(session?.user_public_key || '');
+    const post_list = await api.fetchPosts(session.user.public_key || '', session.accessToken);
     setPosts(post_list);
   };
 

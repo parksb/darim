@@ -11,7 +11,7 @@ import { Button, Container, Section } from '../../components';
 import CalendarItem from './CalendarItem';
 
 interface Props {
-  session: Session | null;
+  session: Session;
 }
 
 interface Week {
@@ -144,7 +144,7 @@ const Calendar: React.FC<Props> = ({ session }) => {
   };
 
   const load = async () => {
-    const postList = await api.fetchPosts(session?.user_public_key || '');
+    const postList = await api.fetchPosts(session.user.public_key || '', session.accessToken);
     const dateToPostsMap: DateToPostsMap = {};
 
     postList.forEach((post) => {

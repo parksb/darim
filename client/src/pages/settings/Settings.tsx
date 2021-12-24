@@ -88,10 +88,10 @@ const Settings: React.FC<Props> = ({ sessionState }) => {
 
   return <Section>
     <ProfileContainer>
-      <UserAvatar src={session.user_avatar_url} />
+      <UserAvatar src={session.user.avatar_url} />
       <Section top={10}>
-        <UserName>{session.user_name}</UserName>
-        <UserEmail>{session.user_email}</UserEmail>
+        <UserName>{session.user.name}</UserName>
+        <UserEmail>{session.user.email}</UserEmail>
       </Section>
     </ProfileContainer>
     <Section top={30} row>
@@ -106,10 +106,10 @@ const Settings: React.FC<Props> = ({ sessionState }) => {
     <Section top={40}>
       <Switch>
         <Route path={`${path}/profile`}>
-          <ProfileSettings userId={session.user_id || ''} setSession={setSession}/>
+          <ProfileSettings userId={session.user.id || ''} sessionState={sessionState}/>
         </Route>
         <Route path={`${path}/security`}>
-          <SecuritySettings userId={session.user_id || ''} userEmail={session.user_email || ''}  />
+          <SecuritySettings userId={session.user.id || ''} userEmail={session.user.email || ''} session={session} />
         </Route>
         <Redirect to={`${path}/profile`} />
       </Switch>

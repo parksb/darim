@@ -1,8 +1,9 @@
 import SHA3 from 'crypto-js/sha3';
-import { Http } from 'snowball-js';
 
+import Http from '../utils/http';
 import { getI18n } from '../utils/i18n';
 import { serverBaseUrl } from '../constants';
+import User from '../models/User';
 
 interface CreateUserBody {
   user_public_key: string;
@@ -24,14 +25,33 @@ interface ResetPasswordBody {
   new_password: string;
 }
 
-async function createUser(user_public_key: string, token_key: string, token_pin: string, recaptcha_token: string): Promise<boolean | null> {
+async function fetchUser(accessToken: string): Promise<User | null> {
+  const url = `${serverBaseUrl}/users/me`;
+
+  try {
+    return await Http.get<User>(url, accessToken);
+  } catch (e) {
+    const i18n = getI18n({
+      error: {
+        ko: '사용자 정보를 가져오지 못했습니다',
+        en: 'Failed to fetch user information',
+      },
+    });
+
+    alert(i18n.text('error'));
+  }
+
+  return null;
+}
+
+async function createUser(userPublicKey: string, tokenKey: string, tokenPin: string, recaptchaToken: string): Promise<boolean | null> {
   const url = `${serverBaseUrl}/users`;
 
   const body: CreateUserBody = {
-    user_public_key,
-    token_key,
-    token_pin,
-    recaptcha_token,
+    user_public_key: userPublicKey,
+    token_key: tokenKey,
+    token_pin: tokenPin,
+    recaptcha_token: recaptchaToken,
   };
 
   try {
@@ -50,7 +70,7 @@ async function createUser(user_public_key: string, token_key: string, token_pin:
   return null;
 }
 
-async function updateUser(userId: string, password?: string, name?: string, avatar?: string): Promise<boolean | null> {
+async function updateUser(userId: string, accessToken: string, password?: string, name?: string, avatar?: string): Promise<boolean | null> {
   const url = `${serverBaseUrl}/users/${userId}`;
 
   const body: UpdateUserBody = {
@@ -60,7 +80,7 @@ async function updateUser(userId: string, password?: string, name?: string, avat
   };
 
   try {
-    return await Http.patch<UpdateUserBody, boolean>(url, body);
+    return await Http.patch<UpdateUserBody, boolean>(url, body, accessToken);
   } catch (e) {
     const i18n = getI18n({
       error: {
@@ -101,4 +121,4 @@ async function resetPassword(email: string, tokenId: string, temporaryPassword: 
   return null;
 }
 
-export { createUser, updateUser, resetPassword };
+export { fetchUser, createUser, updateUser, resetPassword };

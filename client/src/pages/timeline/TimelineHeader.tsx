@@ -1,8 +1,8 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import styled from 'styled-components';
-import { Storage } from 'snowball-js';
 
+import Storage from '../../utils/storage';
 import { getI18n } from '../../utils/i18n';
 import { Button, Container } from '../../components';
 import { localStorageViewModeKey } from '../../constants';

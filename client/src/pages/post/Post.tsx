@@ -12,7 +12,7 @@ import { SaveStatus, getSaveStatusText } from '../../utils/status';
 import { getI18n } from '../../utils/i18n';
 
 interface Props {
-  session: Session | null;
+  session: Session;
 }
 
 interface Post extends Omit<ApiPost, 'id'> {
@@ -121,7 +121,7 @@ const Post: React.FC<Props> = ({ session }) => {
   const [isDeleted, setIsDeleted] = useState(false);
 
   const load = async () => {
-    const fetchedPost = await api.fetchPost(id, session?.user_public_key || '');
+    const fetchedPost = await api.fetchPost(id, session.user.public_key || '', session.accessToken);
 
     if (fetchedPost) {
       setOriginalPost(post);
@@ -139,7 +139,7 @@ const Post: React.FC<Props> = ({ session }) => {
         const dateWithTime = getFormattedDate(post.date, true);
 
         setSaveStatus(SaveStatus.ONGOING);
-        const result = await api.updatePost(session?.user_public_key || '', post.id, post.title, dateWithTime, post.content);
+        const result = await api.updatePost(session.user.public_key || '', session.accessToken, post.id, post.title, dateWithTime, post.content);
 
         if (result) {
           setOriginalPost(post);
@@ -153,7 +153,7 @@ const Post: React.FC<Props> = ({ session }) => {
         const dateWithTime = getFormattedDate(post.date, true);
 
         setSaveStatus(SaveStatus.ONGOING);
-        const result = await api.createPost(session?.user_public_key || '', post.title, dateWithTime, post.content);
+        const result = await api.createPost(session.user.public_key || '', post.title, dateWithTime, post.content, session.accessToken);
 
         if (result) {
           setPost({ ...post, id: result });
@@ -168,7 +168,7 @@ const Post: React.FC<Props> = ({ session }) => {
 
   const deletePost = async () => {
     if (post.id && confirm(i18n.text('deleteConfirm'))) {
-      const result = await api.deletePost(post.id);
+      const result = await api.deletePost(post.id, session.accessToken);
       if (result) {
         setIsDeleted(true);
       }

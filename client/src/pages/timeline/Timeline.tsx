@@ -1,16 +1,16 @@
 import React, { useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Storage } from 'snowball-js';
 
 import Calendar from './Calendar';
 import List from './List';
 import TimelineHeader from './TimelineHeader';
 import { Session, ViewMode, ViewModeMethods } from '../../models';
+import Storage from '../../utils/storage';
 import { Container } from '../../components'
 import { localStorageViewModeKey } from '../../constants';
 
 interface Props {
-  session: Session | null;
+  session: Session;
 }
 
 const Timeline: React.FC<Props> = ({ session }) => {

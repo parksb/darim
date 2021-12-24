@@ -1,9 +1,8 @@
 import SHA3 from 'crypto-js/sha3';
-import { Http } from 'snowball-js';
 
+import Http from '../utils/http';
 import { getI18n } from '../utils/i18n';
 import { serverBaseUrl } from '../constants';
-import { Session } from '../models';
 
 interface LoginBody {
   email: string;
@@ -21,28 +20,18 @@ interface SetPasswordTokenBody {
   email: string;
 }
 
-async function fetchSession(): Promise<Session | null> {
-  const url = `${serverBaseUrl}/auth`;
+async function fetchAccessToken(): Promise<string | null> {
+  const url = `${serverBaseUrl}/auth/token/access`;
 
   try {
-    return await Http.get<Session>(url);
-  } catch (e) {
-    return null;
-  }
-}
-
-async function refreshSession(): Promise<Session | null> {
-  const url = `${serverBaseUrl}/auth`;
-
-  try {
-    return await Http.postWithoutBody<Session>(url);
+    return await Http.postWithoutBody<string>(url);
   } catch (e) { /**/ }
 
   return null;
 }
 
-async function login(email: string, password: string): Promise<Session | null> {
-  const url = `${serverBaseUrl}/auth/login`;
+async function login(email: string, password: string): Promise<string | null> {
+  const url = `${serverBaseUrl}/auth/token`;
   const hashedPassword = SHA3(password, { outputLength: 512 }).toString();
 
   const body: LoginBody = {
@@ -51,7 +40,7 @@ async function login(email: string, password: string): Promise<Session | null> {
   };
 
   try {
-    return await Http.post<LoginBody, Session>(url, body);
+    return await Http.post<LoginBody, string>(url, body);
   } catch (e) {
     const i18n = getI18n({
       error404: {
@@ -75,10 +64,10 @@ async function login(email: string, password: string): Promise<Session | null> {
 }
 
 async function logout(): Promise<boolean | null> {
-  const url = `${serverBaseUrl}/auth/logout`;
+  const url = `${serverBaseUrl}/auth/token`;
 
   try {
-    return await Http.postWithoutBody<boolean>(url);
+    return await Http.delete<boolean>(url);
   } catch (e) {
     const i18n = getI18n({
       error: {
@@ -150,4 +139,4 @@ async function setPasswordToken(email: string): Promise<boolean | null> {
   return null;
 }
 
-export { fetchSession, refreshSession, login, logout, setSignUpToken, setPasswordToken };
+export { login, logout, setSignUpToken, setPasswordToken, fetchAccessToken };

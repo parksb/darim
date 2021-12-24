@@ -1,8 +1,8 @@
 import React from 'react';
 import { Redirect, Route, Switch, useRouteMatch } from 'react-router-dom';
 import styled from 'styled-components';
-import { I18n, I18nLanguages } from 'snowball-js';
 
+import { I18n, I18nLanguages } from '../../utils/i18n';
 import privacyKo from '../../../public/static/privacy_ko.md';
 import termsKo from '../../../public/static/terms_ko.md';
 import privacyEn from '../../../public/static/privacy_en.md';
