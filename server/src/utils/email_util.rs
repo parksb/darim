@@ -15,7 +15,7 @@ pub fn send_email(to: &str, subject: &str, body: &str) -> Result<bool, ServiceEr
         .subject(subject)
         .singlepart(
             SinglePart::builder()
-                .header(ContentType("text/html; charset=utf8".parse().unwrap()))
+                .content_type(ContentType::TEXT_HTML)
                 .body(body.to_string()),
         )
         .unwrap();
