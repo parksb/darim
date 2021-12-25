@@ -1,16 +1,16 @@
+use jsonwebtoken::{encode, EncodingKey, Header};
 use rand::{distributions::Alphanumeric, thread_rng, Rng};
-use std::env;
 
 use crate::models::auth::*;
 use crate::models::error::{get_service_error, ServiceError};
 use crate::models::user::UserRepository;
-use crate::models::user_key::UserKeyRepository;
+use crate::utils::env_util::{CLIENT_ADDRESS, JWT_REFRESH_SECRET};
 use crate::utils::{email_util, password_util};
 
 pub struct AuthService {
     sign_up_token_repository: Option<SignUpTokenRepository>,
     password_token_repository: Option<PasswordTokenRepository>,
-    user_key_repository: Option<UserKeyRepository>,
+    refresh_token_repository: Option<RefreshTokenRepository>,
     user_repository: Option<UserRepository>,
 }
 
@@ -19,7 +19,7 @@ impl AuthService {
         Self {
             sign_up_token_repository: None,
             password_token_repository: None,
-            user_key_repository: None,
+            refresh_token_repository: None,
             user_repository: None,
         }
     }
@@ -50,16 +50,16 @@ impl AuthService {
         }
     }
 
-    fn user_key_repository(
+    fn refresh_token_repository(
         &mut self,
-        new_repository: Option<UserKeyRepository>,
-    ) -> &UserKeyRepository {
+        new_repository: Option<RefreshTokenRepository>,
+    ) -> &mut RefreshTokenRepository {
         match new_repository {
             Some(_) => {
-                self.user_key_repository = new_repository;
-                self.user_key_repository.as_ref().unwrap()
+                self.refresh_token_repository = new_repository;
+                self.refresh_token_repository.as_mut().unwrap()
             }
-            None => self.user_key_repository.as_ref().unwrap(),
+            None => self.refresh_token_repository.as_mut().unwrap(),
         }
     }
 
@@ -74,11 +74,11 @@ impl AuthService {
     }
 
     /// Signs in to set user session.
-    ///
-    /// 1. Finds password of the user by email from arguments.
-    /// 2. Compares password from the found user and it from the arguments.
-    /// 3. If the passwords are equal, returns the found user.
-    pub fn login(&mut self, email: &str, password: &str) -> Result<UserSession, ServiceError> {
+    pub fn set_jwt_refresh(
+        &mut self,
+        email: &str,
+        password: &str,
+    ) -> Result<SetJwtRefreshDTO, ServiceError> {
         let user = {
             let fallback_repository =
                 some_if_true!(self.user_repository.is_none() => UserRepository::new());
@@ -93,25 +93,50 @@ impl AuthService {
             }
         };
 
-        let logged_in_user_session = {
-            let user_public_key = {
-                let fallback_repository =
-                    some_if_true!(self.user_key_repository.is_none() => UserKeyRepository::new());
-                self.user_key_repository(fallback_repository)
-                    .find_by_user_id(user.id)?
-                    .public_key
-            };
+        let jwt_refresh = {
+            let encoded_token = encode(
+                &Header::default(),
+                &Claims::new(user.id),
+                &EncodingKey::from_secret(JWT_REFRESH_SECRET.as_ref()),
+            );
 
-            UserSession {
-                user_id: user.id,
-                user_email: user.email,
-                user_name: user.name,
-                user_public_key,
-                user_avatar_url: user.avatar_url,
+            if let Ok(encoded_token) = encoded_token {
+                encoded_token
+            } else {
+                return Err(ServiceError::InternalServerError);
             }
         };
 
-        Ok(logged_in_user_session)
+        let _ = {
+            let fallback_repository = some_if_true!(self.refresh_token_repository.is_none() => RefreshTokenRepository::new());
+            self.refresh_token_repository(fallback_repository)
+                .save(user.id, &jwt_refresh)?
+        };
+
+        Ok(SetJwtRefreshDTO {
+            user_id: user.id,
+            jwt_refresh,
+        })
+    }
+
+    pub fn validate_jwt_refresh(&mut self, user_id: u64, jwt_refresh: &str) -> bool {
+        if {
+            let fallback_repository = some_if_true!(self.refresh_token_repository.is_none() => RefreshTokenRepository::new());
+            self.refresh_token_repository(fallback_repository)
+                .find(user_id, jwt_refresh)
+        }.is_ok() {
+            Claims::from_token(jwt_refresh).is_ok()
+        } else {
+            false
+        }
+    }
+
+    pub fn remove_jwt_refresh(&mut self, user_id: u64, jwt_refresh: &str) -> bool {
+        let fallback_repository =
+            some_if_true!(self.refresh_token_repository.is_none() => RefreshTokenRepository::new());
+        self.refresh_token_repository(fallback_repository)
+            .delete(user_id, jwt_refresh)
+            .is_ok()
     }
 
     /// Sets token for sign up process.
@@ -201,14 +226,13 @@ impl AuthService {
                 .save(&serialized_token)?
         };
 
-        let client_address = env::var("CLIENT_ADDRESS").expect("CLIENT_ADDRESS not found");
         let email_content = format!(
             "Hello :)<br/><br/>\
             Please copy the temporary password:<br/><br/>\
             <div style=\"background-color: #f0f0f0; padding: 10px; font-weight: bold\">{}</div><br/><br/>\
             and visit the link to reset your password:<br/><br/>\
             <a href=\"{}/password_reset/{}\">{}/password_reset/{}</a>",
-            token.password, client_address, token.id, client_address, token.id,
+            token.password, *CLIENT_ADDRESS, token.id, *CLIENT_ADDRESS, token.id,
         );
 
         let _ = email_util::send_email(
@@ -235,13 +259,13 @@ mod tests {
         pub fn new_with_repository(
             sign_up_token_repository: SignUpTokenRepository,
             password_token_repository: PasswordTokenRepository,
-            user_key_repository: UserKeyRepository,
+            refresh_token_repository: RefreshTokenRepository,
             user_repository: UserRepository,
         ) -> Self {
             Self {
                 sign_up_token_repository: Some(sign_up_token_repository),
                 password_token_repository: Some(password_token_repository),
-                user_key_repository: Some(user_key_repository),
+                refresh_token_repository: Some(refresh_token_repository),
                 user_repository: Some(user_repository),
             }
         }

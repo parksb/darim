@@ -39,6 +39,12 @@ pub enum ServiceError {
 
     #[error("failed to send email to `{0}`")]
     EmailFailure(String),
+
+    #[error("invalid token")]
+    InvalidToken,
+
+    #[error("expired token")]
+    ExpiredToken,
 }
 
 /// Logs and returns service error passed by parameter.

@@ -2,13 +2,12 @@ use lettre::message::header::ContentType;
 use lettre::message::{Message, SinglePart};
 use lettre::transport::sendmail::SendmailTransport;
 use lettre::Transport;
-use std::env;
 
 use crate::models::error::ServiceError;
+use crate::utils::env_util::EMAIL_ADDRESS;
 
 pub fn send_email(to: &str, subject: &str, body: &str) -> Result<bool, ServiceError> {
-    let email_address = env::var("EMAIL_ADDRESS").expect("EMAIL_ADDRESS not found");
-    let parsed_email_address = email_address.parse().unwrap();
+    let parsed_email_address = (*EMAIL_ADDRESS).parse().unwrap();
     let email = Message::builder()
         .from(parsed_email_address)
         .to(to.parse().unwrap())
