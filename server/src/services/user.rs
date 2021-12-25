@@ -1,10 +1,10 @@
 use reqwest::Client;
-use std::env;
 
 use crate::models::auth::*;
 use crate::models::error::{get_service_error, ServiceError};
 use crate::models::user::*;
 use crate::models::user_key::UserKeyRepository;
+use crate::utils::env_util::RECAPTCHA_SECRET_KEY;
 use crate::utils::password_util;
 
 pub struct UserService {
@@ -125,9 +125,8 @@ impl UserService {
 
     /// Verifies reCAPTCHA.
     async fn verify_recaptcha(&self, token: &str) -> Result<bool, ServiceError> {
-        let recaptcha_secret_key = env::var("RECAPTCHA_SECRET_KEY").unwrap();
         let form = reqwest::multipart::Form::new()
-            .text("secret", recaptcha_secret_key)
+            .text("secret", &*RECAPTCHA_SECRET_KEY)
             .text("response", token.to_string());
 
         let response = Client::new()

@@ -30,13 +30,22 @@ pub struct SetPasswordTokenArgs {
     pub email: String,
 }
 
+/// Arguments for `POST /auth/token/refresh/:id` API.
 #[derive(Serialize, Deserialize)]
-pub struct UserSession {
+pub struct ValidateJwtRefreshArgs {
+    pub jwt_refresh: String,
+}
+
+/// Arguments for `DELETE /auth/token/refresh/:id` API.
+#[derive(Serialize, Deserialize)]
+pub struct RemoveJwtRefreshArgs {
+    pub jwt_refresh: String,
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct SetJwtRefreshDTO {
     pub user_id: u64,
-    pub user_email: String,
-    pub user_name: String,
-    pub user_public_key: String,
-    pub user_avatar_url: Option<String>,
+    pub jwt_refresh: String,
 }
 
 pub enum JwtType {
@@ -89,7 +98,7 @@ impl Claims {
         }
     }
 
-    pub fn from_cookie_by_refresh(request: HttpRequest) -> Result<Claims, ApiGatewayError> {
+    pub fn from_cookie_by_refresh(request: &HttpRequest) -> Result<Claims, ApiGatewayError> {
         if let Some(cookie) = request.cookie(&JWT_COOKIE_KEY) {
             Self::from_token(cookie.value(), JwtType::REFRESH)
         } else {

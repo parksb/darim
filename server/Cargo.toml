@@ -23,3 +23,5 @@ mockall = "^0.8"
 time = "^0.2"
 reqwest = { version = "^0.10", features = ["json"] }
 funty = "=1.1.0"
+jsonwebtoken = "^7.2"
+lazy_static = "1.4.0"

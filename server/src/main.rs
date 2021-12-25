@@ -1,6 +1,5 @@
 use actix_web::{get, App, HttpResponse, HttpServer, Responder};
 use std::collections::HashMap;
-use std::env;
 
 #[macro_use]
 mod macros;
@@ -48,6 +47,8 @@ pub mod services {
 pub mod utils {
     /// Utilities related to email.
     pub mod email_util;
+    /// Utilities related to dotenv.
+    pub mod env_util;
     /// Utilities related to HTTP.
     pub mod http_util;
     /// Utilities related to password.
@@ -56,6 +57,8 @@ pub mod utils {
 
 /// A database schema.
 pub mod schema;
+
+use utils::env_util::{HOST, PORT};
 
 /// Health check
 #[get("/")]
@@ -69,9 +72,7 @@ async fn health_check() -> impl Responder {
 async fn main() -> std::io::Result<()> {
     dotenv::dotenv().expect("Failed to read .env file");
 
-    let host = env::var("HOST").expect("HOST not found"); // 0.0.0.0
-    let port = env!("PORT"); // 0000
-    let address = format!("{}:{}", host, port);
+    let address = format!("{}:{}", *HOST, *PORT);
 
     println!("Server running at {}", address);
 
