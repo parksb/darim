@@ -1,3 +1,4 @@
+use actix_web::cookie::SameSite;
 use actix_web::http::Cookie;
 use actix_web::{delete, post, web, HttpRequest, Responder};
 use http::StatusCode;
@@ -150,6 +151,7 @@ pub async fn set_jwt_tokens(args: web::Json<LoginArgs>) -> impl Responder {
                         &Cookie::build(&*JWT_COOKIE_KEY, jwt_refresh)
                             .secure(true)
                             .http_only(true)
+                            .same_site(SameSite::None)
                             .finish(),
                     );
                     response
@@ -200,6 +202,7 @@ pub async fn remove_jwt_tokens(request: HttpRequest) -> impl Responder {
             &Cookie::build(&*JWT_COOKIE_KEY, "deleted")
                 .secure(true)
                 .http_only(true)
+                .same_site(SameSite::None)
                 .max_age(Duration::seconds(0))
                 .finish(),
         );
