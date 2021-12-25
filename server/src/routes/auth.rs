@@ -1,4 +1,4 @@
-use actix_web::{post, delete, web, Responder};
+use actix_web::{delete, post, web, Responder};
 use serde::{Deserialize, Serialize};
 
 use crate::models::auth::*;
