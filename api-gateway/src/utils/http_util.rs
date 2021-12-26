@@ -1,4 +1,5 @@
-use actix_web::HttpResponse;
+use actix_web::{HttpRequest, HttpResponse};
+use http::header::USER_AGENT;
 use http::StatusCode;
 use reqwest::Response;
 use serde::de::DeserializeOwned;
@@ -127,4 +128,16 @@ pub fn get_err_response<T: DeserializeOwned + Serialize>(
 /// * `resource` - A resource of the service.
 pub fn get_url(resource: &str) -> String {
     format!("{}{}", *BACK_END_SERVICE_ADDRESS, resource)
+}
+
+pub fn extract_user_agent(request: &HttpRequest) -> Option<String> {
+    if let Some(user_agent) = request.headers().get(USER_AGENT) {
+        if let Ok(user_agent) = user_agent.to_str() {
+            Some(user_agent.to_string())
+        } else {
+            None
+        }
+    } else {
+        None
+    }
 }

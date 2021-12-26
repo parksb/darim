@@ -29,6 +29,12 @@ pub struct SignUpToken {
     pub avatar_url: Option<String>,
 }
 
+#[derive(Serialize, Deserialize)]
+pub struct UserSessionDTO {
+    pub user_agent: Option<String>,
+    pub last_accessed_at: i64,
+}
+
 /// A core data repository for token.
 pub struct SignUpTokenRepository {
     client: redis::Connection,
@@ -194,7 +200,8 @@ pub struct RefreshTokenRepository {
 
 #[automock]
 pub trait RefreshTokenRepositoryTrait {
-    fn find(&mut self, user_id: u64, token: &str) -> Result<String, ServiceError>;
+    fn is_exist(&mut self, user_id: u64, token: &str) -> Result<bool, ServiceError>;
+    fn find_all_by_user_id(&mut self, user_id: u64) -> Result<Vec<UserSessionDTO>, ServiceError>;
     fn delete(&mut self, user_id: u64, token: &str) -> Result<bool, ServiceError>;
     fn save(&mut self, user_id: u64, token: &str) -> Result<bool, ServiceError>;
 }
@@ -207,34 +214,53 @@ impl RefreshTokenRepository {
         }
     }
 
-    /// Finds a token by key.
-    pub fn find(&mut self, user_id: u64, token: &str) -> Result<i64, ServiceError> {
-        let key = format!("{}:{}", user_id, token);
-        match self.client.get::<&str, i64>(&key) {
-            Ok(token) => Ok(token),
+    /// Check a token is exist by user id and token.
+    pub fn is_exist(&mut self, user_id: u64, token: &str) -> Result<bool, ServiceError> {
+        match self.client.hexists::<u64, &str, _>(user_id, &token) {
+            Ok(is_exist) => Ok(is_exist),
+            Err(_) => Err(get_service_error(ServiceError::QueryExecutionFailure)),
+        }
+    }
+
+    /// Finds a token by user id.
+    pub fn find_all_by_user_id(
+        &mut self,
+        user_id: u64,
+    ) -> Result<Vec<UserSessionDTO>, ServiceError> {
+        match self.client.hgetall::<u64, Vec<String>>(user_id) {
+            Ok(value) => Ok(value
+                .iter()
+                .map(|value| serde_json::from_str(value))
+                .filter_map(|value| value.ok())
+                .collect()),
             Err(_) => Err(get_service_error(ServiceError::QueryExecutionFailure)),
         }
     }
 
     /// Deletes a token by key.
     pub fn delete(&mut self, user_id: u64, token: &str) -> Result<bool, ServiceError> {
-        let key = format!("{}:{}", user_id, token);
-        match self.client.del::<&str, _>(&key) {
+        match self.client.hdel::<u64, &str, _>(user_id, &token) {
             Ok(result) => Ok(result),
             Err(_) => Err(get_service_error(ServiceError::QueryExecutionFailure)),
         }
     }
 
     /// Creates a new token and returns key.
-    pub fn save(&mut self, user_id: u64, token: &str) -> Result<String, ServiceError> {
-        let key = format!("{}:{}", user_id, token);
-        let value = Utc::now().timestamp();
+    pub fn save(
+        &mut self,
+        user_id: u64,
+        token: &str,
+        user_session: &UserSessionDTO,
+    ) -> Result<String, ServiceError> {
+        let value = serde_json::to_string(user_session).unwrap();
         let ttl_seconds = 2592000; // 30 days
 
-        let result: Result<bool, RedisError> = self.client.set::<&str, i64, _>(&key, value);
+        let result: Result<bool, RedisError> = self
+            .client
+            .hset::<u64, &str, &str, _>(user_id, &token, &value);
         match result {
-            Ok(_) => match self.client.expire::<&str, bool>(&key, ttl_seconds) {
-                Ok(_) => Ok(key),
+            Ok(_) => match self.client.expire::<u64, bool>(user_id, ttl_seconds) {
+                Ok(_) => Ok(user_id.to_string()),
                 Err(_) => Err(get_service_error(ServiceError::QueryExecutionFailure)),
             },
             Err(_) => Err(get_service_error(ServiceError::QueryExecutionFailure)),
