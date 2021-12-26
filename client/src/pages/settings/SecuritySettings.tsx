@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 
 import Storage from '../../utils/storage';
@@ -8,7 +8,7 @@ import * as authApi from '../../api/auth';
 import * as userApi from '../../api/user';
 import { Button, Section, TextField } from '../../components';
 import { getSaveStatusText, SaveStatus } from '../../utils/status';
-import { Session } from '../../models';
+import { Session, ActiveUserSession } from '../../models';
 
 interface Props {
   userId: string;
@@ -20,6 +20,10 @@ const SectionTitle = styled.h2`
   font-size: 24px;
   font-weight: 700;
   margin-bottom: 15px;
+`;
+
+const StrongText = styled.strong`
+  font-weight: 700;
 `;
 
 const FullWidthTextField = styled(TextField)`
@@ -60,6 +64,8 @@ const SecuritySettings: React.FC<Props> = ({ userId, userEmail , session }) => {
   const [newPasswordSaveStatus, setNewPasswordSaveStatus] = useState(SaveStatus.NONE);
   const [newPasswordPassword, setNewPasswordPassword] = useState('');
 
+  const [activeUserSessions, setActiveUserSessions] = useState<ActiveUserSession[]>([]);
+
   const i18n = getI18n({
     secretKey: {
       ko: '비밀키',
@@ -81,7 +87,28 @@ const SecuritySettings: React.FC<Props> = ({ userId, userEmail , session }) => {
       ko: '새로고침',
       en: 'Refresh',
     },
+    activeUserSessions: {
+      ko: '로그인된 세션',
+      en: 'Logged-in Sessions',
+    },
+    lastAccessedAt: {
+      ko: '마지막 접속',
+      en: 'Last accessed on',
+    },
+    unknownDevice: {
+      ko: '알 수 없는 장치',
+      en: 'Unknown device',
+    },
   });
+
+  const load = async () => {
+    const fetchedActiveUserSessions = await authApi.fetchActiveUserSessions(session.accessToken);
+    setActiveUserSessions(fetchedActiveUserSessions);
+  };
+
+  useEffect(() => {
+    load();
+  }, []);
 
   const saveNewPrivateKey = async () => {
     setNewSecretKeySaveStatus(SaveStatus.ONGOING);
@@ -165,6 +192,15 @@ const SecuritySettings: React.FC<Props> = ({ userId, userEmail , session }) => {
         <NonBorderButton onClick={saveNewPassword}>{i18n.text('save')}</NonBorderButton>
       </Section>
       <SaveStatusText>{getSaveStatusText(newPasswordSaveStatus)}</SaveStatusText>
+    </Section>
+    <Section bottom={30}>
+      <SectionTitle>{i18n.text('activeUserSessions')}</SectionTitle>
+      {activeUserSessions.map((activeUserSession) => {
+        return <Section bottom={10} key={activeUserSession.last_accessed_at}>
+          <StrongText>{activeUserSession.user_agent ? activeUserSession.user_agent : i18n.text('unknownDevice')}</StrongText>
+          <time>{`${i18n.text('lastAccessedAt')}: ${new Date(activeUserSession.last_accessed_at)}`}</time>
+        </Section>;
+      })}
     </Section>
   </Section>;
 };

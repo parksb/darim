@@ -3,6 +3,7 @@ import SHA3 from 'crypto-js/sha3';
 import Http from '../utils/http';
 import { getI18n } from '../utils/i18n';
 import { serverBaseUrl } from '../constants';
+import ActiveUserSession from '../models/ActiveUserSession';
 
 interface LoginBody {
   email: string;
@@ -18,6 +19,16 @@ interface SetSignUpTokenBody {
 
 interface SetPasswordTokenBody {
   email: string;
+}
+
+async function fetchActiveUserSessions(accessToken: string): Promise<ActiveUserSession[]> {
+  const url = `${serverBaseUrl}/auth/token`;
+
+  try {
+    return await Http.get<ActiveUserSession[]>(url, accessToken);
+  } catch (e) { /**/ }
+
+  return [];
 }
 
 async function fetchAccessToken(): Promise<string | null> {
@@ -139,4 +150,4 @@ async function setPasswordToken(email: string): Promise<boolean | null> {
   return null;
 }
 
-export { login, logout, setSignUpToken, setPasswordToken, fetchAccessToken };
+export { login, logout, setSignUpToken, setPasswordToken, fetchAccessToken, fetchActiveUserSessions };
