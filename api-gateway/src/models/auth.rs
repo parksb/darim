@@ -13,6 +13,7 @@ use crate::utils::env_util::{JWT_ACCESS_SECRET, JWT_COOKIE_KEY, JWT_REFRESH_SECR
 pub struct LoginArgs {
     pub email: String,
     pub password: String,
+    pub user_agent: Option<String>,
 }
 
 /// Arguments for `POST /auth/token` API.
@@ -34,6 +35,7 @@ pub struct SetPasswordTokenArgs {
 #[derive(Serialize, Deserialize)]
 pub struct ValidateJwtRefreshArgs {
     pub jwt_refresh: String,
+    pub user_agent: Option<String>,
 }
 
 /// Arguments for `DELETE /auth/token/refresh/:id` API.
@@ -46,6 +48,12 @@ pub struct RemoveJwtRefreshArgs {
 pub struct SetJwtRefreshDTO {
     pub user_id: u64,
     pub jwt_refresh: String,
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct UserSessionDTO {
+    pub user_agent: Option<String>,
+    pub last_accessed_at: i64,
 }
 
 pub enum JwtType {

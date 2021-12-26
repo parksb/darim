@@ -1,4 +1,4 @@
-use actix_web::{delete, post, web, Responder};
+use actix_web::{delete, get, post, web, Responder};
 use serde::{Deserialize, Serialize};
 
 use crate::models::auth::*;
@@ -10,6 +10,7 @@ use crate::utils::http_util;
 pub struct LoginArgs {
     pub email: String,
     pub password: String,
+    pub user_agent: Option<String>,
 }
 
 /// Arguments for `POST /auth/token` API.
@@ -31,6 +32,7 @@ pub struct SetPasswordTokenArgs {
 #[derive(Serialize, Deserialize)]
 pub struct ValidateJwtRefreshArgs {
     pub jwt_refresh: String,
+    pub user_agent: Option<String>,
 }
 
 /// Arguments for `DELETE /auth/token/refresh/:id` API.
@@ -63,8 +65,12 @@ pub async fn set_password_token(args: web::Json<SetPasswordTokenArgs>) -> impl R
 /// Sets a JWT refresh token.
 #[post("/auth/token/refresh")]
 pub async fn set_jwt_refresh(args: web::Json<LoginArgs>) -> impl Responder {
-    let LoginArgs { email, password } = args.into_inner();
-    let result = AuthService::new().set_jwt_refresh(&email, &password);
+    let LoginArgs {
+        email,
+        password,
+        user_agent,
+    } = args.into_inner();
+    let result = AuthService::new().set_jwt_refresh(&email, &password, user_agent);
     http_util::get_response::<SetJwtRefreshDTO>(result)
 }
 
@@ -74,9 +80,12 @@ pub async fn validate_jwt_refresh(
     id: web::Path<u64>,
     args: web::Json<ValidateJwtRefreshArgs>,
 ) -> impl Responder {
-    let ValidateJwtRefreshArgs { jwt_refresh } = args.into_inner();
+    let ValidateJwtRefreshArgs {
+        jwt_refresh,
+        user_agent,
+    } = args.into_inner();
     let user_id = id.into_inner();
-    let result = AuthService::new().validate_jwt_refresh(user_id, &jwt_refresh);
+    let result = AuthService::new().validate_jwt_refresh(user_id, &jwt_refresh, user_agent);
     http_util::get_response::<bool>(Ok(result))
 }
 
@@ -92,6 +101,14 @@ pub async fn remove_jwt_refresh(
     http_util::get_response::<bool>(Ok(result))
 }
 
+/// Get active tokens as session.
+#[get("/auth/token/{id}")]
+pub async fn get_session_list(id: web::Path<u64>) -> impl Responder {
+    let user_id = id.into_inner();
+    let result = AuthService::new().get_session_list(user_id);
+    http_util::get_response::<Vec<UserSessionDTO>>(result)
+}
+
 /// Initializes the auth routes.
 pub fn init_routes(cfg: &mut web::ServiceConfig) {
     cfg.service(set_sign_up_token);
@@ -99,4 +116,5 @@ pub fn init_routes(cfg: &mut web::ServiceConfig) {
     cfg.service(set_jwt_refresh);
     cfg.service(validate_jwt_refresh);
     cfg.service(remove_jwt_refresh);
+    cfg.service(get_session_list);
 }

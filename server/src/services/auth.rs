@@ -1,3 +1,4 @@
+use chrono::Utc;
 use jsonwebtoken::{encode, EncodingKey, Header};
 use rand::{distributions::Alphanumeric, thread_rng, Rng};
 
@@ -78,6 +79,7 @@ impl AuthService {
         &mut self,
         email: &str,
         password: &str,
+        user_agent: Option<String>,
     ) -> Result<SetJwtRefreshDTO, ServiceError> {
         let user = {
             let fallback_repository =
@@ -109,8 +111,14 @@ impl AuthService {
 
         let _ = {
             let fallback_repository = some_if_true!(self.refresh_token_repository.is_none() => RefreshTokenRepository::new());
-            self.refresh_token_repository(fallback_repository)
-                .save(user.id, &jwt_refresh)?
+            self.refresh_token_repository(fallback_repository).save(
+                user.id,
+                &jwt_refresh,
+                &UserSessionDTO {
+                    user_agent,
+                    last_accessed_at: Utc::now().timestamp_millis(),
+                },
+            )?
         };
 
         Ok(SetJwtRefreshDTO {
@@ -119,13 +127,31 @@ impl AuthService {
         })
     }
 
-    pub fn validate_jwt_refresh(&mut self, user_id: u64, jwt_refresh: &str) -> bool {
-        if {
+    pub fn validate_jwt_refresh(
+        &mut self,
+        user_id: u64,
+        token: &str,
+        user_agent: Option<String>,
+    ) -> bool {
+        let is_exist = {
             let fallback_repository = some_if_true!(self.refresh_token_repository.is_none() => RefreshTokenRepository::new());
-            self.refresh_token_repository(fallback_repository)
-                .find(user_id, jwt_refresh)
-        }.is_ok() {
-            Claims::from_token(jwt_refresh).is_ok()
+            self.refresh_token_repository(fallback_repository).is_exist(user_id, token)
+        }.is_ok();
+
+        if is_exist {
+            let _ = {
+                let fallback_repository = some_if_true!(self.refresh_token_repository.is_none() => RefreshTokenRepository::new());
+                self.refresh_token_repository(fallback_repository).save(
+                    user_id,
+                    token,
+                    &UserSessionDTO {
+                        user_agent,
+                        last_accessed_at: Utc::now().timestamp_millis(),
+                    },
+                )
+            };
+
+            Claims::from_token(token).is_ok()
         } else {
             false
         }
@@ -137,6 +163,13 @@ impl AuthService {
         self.refresh_token_repository(fallback_repository)
             .delete(user_id, jwt_refresh)
             .is_ok()
+    }
+
+    pub fn get_session_list(&mut self, user_id: u64) -> Result<Vec<UserSessionDTO>, ServiceError> {
+        let fallback_repository =
+            some_if_true!(self.refresh_token_repository.is_none() => RefreshTokenRepository::new());
+        self.refresh_token_repository(fallback_repository)
+            .find_all_by_user_id(user_id)
     }
 
     /// Sets token for sign up process.

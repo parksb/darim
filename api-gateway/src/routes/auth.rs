@@ -1,6 +1,6 @@
 use actix_web::cookie::SameSite;
 use actix_web::http::Cookie;
-use actix_web::{delete, post, web, HttpMessage, HttpRequest, Responder};
+use actix_web::{delete, get, post, web, HttpMessage, HttpRequest, Responder};
 use http::StatusCode;
 use jsonwebtoken::{encode, EncodingKey, Header};
 use reqwest::Client;
@@ -120,8 +120,11 @@ pub async fn set_password_token(args: web::Json<SetPasswordTokenArgs>) -> impl R
 /// }
 /// ```
 #[post("/auth/token")]
-pub async fn set_jwt_tokens(args: web::Json<LoginArgs>) -> impl Responder {
-    let args: LoginArgs = args.into_inner();
+pub async fn set_jwt_tokens(request: HttpRequest, args: web::Json<LoginArgs>) -> impl Responder {
+    let args = LoginArgs {
+        user_agent: http_util::extract_user_agent(&request),
+        ..args.into_inner()
+    };
     let response = Client::new()
         .post(&http_util::get_url("/auth/token/refresh"))
         .json(&args)
@@ -248,6 +251,7 @@ pub async fn set_jwt_access_token(request: HttpRequest) -> impl Responder {
                 )))
                 .json(&ValidateJwtRefreshArgs {
                     jwt_refresh: cookie.value().to_string(),
+                    user_agent: http_util::extract_user_agent(&request),
                 })
                 .send()
                 .await;
@@ -302,6 +306,44 @@ pub async fn set_jwt_access_token(request: HttpRequest) -> impl Responder {
     }
 }
 
+/// Get active tokens as session.
+///
+/// # Request
+///
+/// ```text
+/// GET /auth/token
+/// ```
+///
+/// # Response
+///
+/// ```json
+/// {
+///     "data": [
+///       {
+///         "user_agent": "Mozilla/5.0",
+///         "last_accessed_at": 1640425102089
+///       }
+///     ],
+///     "error": null
+/// }
+/// ```
+#[get("/auth/token")]
+pub async fn get_session_list(request: HttpRequest) -> impl Responder {
+    if let Ok(claims) = Claims::from_header_by_access(request) {
+        let response = reqwest::get(&http_util::get_url(&format!(
+            "/auth/token/{}",
+            claims.user_id
+        )))
+        .await;
+        http_util::pass_response::<Vec<UserSessionDTO>>(response).await
+    } else {
+        http_util::get_err_response::<Vec<UserSessionDTO>>(
+            StatusCode::UNAUTHORIZED,
+            &format!("{}", ApiGatewayError::Unauthorized),
+        )
+    }
+}
+
 /// Initializes the auth routes.
 pub fn init_routes(cfg: &mut web::ServiceConfig) {
     cfg.service(set_sign_up_token);
@@ -309,4 +351,5 @@ pub fn init_routes(cfg: &mut web::ServiceConfig) {
     cfg.service(set_jwt_tokens);
     cfg.service(remove_jwt_tokens);
     cfg.service(set_jwt_access_token);
+    cfg.service(get_session_list);
 }
