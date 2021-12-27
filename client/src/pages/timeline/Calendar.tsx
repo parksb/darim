@@ -65,6 +65,15 @@ const MonthControlButton = styled(Button)`
   }
 `;
 
+const MonthControlText = styled.h2`
+  min-width: 130px;
+  text-align: center;
+`;
+
+const WeekLineContainer = styled(Section)`
+  flex: 1 1 0;
+`;
+
 const OverflowContainer = styled(Container)`
   overflow: auto;
 `;
@@ -189,7 +198,7 @@ const Calendar: React.FC<Props> = ({ session }) => {
   return <OverflowContainer fullWidth fullHeight>
     <MonthControlContainer bottom={30} row>
       <PrevMonthControlButton />
-      <h2>{cursorDate.format(cursorDate.year() === dayjs().year() ? 'MMMM' : 'YYYY MMMM')}</h2>
+      <MonthControlText>{cursorDate.format(cursorDate.year() === dayjs().year() ? 'MMMM' : 'YYYY MMMM')}</MonthControlText>
       <NextMonthControlButton />
     </MonthControlContainer>
     <WeekDayLine row>
@@ -197,7 +206,7 @@ const Calendar: React.FC<Props> = ({ session }) => {
         return <WeekDay key={weekDay}>{weekDay}</WeekDay>
       })}
     </WeekDayLine>
-    <Section fullHeight>
+    <WeekLineContainer fullWidth fullHeight>
       {calendar.map((week) => {
         return <WeekLine key={week.week} row>
           {week.days.map((day) => {
@@ -207,7 +216,7 @@ const Calendar: React.FC<Props> = ({ session }) => {
           })}
         </WeekLine>;
       })}
-    </Section>
+    </WeekLineContainer>
   </OverflowContainer>
 };
 
