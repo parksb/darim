@@ -45,14 +45,16 @@ pub mod services {
 
 /// Reusable functions for multiple modules.
 pub mod utils {
+    /// Utilities related to argon2 password.
+    pub mod argon2_password_util;
     /// Utilities related to email.
     pub mod email_util;
     /// Utilities related to dotenv.
     pub mod env_util;
     /// Utilities related to HTTP.
     pub mod http_util;
-    /// Utilities related to password.
-    pub mod password_util;
+    /// Utilities related to scrypt password.
+    pub mod scrypt_password_util;
 }
 
 /// A database schema.

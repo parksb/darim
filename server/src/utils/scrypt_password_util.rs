@@ -11,7 +11,7 @@ use scrypt::{scrypt_check, scrypt_simple, ScryptParams};
 ///
 /// ```ignore
 /// use scrypt::scrypt_check;
-/// use darim::utils::password_util::get_hashed_password;
+/// use darim::utils::scrypt_password_util::get_hashed_password;
 ///
 /// let password = String::from("123");
 /// let hashed_password = get_hashed_password(&password);
@@ -46,7 +46,7 @@ cfg_if! {
 ///
 /// ```ignore
 /// use scrypt::{ScryptParams, scrypt_simple};
-/// use darim::utils::password_util::check_password;
+/// use darim::utils::scrypt_password_util::check_password;
 ///
 /// let password = String::from("123");
 /// let params = ScryptParams::new(7, 4, 1).unwrap();

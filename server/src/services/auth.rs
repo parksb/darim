@@ -6,7 +6,7 @@ use crate::models::auth::*;
 use crate::models::error::{get_service_error, ServiceError};
 use crate::models::user::UserRepository;
 use crate::utils::env_util::{CLIENT_ADDRESS, JWT_REFRESH_SECRET};
-use crate::utils::{email_util, password_util};
+use crate::utils::{argon2_password_util, email_util, scrypt_password_util};
 
 pub struct AuthService {
     sign_up_token_repository: Option<SignUpTokenRepository>,
@@ -88,7 +88,13 @@ impl AuthService {
                 .user_repository(fallback_repository)
                 .find_password_by_email(email)?;
 
-            if password_util::check_password(password, &found_password) {
+            if found_password.starts_with("$argon2i") {
+                if argon2_password_util::verify_hashed_password(&found_password, &password) {
+                    self.user_repository(None).find_by_email(email)?
+                } else {
+                    return Err(ServiceError::Unauthorized);
+                }
+            } else if scrypt_password_util::check_password(password, &found_password) {
                 self.user_repository(None).find_by_email(email)?
             } else {
                 return Err(ServiceError::Unauthorized);
@@ -189,7 +195,8 @@ impl AuthService {
         }
 
         let pin: String = thread_rng().sample_iter(&Alphanumeric).take(8).collect();
-        let hashed_password = password_util::get_hashed_password(password);
+        let password_salt: String = argon2_password_util::generate_password_salt();
+        let hashed_password = argon2_password_util::hash_password(password, &password_salt);
 
         let token = SignUpToken {
             pin,
@@ -206,12 +213,10 @@ impl AuthService {
             return Err(get_service_error(ServiceError::InvalidFormat));
         };
 
-        // FIXME: The compiler doesn't consider it string type when running test.
         let result = {
             let fallback_repository = some_if_true!(self.sign_up_token_repository.is_none() => SignUpTokenRepository::new());
             self.sign_up_token_repository(fallback_repository)
                 .save(&serialized_token)?
-                .to_string()
         };
 
         let email_content = format!(

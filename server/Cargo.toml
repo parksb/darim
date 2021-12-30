@@ -15,6 +15,7 @@ serde_json = "^1.0"
 diesel = { version = "^1.4", features = ["mysql", "chrono"]}
 thiserror = "^1.0"
 scrypt = { version = "^0.3" }
+rust-argon2 = "^0.8"
 redis = "^0.16.0"
 rand = "^0.7.3"
 cfg-if = "^0.1.10"
