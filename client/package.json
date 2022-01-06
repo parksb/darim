@@ -11,13 +11,12 @@
   "dependencies": {
     "crypto-js": "^4.0.0",
     "dayjs": "^1.8.28",
-    "markdown-it": "^11.0.0",
+    "markdown-it": "^12.3.0",
     "react": "^16.13.1",
     "react-copy-to-clipboard": "^5.0.2",
     "react-dom": "^16.13.1",
     "react-google-recaptcha": "^2.1.0",
     "react-router-dom": "^5.2.0",
-    "react-scripts": "^3.4.3",
     "react-simplemde-editor": "https://github.com/parksb/react-simplemde-editor/archive/v4.2.tar.gz",
     "react-textarea-autosize": "^8.0.1",
     "styled-components": "^5.1.1",
@@ -36,8 +35,9 @@
     "@types/styled-components": "^5.1.0",
     "@typescript-eslint/eslint-plugin": "^3.1.0",
     "@typescript-eslint/parser": "^3.1.0",
-    "eslint": "^7.2.0",
+    "eslint": "^8.6.0",
     "eslint-plugin-react": "^7.20.0",
-    "parcel-bundler": "^1.12.4"
+    "parcel-bundler": "^1.12.4",
+    "react-scripts": "^5.0.0"
   }
 }
