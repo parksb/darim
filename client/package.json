@@ -11,7 +11,7 @@
   "dependencies": {
     "crypto-js": "^4.0.0",
     "dayjs": "^1.8.28",
-    "markdown-it": "^12.3.0",
+    "markdown-it": "^12.3.2",
     "react": "^16.13.1",
     "react-copy-to-clipboard": "^5.0.2",
     "react-dom": "^16.13.1",
