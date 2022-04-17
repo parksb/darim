@@ -1,4 +1,5 @@
 use actix_cors::Cors;
+use actix_ratelimit::{MemoryStore, MemoryStoreActor, RateLimiter};
 use actix_web::{get, App, HttpResponse, HttpServer, Responder};
 use rustls::internal::pemfile::{certs, pkcs8_private_keys};
 use rustls::{NoClientAuth, ServerConfig};
@@ -6,6 +7,7 @@ use std::collections::HashMap;
 use std::env;
 use std::fs::File;
 use std::io::BufReader;
+use std::time::Duration;
 
 /// A layer that defines data structure.
 pub mod models {
@@ -56,8 +58,9 @@ async fn main() -> std::io::Result<()> {
 
     let meta_info = MetaInfo::new(ENVIRONMENT::from_string(&ENV));
     let address = format!("{}:{}", *HOST, *PORT);
+    let store = MemoryStore::new();
 
-    let server = HttpServer::new(|| {
+    let server = HttpServer::new(move || {
         App::new()
             .wrap(
                 Cors::default()
@@ -70,6 +73,17 @@ async fn main() -> std::io::Result<()> {
                     ])
                     .supports_credentials()
                     .max_age(3600),
+            )
+            .wrap(
+                RateLimiter::new(MemoryStoreActor::from(store.clone()).start())
+                    .with_interval(Duration::from_secs(60))
+                    .with_max_requests(60)
+                    .with_identifier(|req| {
+                        let connection_info = req.connection_info().clone();
+                        let ip_parts: Vec<&str> =
+                            connection_info.remote_addr().unwrap().split(':').collect();
+                        Ok(ip_parts[0].to_string())
+                    }),
             )
             .service(health_check)
             .configure(routes::auth::init_routes)
