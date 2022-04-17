@@ -64,7 +64,7 @@ class Http {
 
   static async postWithoutBody<T>(url: string, accessToken?: string): Promise<T> {
     try {
-      return await Http.request(HttpMethods.POST, url, accessToken);
+      return await Http.request(HttpMethods.POST, url, undefined, accessToken);
     } catch(e) {
       if (accessToken && e.message === '401') {
         const refreshedAccessToken = await Http.refreshAccessToken();
@@ -91,7 +91,7 @@ class Http {
 
   static async delete<T>(url: string, accessToken?: string): Promise<T> {
     try {
-      return await Http.request(HttpMethods.DELETE, url, accessToken);
+      return await Http.request(HttpMethods.DELETE, url, undefined, accessToken);
     } catch(e) {
       if (accessToken && e.message === '401') {
         const refreshedAccessToken = await Http.refreshAccessToken();
