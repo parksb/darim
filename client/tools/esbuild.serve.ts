@@ -17,7 +17,7 @@ const serveOptions: ServeOptions = {
 const clients = [];
 const buildOptions: BuildOptions = {
   entryPoints: ['src/index.tsx'],
-  outdir: 'public',
+  outdir: 'public/build',
   loader: {
     '.svg': 'dataurl',
     '.md': 'text',

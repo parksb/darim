@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "scripts": {
     "start": "ts-node tools/esbuild.serve.ts",
-    "build": "npm run check && cp -R public/* dist && ts-node tools/esbuild.build.ts",
+    "build": "npm run check && mkdir -p dist && cp -R public/* dist && ts-node tools/esbuild.build.ts",
     "check": "tsc -p tsconfig.json --noEmit"
   },
   "engines": {
