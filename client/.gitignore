@@ -13,6 +13,8 @@
 # bundler
 .cache
 dist
+public/index.js
+public/index.css
 
 # testing
 /coverage
