@@ -5,7 +5,7 @@ use crate::models::error::{get_service_error, ServiceError};
 use crate::models::user::*;
 use crate::models::user_key::UserKeyRepository;
 use crate::utils::argon2_password_util;
-use crate::utils::env_util::RECAPTCHA_SECRET_KEY;
+use crate::utils::env_util::{Profile, PROFILE, RECAPTCHA_SECRET_KEY};
 
 pub struct UserService {
     sign_up_token_repository: Option<SignUpTokenRepository>,
@@ -125,25 +125,30 @@ impl UserService {
 
     /// Verifies reCAPTCHA.
     async fn verify_recaptcha(&self, token: &str) -> Result<bool, ServiceError> {
-        let form = reqwest::multipart::Form::new()
-            .text("secret", &*RECAPTCHA_SECRET_KEY)
-            .text("response", token.to_string());
+        match *PROFILE {
+            Profile::PRODUCTION => {
+                let form = reqwest::multipart::Form::new()
+                    .text("secret", &*RECAPTCHA_SECRET_KEY)
+                    .text("response", token.to_string());
 
-        let response = Client::new()
-            .post("https://www.google.com/recaptcha/api/siteverify")
-            .multipart(form)
-            .send()
-            .await;
+                let response = Client::new()
+                    .post("https://www.google.com/recaptcha/api/siteverify")
+                    .multipart(form)
+                    .send()
+                    .await;
 
-        match response {
-            Ok(response) => {
-                let recaptcha_response = response.json::<ReCaptchaResponse>().await;
-                match recaptcha_response {
-                    Ok(recaptcha_response) => Ok(recaptcha_response.success),
+                match response {
+                    Ok(response) => {
+                        let recaptcha_response = response.json::<ReCaptchaResponse>().await;
+                        match recaptcha_response {
+                            Ok(recaptcha_response) => Ok(recaptcha_response.success),
+                            Err(_) => Err(ServiceError::InternalServerError),
+                        }
+                    }
                     Err(_) => Err(ServiceError::InternalServerError),
                 }
             }
-            Err(_) => Err(ServiceError::InternalServerError),
+            Profile::DEV => Ok(true),
         }
     }
 
