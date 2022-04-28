@@ -3,7 +3,7 @@ import { define } from './define';
 
 const buildOptions: BuildOptions = {
   entryPoints: ['src/index.tsx'],
-  outdir: 'dist',
+  outdir: 'dist/build',
   loader: {
     '.svg': 'dataurl',
     '.md': 'dataurl',
