@@ -14,4 +14,16 @@ lazy_static! {
         env::var("RECAPTCHA_SECRET_KEY").expect("RECAPTCHA_SECRET_KEY not found");
     pub static ref JWT_REFRESH_SECRET: String =
         env::var("JWT_REFRESH_SECRET").expect("JWT_REFRESH_SECRET not found");
+    pub static ref PROFILE: Profile = env::var("PROFILE")
+        .map(|profile| if profile == "production" {
+            Profile::PRODUCTION
+        } else {
+            Profile::DEV
+        })
+        .unwrap_or(Profile::DEV);
+}
+
+pub enum Profile {
+    DEV,
+    PRODUCTION,
 }
