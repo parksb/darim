@@ -1,6 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
-import { Redirect, Switch, Route, Link, useRouteMatch } from 'react-router-dom';
+import { Routes, Route, Link } from 'react-router-dom';
 
 import { getI18n } from '../../utils/i18n';
 import * as api from '../../api/auth';
@@ -44,6 +44,8 @@ const UserEmail = styled.h3`
 
 const SettingsTab = styled(Tab)`
   flex: 3;
+  flex-direction: column;
+  align-self: center;
 `;
 
 const SecuritySettingsTab = styled(SettingsTab)`
@@ -61,7 +63,6 @@ const ButtonLink = styled(Link)`
 
 const Settings: React.FC<Props> = ({ sessionState }) => {
   const [session, setSession] = sessionState;
-  const { path, url } = useRouteMatch();
 
   const i18n = getI18n({
     profileSettings: {
@@ -95,24 +96,26 @@ const Settings: React.FC<Props> = ({ sessionState }) => {
       </Section>
     </ProfileContainer>
     <Section top={30} row>
-      <ButtonLink to={`${url}/profile`}>
+      <ButtonLink to='profile'>
         <SettingsTab>{i18n.text('profileSettings')}</SettingsTab>
       </ButtonLink>
-      <ButtonLink to={`${url}/security`}>
+      <ButtonLink to='security'>
         <SecuritySettingsTab>{i18n.text('securitySettings')}</SecuritySettingsTab>
       </ButtonLink>
       <SignOutTab onClick={() => signOut()}>{i18n.text('signOut')}</SignOutTab>
     </Section>
     <Section top={40}>
-      <Switch>
-        <Route path={`${path}/profile`}>
-          <ProfileSettings userId={session.user.id || ''} sessionState={sessionState}/>
-        </Route>
-        <Route path={`${path}/security`}>
-          <SecuritySettings userId={session.user.id || ''} userEmail={session.user.email || ''} session={session} />
-        </Route>
-        <Redirect to={`${path}/profile`} />
-      </Switch>
+      <Routes>
+        <Route
+          path='profile'
+          element={<ProfileSettings userId={session.user.id || ''} sessionState={sessionState}/>}
+        />
+        <Route
+          path='security'
+          element={<SecuritySettings userId={session.user.id || ''} userEmail={session.user.email || ''} session={session} />}
+        />
+        <Route path='*' element={<ProfileSettings userId={session.user.id || ''} sessionState={sessionState}/>} />
+      </Routes>
     </Section>
   </Section>;
 };

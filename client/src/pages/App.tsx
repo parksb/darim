@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { BrowserRouter as Router, Switch, Redirect, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Navigate, Route } from 'react-router-dom';
 import styled from 'styled-components';
 
 import Storage from '../utils/storage';
@@ -20,6 +20,7 @@ const Wrapper = styled(Container)`
   word-break: keep-all;
   font-family: 'Spoqa Han Sans Neo', 'Noto Sans CJK KR', 'Noto Sans', sans-serif;
   max-width: 100%;
+  min-height: 100vh;
 `;
 
 const HeaderContainer = styled(Container)`
@@ -30,7 +31,7 @@ const PaddingContainer = styled(Container)`
   padding: 0 20px 0 20px;
 `;
 
-const ContainerWithFooter: React.FC = ({ children }) => {
+const ContainerWithFooter = ({ children }: { children: React.ReactNode }) => {
   return <PaddingContainer>
     {children}
     <Footer />
@@ -64,57 +65,53 @@ const App: React.FC = () => {
 
   return (
     <Router>
-      <Wrapper fullWidth>
+      <Wrapper>
         {session && !Storage.get(localStoragePrivateKey) && <SecretKeyWarningBar />}
         <HeaderContainer>
           <Header session={session} />
         </HeaderContainer>
-        <Switch>
-          <Route path='/join/:key'>
-            <ContainerWithFooter>
-              {session ? <Redirect to="/" /> : <Join />}
-            </ContainerWithFooter>
-          </Route>
-          <Route path='/password_reset'>
-            <ContainerWithFooter>
-              {session ? <Redirect to="/" /> : <PasswordReset />}
-            </ContainerWithFooter>
-          </Route>
-          <Route path='/post/:id'>
-            <ContainerWithFooter>
-              {session && <Post session={session} />}
-            </ContainerWithFooter>
-          </Route>
-          <Route path='/post'>
-            <ContainerWithFooter>
-              {session && <Post session={session} />}
-            </ContainerWithFooter>
-          </Route>
-          <Route path='/settings'>
-            <ContainerWithFooter>
-              {session ? <Settings sessionState={[session, setSession]} /> : <Redirect to='/' />}
-            </ContainerWithFooter>
-          </Route>
-          <Route path='/static'>
-            <ContainerWithFooter>
-              <Static />
-            </ContainerWithFooter>
-          </Route>
-          <Route path='/:viewMode/:year/:month'>
-            {session ? <Timeline session={session} /> : <Redirect to='/' />}
-          </Route>
-          <Route path='/:viewMode'>
-            {session ? <Timeline session={session} /> : <Redirect to='/' />}
-          </Route>
-          <Route path='/'>
-            {session ? <Timeline session={session} /> : !isFetchingSession && (
-              <ContainerWithFooter>
-                <Landing session_state={[session, setSession]} />
-              </ContainerWithFooter>
-            )}
-          </Route>
-          <Redirect to='/' />
-        </Switch>
+        <Routes>
+          <Route
+            path='/join/:key'
+            element={<ContainerWithFooter>{session ? <Navigate to='/' /> : <Join />}</ContainerWithFooter>}
+          />
+          <Route
+            path='/password_reset'
+            element={<ContainerWithFooter>{session ? <Navigate to='/' /> : <PasswordReset />}</ContainerWithFooter>}
+          />
+          <Route
+            path='/post/:id'
+            element={<ContainerWithFooter>{session && <Post session={session} />}</ContainerWithFooter>}
+          />
+          <Route
+            path='/post'
+            element={<ContainerWithFooter>{session && <Post session={session} />}</ContainerWithFooter>}
+          />
+          <Route
+            path='/settings/*'
+            element={<ContainerWithFooter>{session ? <Settings sessionState={[session, setSession]} /> : <Navigate to='/' />}</ContainerWithFooter>}
+          />
+          <Route
+            path='/static/*'
+            element={<ContainerWithFooter><Static /></ContainerWithFooter>}
+          />
+          <Route
+            path='/:viewMode/:year/:month'
+            element={session ? <Timeline session={session} /> : <Navigate to='/' />}
+          />
+          <Route
+            path='/:viewMode'
+            element={session ? <Timeline session={session} /> : <Navigate to='/' />}
+          />
+          <Route
+            path='/'
+            element={session ? <Timeline session={session} /> : !isFetchingSession && (<ContainerWithFooter><Landing session_state={[session, setSession]} /></ContainerWithFooter>)}
+          />
+          <Route
+            path='*'
+            element={<Navigate to='/' />}
+          />
+        </Routes>
       </Wrapper>
     </Router>
   );

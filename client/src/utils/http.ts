@@ -39,7 +39,7 @@ class Http {
     try {
       return await Http.request(HttpMethods.GET, url, undefined, accessToken);
     } catch(e) {
-      if (e.message === '401') {
+      if (e instanceof Error && e.message === '401') {
         const refreshedAccessToken = await Http.refreshAccessToken();
         return await Http.get(url, refreshedAccessToken)
       } else {
@@ -53,7 +53,7 @@ class Http {
       const jsonBody = JSON.stringify(body);
       return await Http.request(HttpMethods.POST, url, jsonBody, accessToken);
     } catch(e) {
-      if (accessToken && e.message === '401') {
+      if (accessToken && e instanceof Error && e.message === '401') {
         const refreshedAccessToken = await Http.refreshAccessToken();
         return await Http.post(url, body, refreshedAccessToken)
       } else {
@@ -66,7 +66,7 @@ class Http {
     try {
       return await Http.request(HttpMethods.POST, url, undefined, accessToken);
     } catch(e) {
-      if (accessToken && e.message === '401') {
+      if (accessToken && e instanceof Error && e.message === '401') {
         const refreshedAccessToken = await Http.refreshAccessToken();
         return await Http.postWithoutBody(url, refreshedAccessToken)
       } else {
@@ -80,7 +80,7 @@ class Http {
       const jsonBody = JSON.stringify(body);
       return await Http.request(HttpMethods.PATCH, url, jsonBody, accessToken);
     } catch(e) {
-      if (accessToken && e.message === '401') {
+      if (accessToken && e instanceof Error && e.message === '401') {
         const refreshedAccessToken = await Http.refreshAccessToken();
         return await Http.patch(url, body, refreshedAccessToken)
       } else {
@@ -93,7 +93,7 @@ class Http {
     try {
       return await Http.request(HttpMethods.DELETE, url, undefined, accessToken);
     } catch(e) {
-      if (accessToken && e.message === '401') {
+      if (accessToken && e instanceof Error && e.message === '401') {
         const refreshedAccessToken = await Http.refreshAccessToken();
         return await Http.delete(url, refreshedAccessToken)
       } else {
@@ -107,8 +107,8 @@ class Http {
     return Http.postWithoutBody<string>(url);
   }
 
-  private static composeHeaders(accessToken?: string): HeadersInit_ {
-    const headers: HeadersInit_ = {
+  private static composeHeaders(accessToken?: string): HeadersInit {
+    const headers: HeadersInit = {
       'Content-Type': 'application/json',
       'Access-Control-Allow-Credentials': 'true',
     };

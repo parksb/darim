@@ -1,9 +1,12 @@
 import styled from 'styled-components'
-import React from 'react';
 
-import { Section } from '../components/index';
+import { Section, SectionProps } from '../components';
 
-const Container = styled(({ fullWidth, fullHeight, top, bottom, ...other }) => <Section {...other} />)`
+export interface ContainerProps extends SectionProps {
+  fullWidth?: boolean;
+}
+
+export const Container = styled(Section)<ContainerProps>`
   display: flex;
   width: 100%;
   flex: ${props => !props.row && props.fullHeight && 1};
@@ -15,4 +18,3 @@ const Container = styled(({ fullWidth, fullHeight, top, bottom, ...other }) => <
   margin-left: auto;
 `;
 
-export default Container;

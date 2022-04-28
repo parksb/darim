@@ -1,6 +1,7 @@
 import React from 'react';
-import { Redirect, Route, Switch, useRouteMatch } from 'react-router-dom';
+import { Navigate, Route, Routes } from 'react-router-dom';
 import styled from 'styled-components';
+import MarkdownIt from 'markdown-it';
 
 import { I18n, I18nLanguages } from '../../utils/i18n';
 import privacyKo from '../../../public/static/privacy_ko.md';
@@ -27,37 +28,41 @@ const Frame = styled(Section)`
 `;
 
 const Static: React.FC = () => {
-  const { path } = useRouteMatch();
   const userLanguage = I18n.getUserLanguage()
+  const md = new MarkdownIt({
+    html: false,
+    xhtmlOut: false,
+    breaks: false,
+    langPrefix: 'language-',
+    linkify: true,
+    typographer: true,
+    quotes: '“”‘’',
+  });
 
   const getTerms = () => {
     switch (userLanguage) {
       case I18nLanguages.KO:
-        return termsKo;
+        return md.render(termsKo);
       default:
-        return termsEn;
+        return md.render(termsEn);
     }
   }
 
   const getPrivacy = () => {
     switch (userLanguage) {
       case I18nLanguages.KO:
-        return privacyKo;
+        return md.render(privacyKo);
       default:
-        return privacyEn;
+        return md.render(privacyEn);
     }
   }
 
   return <Section>
-      <Switch>
-        <Route path={`${path}/terms`}>
-          <Frame dangerouslySetInnerHTML={{__html: getTerms()}} />
-        </Route>
-        <Route path={`${path}/privacy`}>
-          <Frame dangerouslySetInnerHTML={{__html: getPrivacy()}} />
-        </Route>
-        <Redirect to='/' />
-      </Switch>
+      <Routes>
+        <Route path='terms' element={<Frame dangerouslySetInnerHTML={{__html: getTerms()}} />} />
+        <Route path='privacy' element={<Frame dangerouslySetInnerHTML={{__html: getPrivacy()}} />} />
+        <Route path='*' element={<Navigate to='/' />} />
+      </Routes>
   </Section>;
 };
 

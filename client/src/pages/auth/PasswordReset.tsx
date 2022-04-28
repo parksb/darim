@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Redirect } from 'react-router-dom';
+import { Navigate } from 'react-router-dom';
 import styled from 'styled-components';
 
 import { getI18n } from '../../utils/i18n';
@@ -72,7 +72,7 @@ const PasswordReset: React.FC = () => {
 
   return <Container bottom={30}>
     {!isSentEmail ? (
-      <Section row unwrap>
+      <Section row nowrap>
         <FullWidthTextField type='email' placeholder={i18n.text('email')} value={email} onChange={({ target: { value } }) => setEmail(value)} />
         <Button onClick={() => email && sendEmail()}>{i18n.text('send')}</Button>
       </Section>
@@ -87,7 +87,7 @@ const PasswordReset: React.FC = () => {
           <NonBorderFullWidthTextField type='password' placeholder={i18n.text('newPassword')} value={newPassword} onChange={({ target: { value } }) => setNewPassword(value)} />
           <NonBorderButton onClick={resetPassword}>{i18n.text('confirm')}</NonBorderButton>
         </Section>
-        {isResetPassword && <Redirect to='/' />}
+        {isResetPassword && <Navigate to='/' />}
       </Section>
     )}
   </Container>

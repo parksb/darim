@@ -8,7 +8,7 @@ import ReCAPTCHA from 'react-google-recaptcha';
 import * as api from '../../api/user';
 import { getI18n } from '../../utils/i18n';
 import { Button, Checkbox, Container, TextField, Section } from '../../components';
-import { localStoragePrivateKey, reCAPTCHASiteKey } from '../../constants';
+import { localStoragePrivateKey, reCAPTCHASiteKey, profile, Profile } from '../../constants';
 
 interface Props {
   tokenKey: string;
@@ -96,7 +96,7 @@ const Verification: React.FC<Props> = ({ tokenKey, privateKeyState, publicKeySta
       </LinkSpan>
     </Section>
     <Section top={20}>
-      <ReCAPTCHA sitekey={reCAPTCHASiteKey} onChange={(value) => { value && setReCAPTCHAToken(value)} } />
+      {profile == Profile.PRODUCTION ? <ReCAPTCHA sitekey={reCAPTCHASiteKey} onChange={(value) => { value && setReCAPTCHAToken(value)} } /> : <label><input type='checkbox' onChange={() => { setReCAPTCHAToken('token') }} />reCAPTCHA</label>}
     </Section>
     <Section top={30}>
       <Section>{i18n.text('verificationGuide')}</Section>

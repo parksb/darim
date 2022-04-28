@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { useParams, useLocation, Redirect } from 'react-router-dom';
+import React, { useEffect, useState, useMemo } from 'react';
+import { useParams, useLocation, Navigate } from 'react-router-dom';
 import styled from 'styled-components';
 import dayjs from 'dayjs';
 import SimpleMDE from 'react-simplemde-editor';
@@ -59,6 +59,7 @@ const DeleteButton = styled(Button)`
 `;
 
 const StyledSimpleMDE = styled(SimpleMDE)`
+  max-width: 100%;
   line-height: 170%;
 
   & .editor-toolbar {
@@ -109,7 +110,7 @@ const Post: React.FC<Props> = ({ session }) => {
     return dayjs().format(format);
   };
 
-  const { id } = useParams();
+  const { id } = useParams<{ id?: string }>();
   const query = new URLSearchParams(useLocation().search);
   const dateFromQuery = query.get('date');
 
@@ -121,7 +122,8 @@ const Post: React.FC<Props> = ({ session }) => {
   const [isDeleted, setIsDeleted] = useState(false);
 
   const load = async () => {
-    const fetchedPost = await api.fetchPost(id, session.user.public_key || '', session.accessToken);
+    const idAsNumber = id ? Number(id) : undefined;
+    const fetchedPost = await api.fetchPost(idAsNumber, session.user.public_key || '', session.accessToken);
 
     if (fetchedPost) {
       setOriginalPost(post);
@@ -183,6 +185,16 @@ const Post: React.FC<Props> = ({ session }) => {
     }
   }, []);
 
+  const editorOptions = useMemo(() => {
+    return {
+      minHeight: '670px',
+      spellChecker: false,
+      renderingConfig: {
+        codeSyntaxHighlighting: true,
+      },
+    };
+  }, []);
+
   return <Container>
     <TitleTextField
       placeholder={i18n.text('title')}
@@ -198,15 +210,8 @@ const Post: React.FC<Props> = ({ session }) => {
     <StyledSimpleMDE
       value={post.content}
       onChange={(text) => setPost({ ...post, content: text })}
-      onBlur={() => upsertPost()}
-      options={{
-        minHeight: '670px',
-        autofocus: false,
-        spellChecker: false,
-        renderingConfig: {
-          codeSyntaxHighlighting: true,
-        },
-      }}
+      events={{ 'blur': () => upsertPost() }}
+      options={editorOptions}
     />
     <MetaSection row>
       <Section row>
@@ -215,7 +220,7 @@ const Post: React.FC<Props> = ({ session }) => {
       </Section>
       {post.id && <DeleteButton onClick={deletePost}>{i18n.text('delete')}</DeleteButton>}
     </MetaSection>
-    {isDeleted && <Redirect to='/' />}
+    {isDeleted && <Navigate to='/' />}
   </Container>
 };
 
