@@ -1,7 +1,14 @@
-import React from 'react';
-import styled from 'styled-components'
+import styled from 'styled-components';
 
-const Section = styled(({ row, top, bottom, fullHeight, nowrap, ...other }) => <div {...other} />)`
+export interface SectionProps {
+  row?: boolean;
+  fullHeight?: boolean;
+  nowrap?: boolean;
+  top?: number;
+  bottom?: number;
+}
+
+export const Section = styled.div<SectionProps>`
   display: flex;
   flex: ${props => !props.row && props.fullHeight && 1};
   flex-wrap: ${props => props.nowrap ? 'nowrap' : 'wrap'};
@@ -12,4 +19,3 @@ const Section = styled(({ row, top, bottom, fullHeight, nowrap, ...other }) => <
   line-height: 150%;
 `;
 
-export default Section;

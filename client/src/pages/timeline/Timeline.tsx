@@ -15,7 +15,7 @@ interface Props {
 
 const Timeline: React.FC<Props> = ({ session }) => {
   const getInitialViewMode = () => {
-    const { viewMode } = useParams();
+    const { viewMode } = useParams<{ viewMode?: string }>();
     return viewMode ? ViewModeMethods.convertStringToViewMode(viewMode) : ViewModeMethods.convertStringToViewMode(Storage.get(localStorageViewModeKey));
   }
 

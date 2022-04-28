@@ -6,7 +6,7 @@ import Verification from './Verification';
 import Token from './Token';
 
 const Join: React.FC = () => {
-  const { key } = useParams();
+  const { key } = useParams<{ key?: string }>();
 
   const [privateKey, setPrivateKey] = useState('');
   const [publicKey, setPublicKey] = useState('');

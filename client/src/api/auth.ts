@@ -64,7 +64,7 @@ async function login(email: string, password: string): Promise<string | null> {
       },
     });
 
-    if (e.message === '404') {
+    if (e instanceof Error && e.message === '404') {
       alert(i18n.text('error404'));
     } else {
       alert(i18n.text('error'));
@@ -140,7 +140,7 @@ async function setPasswordToken(email: string): Promise<boolean | null> {
       },
     });
 
-    if (e.message === '404') {
+    if (e instanceof Error && e.message === '404') {
       alert(i18n.text('error404'));
     } else {
       alert(i18n.text('error'));

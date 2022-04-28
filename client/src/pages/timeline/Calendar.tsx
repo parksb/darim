@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import dayjs from 'dayjs';
 import weekOfYear from 'dayjs/plugin/weekOfYear';
 import styled from 'styled-components';
-import { useParams, withRouter } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 
 import { getI18n } from '../../utils/i18n';
 import * as api from '../../api/post';
@@ -82,9 +82,9 @@ const Calendar: React.FC<Props> = ({ session }) => {
   dayjs.extend(weekOfYear);
 
   const getInitialCursorDate = () => {
-    const { year, month } = useParams();
-    const initialYear = year ?? dayjs().year();
-    const initialMonth = (month ?? (dayjs().month() + 1)) - 1;
+    const { year, month } = useParams<{ year?: string, month?: string }>();
+    const initialYear = year ? Number(year) : dayjs().year();
+    const initialMonth = month ? Number(month) : (dayjs().month() + 1) - 1;
     return dayjs().year(initialYear).month(initialMonth).date(1);
   };
 
@@ -170,21 +170,22 @@ const Calendar: React.FC<Props> = ({ session }) => {
 
   const composeMonthControlURL = (date: dayjs.Dayjs) => `/calendar/${date.year()}/${date.month() + 1}`;
 
-  const PrevMonthControlButton = withRouter(({ history }) => (
-    <MonthControlButton onClick={() => {
+  const history = useNavigate();
+  const PrevMonthControlButton = () => {
+    return <MonthControlButton onClick={() => {
       const date = cursorDate.subtract(1, 'month');
       setCursorDate(date);
-      history.push(composeMonthControlURL(date));
+      history(composeMonthControlURL(date));
     }}>＜</MonthControlButton>
-  ));
+  };
 
-  const NextMonthControlButton = withRouter(({ history }) => (
-    <MonthControlButton onClick={() => {
+  const NextMonthControlButton = () => {
+    return <MonthControlButton onClick={() => {
       const date = cursorDate.add(1, 'month');
       setCursorDate(date);
-      history.push(composeMonthControlURL(date));
+      history(composeMonthControlURL(date));
     }}>＞</MonthControlButton>
-  ));
+  };
 
   useEffect(() => {
     load();
@@ -206,7 +207,7 @@ const Calendar: React.FC<Props> = ({ session }) => {
         return <WeekDay key={weekDay}>{weekDay}</WeekDay>
       })}
     </WeekDayLine>
-    <WeekLineContainer fullWidth fullHeight>
+    <WeekLineContainer fullHeight>
       {calendar.map((week) => {
         return <WeekLine key={week.week} row>
           {week.days.map((day) => {

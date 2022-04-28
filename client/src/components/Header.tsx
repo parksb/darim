@@ -32,7 +32,7 @@ const Title = styled.h1`
   }
 `;
 
-const UserAvatar = styled(({ src, ...other }) => <div {...other} />)`
+const UserAvatar = styled.div<{ src: string }>`
   width: 35px;
   height: 35px;
   background-color: #c0c0c0;
@@ -57,7 +57,7 @@ const Header: React.FC<Props> = ({ session }) => {
     </StyledLink>
     {session && (
       <Link to='/settings'>
-        <UserAvatar src={session?.user?.avatar_url} alt="Your profile"/>
+        <UserAvatar src={session?.user?.avatar_url} />
       </Link>
     )}
   </HeaderContainer>

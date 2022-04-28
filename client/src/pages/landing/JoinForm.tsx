@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Redirect } from 'react-router-dom';
+import { Navigate } from 'react-router-dom';
 import styled from 'styled-components';
 
 import { getI18n } from '../../utils/i18n';
@@ -46,7 +46,7 @@ const JoinForm: React.FC = () => {
 
   return <Container>
     {isSetToken ? (
-      <Redirect to={`/join/${key}`} />
+      <Navigate to={`/join/${key}`} />
     ) : (
       !isSettingToken ? (
         <form onSubmit={setSignUpToken}>
