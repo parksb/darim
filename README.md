@@ -32,27 +32,53 @@
 
 ## Client-side Encryption
 
-* Darim supports client-side encryption to protect the user's secrect from others including server.
+Darim supports client-side encryption to protect the user's secrect from others including server.
 
-### Generate keys
+### Key generation
 
-![key generation flow](https://user-images.githubusercontent.com/6410412/91041309-c37dee80-e64a-11ea-9ac0-75dc0d810aa8.png)
+```mermaid
+%%{init: {'theme': 'neutral'}}%%
+sequenceDiagram
+    Note over client: generates<br>secret and public
+    Note over client: encrypts secret<br>using public
+    client ->> local storage: set(encrypted_secret)
+    client ->> server: POST /public_key { public }
+    server ->> rdb: INSERT public
+    rdb -->> server: [OK 200]
+    server -->> client: [OK 200]
+```
 
-1. When a user finishes the sign-up process, the secret key and public key are generated on the client-side.
-1. The client encrypts the secret key by public key and saevs the encrypted secret key in local storage.
+1. When a user finishes the sign-up process, a secret key and public key are generated on the client-side.
+1. The client encrypts the secret key using the public key and saves the encrypted secret key to local storage.
 1. The public key is sent to the server, and the server stores it.
 
 ### Read & Write
 
-![read and write flow](https://user-images.githubusercontent.com/6410412/91042440-b530d200-e64c-11ea-86f5-dfbcf025bdf4.png)
+```mermaid
+%%{init: {'theme': 'neutral'}}%%
+sequenceDiagram
+    Note over client: creates a new post
+    client ->> local storage: get(encrypted_secret)
+    local storage -->> client: encrypted_secret
+    client ->> server: GET /public_key
+    server ->> rdb: SELECT public
+    rdb -->> server: [OK 200] { public }
+    server -->> client: [OK 200] { public }
+    Note over client: decrypts<br>encrypted_secret<br>using public
+    Note over client: encrypts the post<br>using secret
+    client ->> server: POST /post { encrypted_post }
+    server ->> rdb: INSERT encrypted_post
+    rdb -->> server: [OK 200]
+    server -->> client: [OK 200]
+```
 
-1. When a user creates the plaintext post, the client requests the public key to the server.
+1. After a user creates a new plaintext post, the client requests the public key to the server.
 1. The client decrypts the encrypted secret key in the local storage using the public key from the server.
 1. The plaintext post is encrypted by the secret key decrypted by the public key.
 1. The encrypted post is sent to the server, and the server stores it.
 
 > * At this point, the server can only know encrypted post.
-> * When the client requests the server to read the post, whole flows are reversed.
+> * If the client reads a post, the flow is the same until the client requests to create a post to the server.
 
 ## License
 
