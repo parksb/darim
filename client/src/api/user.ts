@@ -1,3 +1,4 @@
+/* eslint-disable import/no-unresolved */
 import SHA3 from 'crypto-js/sha3';
 
 import Http from '../utils/http';
@@ -75,7 +76,7 @@ async function updateUser(userId: string, accessToken: string, password?: string
 
   const body: UpdateUserBody = {
     password: password ? SHA3(password, { outputLength: 512 }).toString() : undefined,
-    name: name,
+    name,
     avatar_url: avatar,
   };
 
@@ -121,4 +122,6 @@ async function resetPassword(email: string, tokenId: string, temporaryPassword: 
   return null;
 }
 
-export { fetchUser, createUser, updateUser, resetPassword };
+export {
+  fetchUser, createUser, updateUser, resetPassword,
+};

@@ -14,7 +14,26 @@
   },
   "plugins": ["react", "@typescript-eslint"],
   "rules": {
-    "react/prop-types": 0,
-    "quotes": ["error", "single"]
+    "quotes": ["error", "single"],
+    "max-len": ["warn", { "code": 150 }],
+    "import/extensions": "off",
+    "import/prefer-default-export": "off",
+    "no-unused-vars": "off",
+    "@typescript-eslint/no-unused-vars": "error",
+    "no-shadow": "off",
+    "@typescript-eslint/no-shadow": ["error"],
+    "no-restricted-globals": "warn",
+    "import/no-unresolved": "error"
+  },
+  "settings": {
+    "import/parsers": {
+      "@typescript-eslint/parser": [".ts", ".tsx", ".d.ts"]
+    },
+    "import/resolver": {
+      "node": {
+        "extensions": [".ts", ".tsx", ".d.ts"],
+        "moduleDirectory": ["node_modules"]
+      }
+    }
   }
 }

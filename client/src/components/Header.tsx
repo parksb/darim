@@ -37,7 +37,7 @@ const UserAvatar = styled.div<{ src: string }>`
   height: 35px;
   background-color: #c0c0c0;
   border-radius: 50%;
-  background-image: url(${props => props.src || ''});
+  background-image: url(${(props) => props.src || ''});
   background-position: center;
   background-size: cover;
   background-repeat: no-repeat;
@@ -60,7 +60,7 @@ const Header: React.FC<Props> = ({ session }) => {
         <UserAvatar src={session?.user?.avatar_url} />
       </Link>
     )}
-  </HeaderContainer>
+  </HeaderContainer>;
 };
 
 export default Header;

@@ -18,15 +18,14 @@ class I18n {
   }
 
   static getUserLanguage(): I18nLanguages {
-    const language = navigator.language;
+    const { language } = navigator;
 
     if (language.startsWith(I18nLanguages.KO)) {
       return I18nLanguages.KO;
-    } else if (language.startsWith(I18nLanguages.EN)) {
-      return I18nLanguages.EN;
-    } else {
+    } if (language.startsWith(I18nLanguages.EN)) {
       return I18nLanguages.EN;
     }
+    return I18nLanguages.EN;
   }
 
   text(key: string): string {

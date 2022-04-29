@@ -53,9 +53,9 @@ const RefreshLink = styled.span`
   &:hover {
     text-decoration: underline;
   }
-`
+`;
 
-const SecuritySettings: React.FC<Props> = ({ userId, userEmail , session }) => {
+const SecuritySettings: React.FC<Props> = ({ userId, userEmail, session }) => {
   const [newSecretKey, setNewSecretKey] = useState('');
   const [newSecretKeySaveStatus, setNewSecretKeySaveStatus] = useState(SaveStatus.NONE);
   const [newSecretKeyPassword, setNewSecretKeyPassword] = useState('');
@@ -195,12 +195,10 @@ const SecuritySettings: React.FC<Props> = ({ userId, userEmail , session }) => {
     </Section>
     <Section bottom={30}>
       <SectionTitle>{i18n.text('activeUserSessions')}</SectionTitle>
-      {activeUserSessions.map((activeUserSession) => {
-        return <Section bottom={10} key={activeUserSession.last_accessed_at}>
+      {activeUserSessions.map((activeUserSession) => <Section bottom={10} key={activeUserSession.last_accessed_at}>
           <StrongText>{activeUserSession.user_agent ? activeUserSession.user_agent : i18n.text('unknownDevice')}</StrongText>
           <time>{`${i18n.text('lastAccessedAt')}: ${new Date(activeUserSession.last_accessed_at)}`}</time>
-        </Section>;
-      })}
+        </Section>)}
     </Section>
   </Section>;
 };

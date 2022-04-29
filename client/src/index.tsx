@@ -1,6 +1,7 @@
 import React from 'react';
+/* eslint-disable import/no-unresolved */
 import ReactDOM from 'react-dom/client';
-import { Reset } from 'styled-reset'
+import { Reset } from 'styled-reset';
 
 import App from './pages/App';
 

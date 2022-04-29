@@ -7,7 +7,9 @@ import 'easymde/dist/easymde.min.css';
 
 import * as api from '../../api/post';
 import { Post as ApiPost, Session } from '../../models';
-import { Button, Container, Section, TextField } from '../../components';
+import {
+  Button, Container, Section, TextField,
+} from '../../components';
 import { SaveStatus, getSaveStatusText } from '../../utils/status';
 import { getI18n } from '../../utils/i18n';
 
@@ -74,6 +76,7 @@ const StyledSimpleMDE = styled(SimpleMDE)`
   }
 `;
 
+/* eslint-disable no-redeclare */
 const Post: React.FC<Props> = ({ session }) => {
   const i18n = getI18n({
     title: {
@@ -98,7 +101,7 @@ const Post: React.FC<Props> = ({ session }) => {
     },
     deleteConfirm: {
       ko: '정말 삭제하시겠습니까?',
-      en: 'Are you sure want to delete?'
+      en: 'Are you sure want to delete?',
     },
   });
 
@@ -114,9 +117,11 @@ const Post: React.FC<Props> = ({ session }) => {
   const query = new URLSearchParams(useLocation().search);
   const dateFromQuery = query.get('date');
 
-  const initialPost: Post = { id: null, title: '', content: '', date: getFormattedDate(dateFromQuery), updated_at: null, created_at: getFormattedDate() };
-  const [post, setPost] = useState<Post>(initialPost);
-  const [originalPost, setOriginalPost] = useState<Post | null>(null);
+  const initialPost: ApiPost = {
+    id: null, title: '', content: '', date: getFormattedDate(dateFromQuery), updated_at: null, created_at: getFormattedDate(),
+  };
+  const [post, setPost] = useState<ApiPost>(initialPost);
+  const [originalPost, setOriginalPost] = useState<ApiPost | null>(null);
 
   const [saveStatus, setSaveStatus] = useState(SaveStatus.NONE);
   const [isDeleted, setIsDeleted] = useState(false);
@@ -134,9 +139,9 @@ const Post: React.FC<Props> = ({ session }) => {
   const upsertPost = async () => {
     if (post.id && originalPost) {
       if (
-        post.title !== originalPost.title ||
-        post.date !== originalPost.date ||
-        post.content !== originalPost.content
+        post.title !== originalPost.title
+        || post.date !== originalPost.date
+        || post.content !== originalPost.content
       ) {
         const dateWithTime = getFormattedDate(post.date, true);
 
@@ -185,15 +190,13 @@ const Post: React.FC<Props> = ({ session }) => {
     }
   }, []);
 
-  const editorOptions = useMemo(() => {
-    return {
-      minHeight: '670px',
-      spellChecker: false,
-      renderingConfig: {
-        codeSyntaxHighlighting: true,
-      },
-    };
-  }, []);
+  const editorOptions = useMemo(() => ({
+    minHeight: '670px',
+    spellChecker: false,
+    renderingConfig: {
+      codeSyntaxHighlighting: true,
+    },
+  }), []);
 
   return <Container>
     <TitleTextField
@@ -210,7 +213,7 @@ const Post: React.FC<Props> = ({ session }) => {
     <StyledSimpleMDE
       value={post.content}
       onChange={(text) => setPost({ ...post, content: text })}
-      events={{ 'blur': () => upsertPost() }}
+      events={{ blur: () => upsertPost() }}
       options={editorOptions}
     />
     <MetaSection row>
@@ -221,7 +224,7 @@ const Post: React.FC<Props> = ({ session }) => {
       {post.id && <DeleteButton onClick={deletePost}>{i18n.text('delete')}</DeleteButton>}
     </MetaSection>
     {isDeleted && <Navigate to='/' />}
-  </Container>
+  </Container>;
 };
 
 export default Post;

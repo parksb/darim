@@ -18,8 +18,8 @@ const List: React.FC<Props> = ({ session }) => {
   const [posts, setPosts] = useState<SummarizedPost[]>([]);
 
   const load = async () => {
-    const post_list = await api.fetchPosts(session.user.public_key || '', session.accessToken);
-    setPosts(post_list);
+    const postList = await api.fetchPosts(session.user.public_key || '', session.accessToken);
+    setPosts(postList);
   };
 
   useEffect(() => {
@@ -27,10 +27,8 @@ const List: React.FC<Props> = ({ session }) => {
   }, []);
 
   return <StyledContainer top={50}>
-    {posts.map((post) => {
-      return <ListItem key={post.id} post={post}/>
-    })}
-  </StyledContainer>
+    {posts.map((post) => <ListItem key={post.id} post={post}/>)}
+  </StyledContainer>;
 };
 
 export default List;

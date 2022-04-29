@@ -32,24 +32,24 @@ const TimelineHeader: React.FC<Props> = ({ viewModeState }) => {
     calendarView: {
       ko: '캘린더 뷰',
       en: 'Calendar view',
-    }
+    },
   });
 
   const switchViewMode = (mode: string) => {
-    const viewMode = ViewModeMethods.convertNumberToString(Number(mode));
-    Storage.set(localStorageViewModeKey, ViewModeMethods.convertViewModeToString(viewMode));
-    setViewMode(viewMode);
+    const newViewMode = ViewModeMethods.convertNumberToString(Number(mode));
+    Storage.set(localStorageViewModeKey, ViewModeMethods.convertViewModeToString(newViewMode));
+    setViewMode(newViewMode);
   };
 
   return <MainContainer row>
     <Link to={'/post'}>
       <Button>New +</Button>
     </Link>
-    <Select value={viewMode} onChange={({ target: { value }}) => switchViewMode(value)}>
+    <Select value={viewMode} onChange={({ target: { value } }) => switchViewMode(value)}>
       <option value={ViewMode.CALENDAR}>{i18n.text('calendarView')}</option>
       <option value={ViewMode.LIST}>{i18n.text('listView')}</option>
     </Select>
-  </MainContainer>
+  </MainContainer>;
 };
 
 export default TimelineHeader;

@@ -35,11 +35,9 @@ const i18n = getI18n({
   },
 });
 
-const SecretKeyWarningBar: React.FC = ({ ...props }) => {
-  return <StyledSection row {...props}>
+const SecretKeyWarningBar: React.FC = ({ ...props }) => <StyledSection row {...props}>
     {i18n.text('secretKeyWarning')}
     <Link to='/settings/security'>{i18n.text('setSecretKey')}</Link>
-  </StyledSection>
-};
+  </StyledSection>;
 
 export default SecretKeyWarningBar;

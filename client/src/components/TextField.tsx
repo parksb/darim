@@ -1,4 +1,4 @@
-import styled from 'styled-components'
+import styled from 'styled-components';
 
 const TextField = styled.input`
   padding: 11px 10px 9px 10px;

@@ -171,21 +171,17 @@ const Calendar: React.FC<Props> = ({ session }) => {
   const composeMonthControlURL = (date: dayjs.Dayjs) => `/calendar/${date.year()}/${date.month() + 1}`;
 
   const history = useNavigate();
-  const PrevMonthControlButton = () => {
-    return <MonthControlButton onClick={() => {
-      const date = cursorDate.subtract(1, 'month');
-      setCursorDate(date);
-      history(composeMonthControlURL(date));
-    }}>＜</MonthControlButton>
-  };
+  const PrevMonthControlButton = () => <MonthControlButton onClick={() => {
+    const date = cursorDate.subtract(1, 'month');
+    setCursorDate(date);
+    history(composeMonthControlURL(date));
+  }}>＜</MonthControlButton>;
 
-  const NextMonthControlButton = () => {
-    return <MonthControlButton onClick={() => {
-      const date = cursorDate.add(1, 'month');
-      setCursorDate(date);
-      history(composeMonthControlURL(date));
-    }}>＞</MonthControlButton>
-  };
+  const NextMonthControlButton = () => <MonthControlButton onClick={() => {
+    const date = cursorDate.add(1, 'month');
+    setCursorDate(date);
+    history(composeMonthControlURL(date));
+  }}>＞</MonthControlButton>;
 
   useEffect(() => {
     load();
@@ -203,22 +199,18 @@ const Calendar: React.FC<Props> = ({ session }) => {
       <NextMonthControlButton />
     </MonthControlContainer>
     <WeekDayLine row>
-      {weekDays.map((weekDay) => {
-        return <WeekDay key={weekDay}>{weekDay}</WeekDay>
-      })}
+      {weekDays.map((weekDay) => <WeekDay key={weekDay}>{weekDay}</WeekDay>)}
     </WeekDayLine>
     <WeekLineContainer fullHeight>
-      {calendar.map((week) => {
-        return <WeekLine key={week.week} row>
+      {calendar.map((week) => <WeekLine key={week.week} row>
           {week.days.map((day) => {
             const formattedDate = day.format('YYYY-MM-DD');
             const posts = postMap[formattedDate];
             return <CalendarItem key={formattedDate} day={day} cursorDate={cursorDate} posts={posts} />;
           })}
-        </WeekLine>;
-      })}
+        </WeekLine>)}
     </WeekLineContainer>
-  </OverflowContainer>
+  </OverflowContainer>;
 };
 
 export default Calendar;

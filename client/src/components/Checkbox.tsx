@@ -22,7 +22,7 @@ const Checkbox: React.FC<Props> = ({ text, valueState }) => {
   return <label>
     <Input type='checkbox' checked={value} onChange={change} />
     {text}
-  </label>
+  </label>;
 };
 
 export default Checkbox;

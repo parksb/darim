@@ -40,15 +40,15 @@ const StyledLink = styled(Link)`
 
 const ListItem: React.FC<Props> = ({ post }) => {
   const { id, title, date } = post;
-  const displayed_date = dayjs(date).format('YYYY / MM / DD');
+  const displayedDate = dayjs(date).format('YYYY / MM / DD');
 
   return <Container bottom={30} row>
     <StyledLink to={`/post/${id}`}>
-      <Date dateTime={date}>{displayed_date}</Date>
+      <Date dateTime={date}>{displayedDate}</Date>
       <HorizontalLine />
       <Title>{title}</Title>
     </StyledLink>
-  </Container>
+  </Container>;
 };
 
 export default ListItem;

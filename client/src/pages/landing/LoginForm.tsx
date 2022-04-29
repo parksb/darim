@@ -5,7 +5,9 @@ import styled from 'styled-components';
 import { getI18n } from '../../utils/i18n';
 import * as authApi from '../../api/auth';
 import * as userApi from '../../api/user';
-import { TextField, Button, Container, Section, LoadingDots } from '../../components';
+import {
+  TextField, Button, Container, Section, LoadingDots,
+} from '../../components';
 import { Session } from '../../models';
 
 interface Props {
@@ -32,7 +34,7 @@ const ForgotPasswordLink = styled(Link)`
   }
 `;
 
-const LoginForm: React.FC<Props> = ({ sessionState , hasSignUpButton }) => {
+const LoginForm: React.FC<Props> = ({ sessionState, hasSignUpButton }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const setSession = sessionState[1];
@@ -102,7 +104,7 @@ const LoginForm: React.FC<Props> = ({ sessionState , hasSignUpButton }) => {
         <LoadingDots />
       </Section>
     )}
-  </Container>
+  </Container>;
 };
 
 export default LoginForm;

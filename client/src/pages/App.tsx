@@ -1,12 +1,16 @@
 import React, { useEffect, useState } from 'react';
-import { BrowserRouter as Router, Routes, Navigate, Route } from 'react-router-dom';
+import {
+  BrowserRouter as Router, Routes, Navigate, Route,
+} from 'react-router-dom';
 import styled from 'styled-components';
 
 import Storage from '../utils/storage';
 import { localStoragePrivateKey } from '../constants';
 import * as userApi from '../api/user';
 import * as authApi from '../api/auth';
-import { Header, Footer, Container, SecretKeyWarningBar } from '../components';
+import {
+  Header, Footer, Container, SecretKeyWarningBar,
+} from '../components';
 import { Session } from '../models';
 import { Timeline } from './timeline';
 import { Join, PasswordReset } from './auth';
@@ -31,12 +35,10 @@ const PaddingContainer = styled(Container)`
   padding: 0 20px 0 20px;
 `;
 
-const ContainerWithFooter = ({ children }: { children: React.ReactNode }) => {
-  return <PaddingContainer>
+const ContainerWithFooter = ({ children }: { children: React.ReactNode }) => <PaddingContainer>
     {children}
     <Footer />
   </PaddingContainer>;
-};
 
 const App: React.FC = () => {
   const [session, setSession] = useState<Session | null>(null);
@@ -105,7 +107,7 @@ const App: React.FC = () => {
           />
           <Route
             path='/'
-            element={session ? <Timeline session={session} /> : !isFetchingSession && (<ContainerWithFooter><Landing session_state={[session, setSession]} /></ContainerWithFooter>)}
+            element={session ? <Timeline session={session} /> : !isFetchingSession && (<ContainerWithFooter><Landing sessionState={[session, setSession]} /></ContainerWithFooter>)}
           />
           <Route
             path='*'

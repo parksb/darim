@@ -4,7 +4,9 @@ import styled from 'styled-components';
 
 import { getI18n } from '../../utils/i18n';
 import * as api from '../../api/auth';
-import { Button, Container, TextField, Section, LoadingDots } from '../../components';
+import {
+  Button, Container, TextField, Section, LoadingDots,
+} from '../../components';
 
 const FullWidthTextField = styled(TextField)`
   flex: 3;
@@ -28,7 +30,7 @@ const JoinForm: React.FC = () => {
     signUp: {
       ko: '회원가입',
       en: 'Sign up',
-    }
+    },
   });
 
   const setSignUpToken = async () => {
@@ -44,6 +46,7 @@ const JoinForm: React.FC = () => {
     }
   };
 
+  /* eslint-disable no-nested-ternary */
   return <Container>
     {isSetToken ? (
       <Navigate to={`/join/${key}`} />
@@ -64,7 +67,7 @@ const JoinForm: React.FC = () => {
         </Section>
       )
     )}
-  </Container>
+  </Container>;
 };
 
 export default JoinForm;
