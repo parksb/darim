@@ -49,9 +49,8 @@ async function fetchPosts(publicKey: string, accessToken: string): Promise<Summa
 
         return null;
       }).filter((post) => post !== null) as SummarizedPost[];
-    } else {
-      return [];
     }
+    return [];
   } catch (e) {
     return [];
   }
@@ -71,18 +70,19 @@ async function fetchPost(id: number, publicKey: string, accessToken: string): Pr
     const privateKey = Secret.decryptAES(encryptedPrivateKey, publicKey);
 
     if (privateKey) {
-      const { id, title, content, date, created_at, updated_at } = post;
+      const {
+        title, content, date, created_at: createdAt, updated_at: updatedAt,
+      } = post;
       return {
         id,
         title: Secret.decryptAES(title, privateKey),
         content: Secret.decryptAES(content, privateKey),
         date,
-        created_at,
-        updated_at,
+        created_at: createdAt,
+        updated_at: updatedAt,
       };
-    } else {
-      return null;
     }
+    return null;
   } catch (e) {
     return null;
   }
@@ -171,7 +171,7 @@ async function deletePost(id: number, accessToken: string): Promise<boolean> {
     const url = `${serverBaseUrl}/posts/${id}`;
     return await Http.delete<boolean>(url, accessToken);
   } catch (e) {
-     const i18n = getI18n({
+    const i18n = getI18n({
       error: {
         ko: '삭제에 실패했습니다',
         en: 'Failed to delete',
@@ -184,4 +184,6 @@ async function deletePost(id: number, accessToken: string): Promise<boolean> {
   return false;
 }
 
-export { fetchPosts, createPost, updatePost, fetchPost, deletePost };
+export {
+  fetchPosts, createPost, updatePost, fetchPost, deletePost,
+};

@@ -4,11 +4,10 @@ export enum Profile {
 }
 
 function decideProfile(profile: string) {
-  if (process.env.PROFILE == 'production') {
+  if (profile === 'production') {
     return Profile.PRODUCTION;
-  } else {
-    return Profile.DEV;
   }
+  return Profile.DEV;
 }
 
 export const serverBaseUrl = process.env.SERVER_BASE_URL || 'http://localhost:9600';

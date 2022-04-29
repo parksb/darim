@@ -5,7 +5,9 @@ import styled from 'styled-components';
 import { getI18n } from '../../utils/i18n';
 import * as authApi from '../../api/auth';
 import * as userApi from '../../api/user';
-import { Button, Container, Section, TextField } from '../../components';
+import {
+  Button, Container, Section, TextField,
+} from '../../components';
 
 const FullWidthTextField = styled(TextField)`
   flex: 1;
@@ -90,7 +92,7 @@ const PasswordReset: React.FC = () => {
         {isResetPassword && <Navigate to='/' />}
       </Section>
     )}
-  </Container>
+  </Container>;
 };
 
 export default PasswordReset;

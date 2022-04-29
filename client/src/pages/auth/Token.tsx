@@ -91,7 +91,7 @@ const Token: React.FC<Props> = ({ publicKey, privateKey }) => {
         {i18n.text('goToSignIn')}
       </GoToSignInButton>
     </Link>
-  </Container>
+  </Container>;
 };
 
 export default Token;

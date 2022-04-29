@@ -21,7 +21,7 @@ const Join: React.FC = () => {
         publicKeyState={[publicKey, setPublicKey]}
       />
     )}
-  </Container>
+  </Container>;
 };
 
 export default Join;

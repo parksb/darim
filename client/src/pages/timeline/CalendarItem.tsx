@@ -20,7 +20,7 @@ const Container = styled(Section)<CalendarItemSectionProps>`
   flex: 7;
   border-left: 1px solid #000000;
   border-right: 1px solid #000000;
-  background-color: ${props => props.isCurrentMonth ? '#ffffff' : '#f5f5f5'};
+  background-color: ${(props) => (props.isCurrentMonth ? '#ffffff' : '#f5f5f5')};
   min-width: 0;
   max-height: 100%;
 
@@ -80,31 +80,27 @@ const OverflowSection = styled(Section)`
 `;
 
 const CalendarItem: React.FC<Props> = ({ posts, day, cursorDate }) => {
-  const displayed_date = day.date() === 1 ? day.format('MM / DD') : day.format('D');
-  const is_today = day.format('YYYY-MM-DD') === dayjs().format('YYYY-MM-DD');
+  const displayedDate = day.date() === 1 ? day.format('MM / DD') : day.format('D');
+  const isToday = day.format('YYYY-MM-DD') === dayjs().format('YYYY-MM-DD');
 
   return <Container isCurrentMonth={day.month() === cursorDate.month()}>
     <ItemHead row>
       <Date dateTime={day.format('YYYY-MM-DD')}>
-        {displayed_date}
-        {is_today && '📌'}
+        {displayedDate}
+        {isToday && '📌'}
       </Date>
       <NewPostLink to={`/post?date=${day.format('YYYY-MM-DD')}`}>
         <NewPostButton>+</NewPostButton>
       </NewPostLink>
     </ItemHead>
     <OverflowSection>
-    {posts && posts.map((post) => {
-      return (
+    {posts && posts.map((post) => (
         <PostLink key={post.id} to={`/post/${post.id}`}>
-          <PostContainer>
-            {post.title}
-          </PostContainer>
+          <PostContainer>{post.title}</PostContainer>
         </PostLink>
-      );
-    })}
+    ))}
     </OverflowSection>
-  </Container>
+  </Container>;
 };
 
 export default CalendarItem;

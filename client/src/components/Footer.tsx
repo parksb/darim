@@ -39,15 +39,13 @@ const ListItem = styled.li`
   font-size: 12px;
 `;
 
-const Footer: React.FC = () => {
-  return <FooterContainer>
+const Footer: React.FC = () => <FooterContainer>
     <List>
       <ListItem>© 2020 Darim.</ListItem>
       <ListItem><StyledLink to='/static/terms'>Terms</StyledLink></ListItem>
       <ListItem><StyledLink to='/static/privacy'>Privacy</StyledLink></ListItem>
       <ListItem><StyledAnchor href='https://github.com/parksb/darim'>GitHub</StyledAnchor></ListItem>
     </List>
-  </FooterContainer>
-};
+  </FooterContainer>;
 
 export default Footer;

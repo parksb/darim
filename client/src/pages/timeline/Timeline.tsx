@@ -6,7 +6,7 @@ import List from './List';
 import TimelineHeader from './TimelineHeader';
 import { Session, ViewMode, ViewModeMethods } from '../../models';
 import Storage from '../../utils/storage';
-import { Container } from '../../components'
+import { Container } from '../../components';
 import { localStorageViewModeKey } from '../../constants';
 
 interface Props {
@@ -17,7 +17,7 @@ const Timeline: React.FC<Props> = ({ session }) => {
   const getInitialViewMode = () => {
     const { viewMode } = useParams<{ viewMode?: string }>();
     return viewMode ? ViewModeMethods.convertStringToViewMode(viewMode) : ViewModeMethods.convertStringToViewMode(Storage.get(localStorageViewModeKey));
-  }
+  };
 
   const [viewMode, setViewMode] = useState(getInitialViewMode());
 
@@ -27,13 +27,15 @@ const Timeline: React.FC<Props> = ({ session }) => {
         return <Calendar session={session} />;
       case ViewMode.LIST:
         return <List session={session} />;
+      default:
+        return <Calendar session={session} />;
     }
   };
 
   return <Container fullWidth fullHeight>
     <TimelineHeader viewModeState={[viewMode, setViewMode]} />
     {viewTimelineBody(viewMode)}
-  </Container>
+  </Container>;
 };
 
 export default Timeline;

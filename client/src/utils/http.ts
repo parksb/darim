@@ -37,76 +37,60 @@ class Http {
 
   static async get<T>(url: string, accessToken: string): Promise<T> {
     try {
-      return await Http.request(HttpMethods.GET, url, undefined, accessToken);
-    } catch(e) {
+      return Http.request(HttpMethods.GET, url, undefined, accessToken);
+    } catch (e) {
       if (e instanceof Error && e.message === '401') {
         const refreshedAccessToken = await Http.refreshAccessToken();
-        return await Http.get(url, refreshedAccessToken)
-      } else {
-        throw e;
+        return Http.get(url, refreshedAccessToken);
       }
+      throw e;
     }
   }
 
-  static async post<T, S>(url: string, body: T, accessToken?: string): Promise<S> {
+  static async post<T, S>(url: string, body?: T, accessToken?: string): Promise<S> {
     try {
-      const jsonBody = JSON.stringify(body);
-      return await Http.request(HttpMethods.POST, url, jsonBody, accessToken);
-    } catch(e) {
+      const jsonBody = body ? JSON.stringify(body) : undefined;
+      return Http.request(HttpMethods.POST, url, jsonBody, accessToken);
+    } catch (e) {
       if (accessToken && e instanceof Error && e.message === '401') {
         const refreshedAccessToken = await Http.refreshAccessToken();
-        return await Http.post(url, body, refreshedAccessToken)
-      } else {
-        throw e;
+        return Http.post(url, body, refreshedAccessToken);
       }
-    }
-  }
-
-  static async postWithoutBody<T>(url: string, accessToken?: string): Promise<T> {
-    try {
-      return await Http.request(HttpMethods.POST, url, undefined, accessToken);
-    } catch(e) {
-      if (accessToken && e instanceof Error && e.message === '401') {
-        const refreshedAccessToken = await Http.refreshAccessToken();
-        return await Http.postWithoutBody(url, refreshedAccessToken)
-      } else {
-        throw e;
-      }
+      throw e;
     }
   }
 
   static async patch<T, S>(url: string, body: T, accessToken: string): Promise<S> {
     try {
       const jsonBody = JSON.stringify(body);
-      return await Http.request(HttpMethods.PATCH, url, jsonBody, accessToken);
-    } catch(e) {
+      return Http.request(HttpMethods.PATCH, url, jsonBody, accessToken);
+    } catch (e) {
       if (accessToken && e instanceof Error && e.message === '401') {
         const refreshedAccessToken = await Http.refreshAccessToken();
-        return await Http.patch(url, body, refreshedAccessToken)
-      } else {
-        throw e;
+        return Http.patch(url, body, refreshedAccessToken);
       }
+      throw e;
     }
   }
 
   static async delete<T>(url: string, accessToken?: string): Promise<T> {
     try {
-      return await Http.request(HttpMethods.DELETE, url, undefined, accessToken);
-    } catch(e) {
+      return Http.request(HttpMethods.DELETE, url, undefined, accessToken);
+    } catch (e) {
       if (accessToken && e instanceof Error && e.message === '401') {
         const refreshedAccessToken = await Http.refreshAccessToken();
-        return await Http.delete(url, refreshedAccessToken)
-      } else {
-        throw e;
+        return Http.delete(url, refreshedAccessToken);
       }
+      throw e;
     }
   }
 
   private static async refreshAccessToken(): Promise<string> {
     const url = `${serverBaseUrl}/auth/token/access`;
-    return Http.postWithoutBody<string>(url);
+    return Http.request(HttpMethods.POST, url);
   }
 
+  /* eslint-disable no-undef */
   private static composeHeaders(accessToken?: string): HeadersInit {
     const headers: HeadersInit = {
       'Content-Type': 'application/json',
@@ -114,12 +98,11 @@ class Http {
     };
 
     if (accessToken) {
-      headers['Authorization'] = `Bearer ${accessToken}`;
+      headers.Authorization = `Bearer ${accessToken}`;
     }
 
     return headers;
   }
-
 }
 
 export default Http;

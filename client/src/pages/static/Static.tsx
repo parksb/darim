@@ -28,7 +28,7 @@ const Frame = styled(Section)`
 `;
 
 const Static: React.FC = () => {
-  const userLanguage = I18n.getUserLanguage()
+  const userLanguage = I18n.getUserLanguage();
   const md = new MarkdownIt({
     html: false,
     xhtmlOut: false,
@@ -46,7 +46,7 @@ const Static: React.FC = () => {
       default:
         return md.render(termsEn);
     }
-  }
+  };
 
   const getPrivacy = () => {
     switch (userLanguage) {
@@ -55,12 +55,12 @@ const Static: React.FC = () => {
       default:
         return md.render(privacyEn);
     }
-  }
+  };
 
   return <Section>
       <Routes>
-        <Route path='terms' element={<Frame dangerouslySetInnerHTML={{__html: getTerms()}} />} />
-        <Route path='privacy' element={<Frame dangerouslySetInnerHTML={{__html: getPrivacy()}} />} />
+        <Route path='terms' element={<Frame dangerouslySetInnerHTML={{ __html: getTerms() }} />} />
+        <Route path='privacy' element={<Frame dangerouslySetInnerHTML={{ __html: getPrivacy() }} />} />
         <Route path='*' element={<Navigate to='/' />} />
       </Routes>
   </Section>;

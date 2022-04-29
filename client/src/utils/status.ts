@@ -1,4 +1,4 @@
-import { I18n } from '../utils/i18n';
+import { I18n } from './i18n';
 
 enum SaveStatus {
   NONE,

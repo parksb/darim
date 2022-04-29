@@ -1,3 +1,4 @@
+/* eslint-disable import/no-unresolved */
 import SHA3 from 'crypto-js/sha3';
 
 import Http from '../utils/http';
@@ -25,8 +26,10 @@ async function fetchActiveUserSessions(accessToken: string): Promise<ActiveUserS
   const url = `${serverBaseUrl}/auth/token`;
 
   try {
-    return await Http.get<ActiveUserSession[]>(url, accessToken);
-  } catch (e) { /**/ }
+    return Http.get<ActiveUserSession[]>(url, accessToken);
+  } catch (e) {
+    // do nothing
+  }
 
   return [];
 }
@@ -35,8 +38,10 @@ async function fetchAccessToken(): Promise<string | null> {
   const url = `${serverBaseUrl}/auth/token/access`;
 
   try {
-    return await Http.postWithoutBody<string>(url);
-  } catch (e) { /**/ }
+    return Http.post<string, string | null>(url);
+  } catch (e) {
+    // do nothing
+  }
 
   return null;
 }
@@ -51,7 +56,7 @@ async function login(email: string, password: string): Promise<string | null> {
   };
 
   try {
-    return await Http.post<LoginBody, string>(url, body);
+    return Http.post<LoginBody, string>(url, body);
   } catch (e) {
     const i18n = getI18n({
       error404: {
@@ -87,7 +92,7 @@ async function logout(): Promise<boolean | null> {
       },
     });
 
-    alert(i18n.text('error'))
+    alert(i18n.text('error'));
   }
 
   return null;
@@ -105,7 +110,7 @@ async function setSignUpToken(name: string, email: string, password: string, ava
   };
 
   try {
-    return await Http.post<SetSignUpTokenBody, string>(url, body);
+    return Http.post<SetSignUpTokenBody, string>(url, body);
   } catch (e) {
     const i18n = getI18n({
       error: {
@@ -127,7 +132,7 @@ async function setPasswordToken(email: string): Promise<boolean | null> {
   };
 
   try {
-    return await Http.post<SetPasswordTokenBody, boolean>(url, body);
+    return Http.post<SetPasswordTokenBody, boolean>(url, body);
   } catch (e) {
     const i18n = getI18n({
       error404: {
@@ -150,4 +155,6 @@ async function setPasswordToken(email: string): Promise<boolean | null> {
   return null;
 }
 
-export { login, logout, setSignUpToken, setPasswordToken, fetchAccessToken, fetchActiveUserSessions };
+export {
+  login, logout, setSignUpToken, setPasswordToken, fetchAccessToken, fetchActiveUserSessions,
+};

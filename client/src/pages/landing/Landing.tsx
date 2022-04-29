@@ -3,8 +3,8 @@ import styled from 'styled-components';
 
 import { getI18n } from '../../utils/i18n';
 import { Container, Section } from '../../components';
-import LoginForm from './LoginForm'
-import JoinForm from './JoinForm'
+import LoginForm from './LoginForm';
+import JoinForm from './JoinForm';
 import { Session } from '../../models';
 
 import previewCalendarImage from './images/thumb-without-text.svg';
@@ -12,7 +12,7 @@ import encryptionImage from './images/encryption.svg';
 import markdownImage from './images/markdown.svg';
 
 interface Props {
-  session_state: [Session | null, React.Dispatch<React.SetStateAction<Session | null>>]
+  sessionState: [Session | null, React.Dispatch<React.SetStateAction<Session | null>>]
 }
 
 const SectionTitle = styled.h2`
@@ -32,7 +32,7 @@ const SVG = styled.object`
   max-width: 100%;
 `;
 
-const Landing: React.FC<Props> = ({ session_state }) => {
+const Landing: React.FC<Props> = ({ sessionState }) => {
   const i18n = getI18n({
     secureDiary: {
       ko: '📖 안전한 온라인 다이어리',
@@ -44,7 +44,7 @@ const Landing: React.FC<Props> = ({ session_state }) => {
     },
     keepYourDiaryASecret: {
       ko: '🔏 다이어리의 내용을 안전하게 보호하세요',
-      en: '🔏 Keep your diary secure'
+      en: '🔏 Keep your diary secure',
     },
     keepYourDiaryASecretDescription: {
       ko: `암호화를 통해 다이어리 내용을 보호할 수 있습니다.
@@ -68,7 +68,7 @@ const Landing: React.FC<Props> = ({ session_state }) => {
     getStartedNow: {
       ko: '👋 지금 시작해보세요!',
       en: '👋 Get started now!',
-    }
+    },
   });
 
   return <Container>
@@ -84,7 +84,7 @@ const Landing: React.FC<Props> = ({ session_state }) => {
         <SVG type='image/svg+xml' data={previewCalendarImage} />
       </Section>
       <Section top={30}>
-        <LoginForm sessionState={session_state} />
+        <LoginForm sessionState={sessionState} />
       </Section>
       <Section top={50}>
         <SectionTitle>{i18n.text('keepYourDiaryASecret')}</SectionTitle>
@@ -107,7 +107,7 @@ const Landing: React.FC<Props> = ({ session_state }) => {
         </Section>
       </Section>
     </Section>
-  </Container>
+  </Container>;
 };
 
 export default Landing;

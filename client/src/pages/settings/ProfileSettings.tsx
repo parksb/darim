@@ -53,9 +53,8 @@ const ProfileSettings: React.FC<Props> = ({ userId, sessionState }) => {
       const refreshedSession: Session = { user, accessToken: session.accessToken };
       setSession(refreshedSession);
       return true;
-    } else {
-      return false;
     }
+    return false;
   };
 
   const saveNewName = async () => {

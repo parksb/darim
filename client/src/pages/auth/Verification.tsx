@@ -1,14 +1,18 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import styled from 'styled-components';
+import ReCAPTCHA from 'react-google-recaptcha';
 import Secret from '../../utils/secret';
 import Storage from '../../utils/storage';
-import ReCAPTCHA from 'react-google-recaptcha';
 
 import * as api from '../../api/user';
 import { getI18n } from '../../utils/i18n';
-import { Button, Checkbox, Container, TextField, Section } from '../../components';
-import { localStoragePrivateKey, reCAPTCHASiteKey, profile, Profile } from '../../constants';
+import {
+  Button, Checkbox, Container, TextField, Section,
+} from '../../components';
+import {
+  localStoragePrivateKey, reCAPTCHASiteKey, profile, Profile,
+} from '../../constants';
 
 interface Props {
   tokenKey: string;
@@ -96,7 +100,7 @@ const Verification: React.FC<Props> = ({ tokenKey, privateKeyState, publicKeySta
       </LinkSpan>
     </Section>
     <Section top={20}>
-      {profile == Profile.PRODUCTION ? <ReCAPTCHA sitekey={reCAPTCHASiteKey} onChange={(value) => { value && setReCAPTCHAToken(value)} } /> : <label><input type='checkbox' onChange={() => { setReCAPTCHAToken('token') }} />reCAPTCHA</label>}
+      {profile === Profile.PRODUCTION ? <ReCAPTCHA sitekey={reCAPTCHASiteKey} onChange={(value) => (value && setReCAPTCHAToken(value))} /> : <label><input type='checkbox' onChange={() => { setReCAPTCHAToken('token'); }} />reCAPTCHA</label>}
     </Section>
     <Section top={30}>
       <Section>{i18n.text('verificationGuide')}</Section>
@@ -105,7 +109,7 @@ const Verification: React.FC<Props> = ({ tokenKey, privateKeyState, publicKeySta
         <Button onClick={verify} disabled={!hasAgreed || !reCAPTCHAToken}>{i18n.text('verify')}</Button>
       </Section>
     </Section>
-  </Container>
+  </Container>;
 };
 
 export default Verification;

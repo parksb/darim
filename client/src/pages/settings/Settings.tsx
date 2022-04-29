@@ -14,12 +14,12 @@ interface Props {
   sessionState: [Session, React.Dispatch<React.SetStateAction<Session | null>>]
 }
 
-const UserAvatar = styled(({ src, ...other }) => <div {...other} />)`
+const UserAvatar = styled.div<{ src: string }>`
   width: 130px;
   height: 130px;
   background-color: #c0c0c0;
   border-radius: 50%;
-  background-image: url(${props => props.src || ''});
+  background-image: url(${(props) => props.src || ''});
   background-position: center;
   background-size: cover;
   background-repeat: no-repeat;
@@ -75,8 +75,8 @@ const Settings: React.FC<Props> = ({ sessionState }) => {
     },
     signOut: {
       ko: '로그아웃 ↗',
-      en: 'Sign out ↗'
-    }
+      en: 'Sign out ↗',
+    },
   });
 
   const signOut = async () => {
