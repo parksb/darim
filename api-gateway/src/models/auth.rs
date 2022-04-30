@@ -34,6 +34,7 @@ pub struct SetPasswordTokenArgs {
 /// Arguments for `POST /auth/token/refresh/:id` API.
 #[derive(Serialize, Deserialize)]
 pub struct ValidateJwtRefreshArgs {
+    pub token_uuid: String,
     pub jwt_refresh: String,
     pub user_agent: Option<String>,
 }
@@ -41,17 +42,19 @@ pub struct ValidateJwtRefreshArgs {
 /// Arguments for `DELETE /auth/token/refresh/:id` API.
 #[derive(Serialize, Deserialize)]
 pub struct RemoveJwtRefreshArgs {
-    pub jwt_refresh: String,
+    pub token_uuid: String,
 }
 
 #[derive(Serialize, Deserialize)]
 pub struct SetJwtRefreshDTO {
+    pub token_uuid: String,
     pub user_id: u64,
     pub jwt_refresh: String,
 }
 
 #[derive(Serialize, Deserialize)]
 pub struct UserSessionDTO {
+    pub token_uuid: String,
     pub user_agent: Option<String>,
     pub last_accessed_at: i64,
 }

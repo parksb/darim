@@ -31,6 +31,7 @@ pub struct SetPasswordTokenArgs {
 /// Arguments for `POST /auth/token/refresh/:id` API.
 #[derive(Serialize, Deserialize)]
 pub struct ValidateJwtRefreshArgs {
+    pub token_uuid: String,
     pub jwt_refresh: String,
     pub user_agent: Option<String>,
 }
@@ -38,7 +39,7 @@ pub struct ValidateJwtRefreshArgs {
 /// Arguments for `DELETE /auth/token/refresh/:id` API.
 #[derive(Serialize, Deserialize)]
 pub struct RemoveJwtRefreshArgs {
-    pub jwt_refresh: String,
+    pub token_uuid: String,
 }
 
 /// Sets token for creating user.
@@ -81,11 +82,13 @@ pub async fn validate_jwt_refresh(
     args: web::Json<ValidateJwtRefreshArgs>,
 ) -> impl Responder {
     let ValidateJwtRefreshArgs {
+        token_uuid,
         jwt_refresh,
         user_agent,
     } = args.into_inner();
     let user_id = id.into_inner();
-    let result = AuthService::new().validate_jwt_refresh(user_id, &jwt_refresh, user_agent);
+    let result =
+        AuthService::new().validate_jwt_refresh(user_id, &token_uuid, &jwt_refresh, user_agent);
     http_util::get_response::<bool>(Ok(result))
 }
 
@@ -95,9 +98,9 @@ pub async fn remove_jwt_refresh(
     id: web::Path<u64>,
     args: web::Json<RemoveJwtRefreshArgs>,
 ) -> impl Responder {
-    let RemoveJwtRefreshArgs { jwt_refresh } = args.into_inner();
+    let RemoveJwtRefreshArgs { token_uuid } = args.into_inner();
     let user_id = id.into_inner();
-    let result = AuthService::new().remove_jwt_refresh(user_id, &jwt_refresh);
+    let result = AuthService::new().remove_jwt_refresh(user_id, &token_uuid);
     http_util::get_response::<bool>(Ok(result))
 }
 

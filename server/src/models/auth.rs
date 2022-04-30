@@ -13,6 +13,7 @@ use crate::utils::env_util::JWT_REFRESH_SECRET;
 /// Session containing information of the logged-in user.
 #[derive(Serialize, Deserialize)]
 pub struct SetJwtRefreshDTO {
+    pub token_uuid: String,
     pub user_id: u64,
     pub jwt_refresh: String,
 }
@@ -31,6 +32,14 @@ pub struct SignUpToken {
 
 #[derive(Serialize, Deserialize)]
 pub struct UserSessionDTO {
+    pub token_uuid: String,
+    pub user_agent: Option<String>,
+    pub last_accessed_at: i64,
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct UserSession {
+    pub jwt_refresh: String,
     pub user_agent: Option<String>,
     pub last_accessed_at: i64,
 }
@@ -215,9 +224,17 @@ impl RefreshTokenRepository {
     }
 
     /// Check a token is exist by user id and token.
-    pub fn is_exist(&mut self, user_id: u64, token: &str) -> Result<bool, ServiceError> {
-        match self.client.hexists::<u64, &str, _>(user_id, &token) {
-            Ok(is_exist) => Ok(is_exist),
+    pub fn is_exist(
+        &mut self,
+        user_id: u64,
+        uuid: &str,
+        token: &str,
+    ) -> Result<bool, ServiceError> {
+        match self.client.hget::<u64, &str, String>(user_id, uuid) {
+            Ok(session_json) => {
+                let value = serde_json::from_str::<UserSession>(&session_json).unwrap();
+                Ok(value.jwt_refresh == token)
+            }
             Err(_) => Err(get_service_error(ServiceError::QueryExecutionFailure)),
         }
     }
@@ -227,10 +244,20 @@ impl RefreshTokenRepository {
         &mut self,
         user_id: u64,
     ) -> Result<Vec<UserSessionDTO>, ServiceError> {
-        match self.client.hgetall::<u64, Vec<String>>(user_id) {
+        match self.client.hgetall::<u64, Vec<(String, String)>>(user_id) {
             Ok(value) => Ok(value
                 .iter()
-                .map(|value| serde_json::from_str(value))
+                .map(|(key, value)| {
+                    if let Ok(value) = serde_json::from_str::<UserSession>(value) {
+                        Ok(UserSessionDTO {
+                            token_uuid: key.to_string(),
+                            last_accessed_at: value.last_accessed_at,
+                            user_agent: value.user_agent,
+                        })
+                    } else {
+                        Err(false)
+                    }
+                })
                 .filter_map(|value| value.ok())
                 .collect()),
             Err(_) => Err(get_service_error(ServiceError::QueryExecutionFailure)),
@@ -238,8 +265,8 @@ impl RefreshTokenRepository {
     }
 
     /// Deletes a token by key.
-    pub fn delete(&mut self, user_id: u64, token: &str) -> Result<bool, ServiceError> {
-        match self.client.hdel::<u64, &str, _>(user_id, &token) {
+    pub fn delete(&mut self, user_id: u64, uuid: &str) -> Result<bool, ServiceError> {
+        match self.client.hdel::<u64, &str, _>(user_id, uuid) {
             Ok(result) => Ok(result),
             Err(_) => Err(get_service_error(ServiceError::QueryExecutionFailure)),
         }
@@ -249,15 +276,15 @@ impl RefreshTokenRepository {
     pub fn save(
         &mut self,
         user_id: u64,
-        token: &str,
-        user_session: &UserSessionDTO,
+        uuid: &str,
+        user_session: &UserSession,
     ) -> Result<String, ServiceError> {
         let value = serde_json::to_string(user_session).unwrap();
         let ttl_seconds = 2592000; // 30 days
 
         let result: Result<bool, RedisError> = self
             .client
-            .hset::<u64, &str, &str, _>(user_id, &token, &value);
+            .hset::<u64, &str, &str, _>(user_id, uuid, &value);
         match result {
             Ok(_) => match self.client.expire::<u64, bool>(user_id, ttl_seconds) {
                 Ok(_) => Ok(user_id.to_string()),
