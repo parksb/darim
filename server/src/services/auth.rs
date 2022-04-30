@@ -1,6 +1,7 @@
 use chrono::Utc;
 use jsonwebtoken::{encode, EncodingKey, Header};
 use rand::{distributions::Alphanumeric, thread_rng, Rng};
+use uuid::Uuid;
 
 use crate::models::auth::*;
 use crate::models::error::{get_service_error, ServiceError};
@@ -115,12 +116,14 @@ impl AuthService {
             }
         };
 
+        let token_uuid = Uuid::new_v4().to_string();
         let _ = {
             let fallback_repository = some_if_true!(self.refresh_token_repository.is_none() => RefreshTokenRepository::new());
             self.refresh_token_repository(fallback_repository).save(
                 user.id,
-                &jwt_refresh,
-                &UserSessionDTO {
+                &token_uuid,
+                &UserSession {
+                    jwt_refresh: jwt_refresh.clone(),
                     user_agent,
                     last_accessed_at: Utc::now().timestamp_millis(),
                 },
@@ -128,6 +131,7 @@ impl AuthService {
         };
 
         Ok(SetJwtRefreshDTO {
+            token_uuid,
             user_id: user.id,
             jwt_refresh,
         })
@@ -136,12 +140,13 @@ impl AuthService {
     pub fn validate_jwt_refresh(
         &mut self,
         user_id: u64,
+        token_uuid: &str,
         token: &str,
         user_agent: Option<String>,
     ) -> bool {
         let is_exist = {
             let fallback_repository = some_if_true!(self.refresh_token_repository.is_none() => RefreshTokenRepository::new());
-            self.refresh_token_repository(fallback_repository).is_exist(user_id, token)
+            self.refresh_token_repository(fallback_repository).is_exist(user_id, token_uuid, token)
         }.is_ok();
 
         if is_exist {
@@ -149,8 +154,9 @@ impl AuthService {
                 let fallback_repository = some_if_true!(self.refresh_token_repository.is_none() => RefreshTokenRepository::new());
                 self.refresh_token_repository(fallback_repository).save(
                     user_id,
-                    token,
-                    &UserSessionDTO {
+                    token_uuid,
+                    &UserSession {
+                        jwt_refresh: token.to_string(),
                         user_agent,
                         last_accessed_at: Utc::now().timestamp_millis(),
                     },
@@ -163,11 +169,11 @@ impl AuthService {
         }
     }
 
-    pub fn remove_jwt_refresh(&mut self, user_id: u64, jwt_refresh: &str) -> bool {
+    pub fn remove_jwt_refresh(&mut self, user_id: u64, token_uuid: &str) -> bool {
         let fallback_repository =
             some_if_true!(self.refresh_token_repository.is_none() => RefreshTokenRepository::new());
         self.refresh_token_repository(fallback_repository)
-            .delete(user_id, jwt_refresh)
+            .delete(user_id, token_uuid)
             .is_ok()
     }
 

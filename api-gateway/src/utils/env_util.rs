@@ -17,5 +17,21 @@ lazy_static! {
         env::var("JWT_REFRESH_SECRET").expect("JWT_REFRESH_SECRET not found");
     pub static ref JWT_ACCESS_SECRET: String =
         env::var("JWT_ACCESS_SECRET").expect("JWT_ACCESS_SECRET not found");
-    pub static ref JWT_COOKIE_KEY: String = "jwt-refresh".to_string();
+    pub static ref JWT_COOKIE_KEY: String =
+        env::var("JWT_COOKIE_KEY").expect("JWT_COOKIE_KEY not found");
+    pub static ref JWT_UUID_COOKIE_KEY: String =
+        env::var("JWT_UUID_COOKIE_KEY").expect("JWT_UUID_COOKIE_KEY not found");
+    pub static ref PROFILE: Profile = env::var("PROFILE")
+        .map(|profile| if profile == "production" {
+            Profile::PRODUCTION
+        } else {
+            Profile::DEV
+        })
+        .unwrap_or(Profile::DEV);
+    pub static ref DOMAIN: String = env::var("DOMAIN").expect("DOMAIN not found");
+}
+
+pub enum Profile {
+    DEV,
+    PRODUCTION,
 }
