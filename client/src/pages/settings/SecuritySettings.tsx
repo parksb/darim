@@ -19,7 +19,7 @@ interface Props {
 const SectionTitle = styled.h2`
   font-size: 24px;
   font-weight: 700;
-  margin-bottom: 15px;
+  margin-bottom: 10px;
 `;
 
 const StrongText = styled.strong`
@@ -36,6 +36,10 @@ const NonBorderFullWidthTextField = styled(FullWidthTextField)`
 
 const NonBorderButton = styled(Button)`
   border-top: 0;
+`;
+
+const RevokeButton = styled(Button)`
+  align-self: flex-start;
 `;
 
 const SaveStatusText = styled.span`
@@ -99,11 +103,23 @@ const SecuritySettings: React.FC<Props> = ({ userId, userEmail, session }) => {
       ko: '알 수 없는 장치',
       en: 'Unknown device',
     },
+    revokeInfo: {
+      ko: '이 계정에 로그인한 기기 목록입니다. 모르는 기기라면 세션을 로그아웃시켜 주세요.',
+      en: 'This is a list of devices that have logged into your account. Revoke any sessions that you do not recognize',
+    },
+    revoke: {
+      ko: '로그아웃',
+      en: 'Revoke',
+    },
   });
 
-  const load = async () => {
+  const fetchActiveUserSessions = async () => {
     const fetchedActiveUserSessions = await authApi.fetchActiveUserSessions(session.accessToken);
     setActiveUserSessions(fetchedActiveUserSessions);
+  };
+
+  const load = async () => {
+    fetchActiveUserSessions();
   };
 
   useEffect(() => {
@@ -194,10 +210,17 @@ const SecuritySettings: React.FC<Props> = ({ userId, userEmail, session }) => {
       <SaveStatusText>{getSaveStatusText(newPasswordSaveStatus)}</SaveStatusText>
     </Section>
     <Section bottom={30}>
-      <SectionTitle>{i18n.text('activeUserSessions')}</SectionTitle>
-      {activeUserSessions.map((activeUserSession) => <Section bottom={10} key={activeUserSession.last_accessed_at}>
+      <Section bottom={10}>
+        <SectionTitle>{i18n.text('activeUserSessions')}</SectionTitle>
+        <span>{i18n.text('revokeInfo')}</span>
+      </Section>
+      {activeUserSessions.map((activeUserSession) => <Section bottom={10} key={activeUserSession.token_uuid}>
           <StrongText>{activeUserSession.user_agent ? activeUserSession.user_agent : i18n.text('unknownDevice')}</StrongText>
           <time>{`${i18n.text('lastAccessedAt')}: ${new Date(activeUserSession.last_accessed_at)}`}</time>
+          <RevokeButton onClick={async () => {
+            await authApi.deleteActiveSession(activeUserSession.token_uuid);
+            await fetchActiveUserSessions();
+          }}>{i18n.text('revoke')}</RevokeButton>
         </Section>)}
     </Section>
   </Section>;

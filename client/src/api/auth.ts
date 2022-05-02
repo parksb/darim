@@ -26,7 +26,7 @@ async function fetchActiveUserSessions(accessToken: string): Promise<ActiveUserS
   const url = `${serverBaseUrl}/auth/token`;
 
   try {
-    return Http.get<ActiveUserSession[]>(url, accessToken);
+    return await Http.get<ActiveUserSession[]>(url, accessToken);
   } catch (e) {
     // do nothing
   }
@@ -38,7 +38,7 @@ async function fetchAccessToken(): Promise<string | null> {
   const url = `${serverBaseUrl}/auth/token/access`;
 
   try {
-    return Http.post<string, string | null>(url);
+    return await Http.post<string, string | null>(url);
   } catch (e) {
     // do nothing
   }
@@ -56,7 +56,7 @@ async function login(email: string, password: string): Promise<string | null> {
   };
 
   try {
-    return Http.post<LoginBody, string>(url, body);
+    return await Http.post<LoginBody, string>(url, body);
   } catch (e) {
     const i18n = getI18n({
       error404: {
@@ -80,7 +80,7 @@ async function login(email: string, password: string): Promise<string | null> {
 }
 
 async function logout(): Promise<boolean | null> {
-  const url = `${serverBaseUrl}/auth/token`;
+  const url = `${serverBaseUrl}/auth/token/me`;
 
   try {
     return await Http.delete<boolean>(url);
@@ -89,6 +89,25 @@ async function logout(): Promise<boolean | null> {
       error: {
         ko: '로그아웃에 실패했습니다',
         en: 'Failed to sign out',
+      },
+    });
+
+    alert(i18n.text('error'));
+  }
+
+  return null;
+}
+
+async function deleteActiveSession(uuid: string): Promise<boolean | null> {
+  const url = `${serverBaseUrl}/auth/token/${uuid}`;
+
+  try {
+    return await Http.delete<boolean>(url);
+  } catch (e) {
+    const i18n = getI18n({
+      error: {
+        ko: '세션 삭제에 실패했습니다',
+        en: 'Failed to delete the session',
       },
     });
 
@@ -110,7 +129,7 @@ async function setSignUpToken(name: string, email: string, password: string, ava
   };
 
   try {
-    return Http.post<SetSignUpTokenBody, string>(url, body);
+    return await Http.post<SetSignUpTokenBody, string>(url, body);
   } catch (e) {
     const i18n = getI18n({
       error: {
@@ -132,7 +151,7 @@ async function setPasswordToken(email: string): Promise<boolean | null> {
   };
 
   try {
-    return Http.post<SetPasswordTokenBody, boolean>(url, body);
+    return await Http.post<SetPasswordTokenBody, boolean>(url, body);
   } catch (e) {
     const i18n = getI18n({
       error404: {
@@ -156,5 +175,5 @@ async function setPasswordToken(email: string): Promise<boolean | null> {
 }
 
 export {
-  login, logout, setSignUpToken, setPasswordToken, fetchAccessToken, fetchActiveUserSessions,
+  login, logout, setSignUpToken, setPasswordToken, fetchAccessToken, fetchActiveUserSessions, deleteActiveSession,
 };
