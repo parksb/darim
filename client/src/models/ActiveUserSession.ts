@@ -1,4 +1,5 @@
 interface ActiveUserSession {
+  token_uuid: string;
   user_agent?: string;
   last_accessed_at: number;
 }
