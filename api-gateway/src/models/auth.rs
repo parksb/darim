@@ -5,7 +5,7 @@ use jsonwebtoken::errors::ErrorKind;
 use jsonwebtoken::{decode, DecodingKey, Validation};
 use serde::{Deserialize, Serialize};
 
-use crate::models::error::ApiGatewayError;
+use crate::models::error::Error;
 use crate::utils::env_util::{JWT_ACCESS_SECRET, JWT_COOKIE_KEY, JWT_REFRESH_SECRET};
 
 /// Arguments for `GET /auth` API.
@@ -87,7 +87,7 @@ impl Claims {
         }
     }
 
-    pub fn from_header_by_access(request: HttpRequest) -> Result<Claims, ApiGatewayError> {
+    pub fn from_header_by_access(request: HttpRequest) -> Result<Claims, Error> {
         const BEARER_STRING: &str = "bearer";
         if let Some(authorization_value) = request.headers().get(AUTHORIZATION) {
             if let Ok(authorization_value) = authorization_value.to_str() {
@@ -99,25 +99,25 @@ impl Claims {
                         authorization_value[BEARER_STRING.len()..authorization_value.len()].trim();
                     Self::from_token(token, JwtType::ACCESS)
                 } else {
-                    Err(ApiGatewayError::Unauthorized)
+                    Err(Error::Unauthorized)
                 }
             } else {
-                Err(ApiGatewayError::Unauthorized)
+                Err(Error::Unauthorized)
             }
         } else {
-            Err(ApiGatewayError::Unauthorized)
+            Err(Error::Unauthorized)
         }
     }
 
-    pub fn from_cookie_by_refresh(request: &HttpRequest) -> Result<Claims, ApiGatewayError> {
+    pub fn from_cookie_by_refresh(request: &HttpRequest) -> Result<Claims, Error> {
         if let Some(cookie) = request.cookie(&JWT_COOKIE_KEY) {
             Self::from_token(cookie.value(), JwtType::REFRESH)
         } else {
-            Err(ApiGatewayError::Unauthorized)
+            Err(Error::Unauthorized)
         }
     }
 
-    fn from_token(token: &str, token_type: JwtType) -> Result<Claims, ApiGatewayError> {
+    fn from_token(token: &str, token_type: JwtType) -> Result<Claims, Error> {
         let validation = Validation::default();
         let secret = match token_type {
             JwtType::REFRESH => JWT_REFRESH_SECRET.as_ref(),
@@ -127,9 +127,9 @@ impl Claims {
         match decode::<Claims>(token, &DecodingKey::from_secret(secret), &validation) {
             Ok(token_data) => Ok(token_data.claims),
             Err(error) => match error.kind() {
-                ErrorKind::InvalidToken => Err(ApiGatewayError::InvalidJwtAccessToken),
-                ErrorKind::ExpiredSignature => Err(ApiGatewayError::ExpiredJwtAccessToken),
-                _ => Err(ApiGatewayError::InternalServerError),
+                ErrorKind::InvalidToken => Err(Error::InvalidJwtAccessToken),
+                ErrorKind::ExpiredSignature => Err(Error::ExpiredJwtAccessToken),
+                _ => Err(Error::InternalServerError),
             },
         }
     }

@@ -44,7 +44,7 @@ pub async fn get_post(request: HttpRequest, id: web::Path<u64>) -> impl Responde
     } else {
         http_util::get_err_response::<PostDTO>(
             StatusCode::UNAUTHORIZED,
-            &get_api_error_message(ApiGatewayError::Unauthorized),
+            &Error::Unauthorized.message(),
         )
     }
 }
@@ -91,7 +91,7 @@ pub async fn get_posts(request: HttpRequest) -> impl Responder {
     } else {
         http_util::get_err_response::<Vec<PostDTO>>(
             StatusCode::UNAUTHORIZED,
-            &get_api_error_message(ApiGatewayError::Unauthorized),
+            &Error::Unauthorized.message(),
         )
     }
 }
@@ -135,7 +135,7 @@ pub async fn get_summarized_posts(request: HttpRequest) -> impl Responder {
     } else {
         http_util::get_err_response::<Vec<SummarizedPostDTO>>(
             StatusCode::UNAUTHORIZED,
-            &get_api_error_message(ApiGatewayError::Unauthorized),
+            &Error::Unauthorized.message(),
         )
     }
 }
@@ -193,10 +193,7 @@ pub async fn create_post(request: HttpRequest, args: web::Json<CreateArgs>) -> i
 
         http_util::pass_response::<u64>(response).await
     } else {
-        http_util::get_err_response::<u64>(
-            StatusCode::UNAUTHORIZED,
-            &get_api_error_message(ApiGatewayError::Unauthorized),
-        )
+        http_util::get_err_response::<u64>(StatusCode::UNAUTHORIZED, &Error::Unauthorized.message())
     }
 }
 
@@ -228,10 +225,7 @@ pub async fn delete_post(request: HttpRequest, id: web::Path<u64>) -> impl Respo
             .await;
         http_util::pass_response::<bool>(response).await
     } else {
-        http_util::get_err_response::<u64>(
-            StatusCode::UNAUTHORIZED,
-            &get_api_error_message(ApiGatewayError::Unauthorized),
-        )
+        http_util::get_err_response::<u64>(StatusCode::UNAUTHORIZED, &Error::Unauthorized.message())
     }
 }
 
@@ -292,7 +286,7 @@ pub async fn update_post(
     } else {
         http_util::get_err_response::<bool>(
             StatusCode::UNAUTHORIZED,
-            &get_api_error_message(ApiGatewayError::Unauthorized),
+            &Error::Unauthorized.message(),
         )
     }
 }

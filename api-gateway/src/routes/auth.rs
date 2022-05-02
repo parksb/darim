@@ -1,4 +1,4 @@
-use actix_web::cookie::SameSite;
+use actix_web::cookie::{CookieBuilder, SameSite};
 use actix_web::http::Cookie;
 use actix_web::{delete, get, post, web, HttpMessage, HttpRequest, Responder};
 use http::StatusCode;
@@ -7,7 +7,7 @@ use reqwest::Client;
 use time::Duration;
 
 use crate::models::auth::*;
-use crate::models::error::ApiGatewayError;
+use crate::models::error::Error;
 use crate::utils::env_util::{
     Profile, DOMAIN, JWT_ACCESS_SECRET, JWT_COOKIE_KEY, JWT_UUID_COOKIE_KEY, PROFILE,
 };
@@ -127,59 +127,35 @@ pub async fn set_jwt_tokens(request: HttpRequest, args: web::Json<LoginArgs>) ->
         user_agent: http_util::extract_user_agent(&request),
         ..args.into_inner()
     };
-    let response = Client::new()
-        .post(&http_util::get_url("/auth/token/refresh"))
-        .json(&args)
-        .send()
-        .await;
 
-    if let Ok(response) = response {
-        if let Ok(Some(result)) =
-            http_util::parse_data_from_service_response::<SetJwtRefreshDTO>(response).await
-        {
-            let encoded_token = encode(
-                &Header::default(),
-                &Claims::new(result.user_id, JwtType::ACCESS),
-                &EncodingKey::from_secret(JWT_ACCESS_SECRET.as_ref()),
-            );
+    async fn resolve(args: LoginArgs) -> Result<(String, String, String), Error> {
+        let response = Client::new()
+            .post(&http_util::get_url("/auth/token/refresh"))
+            .json(&args)
+            .send()
+            .await?;
 
-            if let Ok(jwt_access) = encoded_token {
-                let mut response = http_util::get_ok_response::<String>(jwt_access);
-                let _ = response.add_cookie({
-                    let builder = Cookie::build(&*JWT_COOKIE_KEY, result.jwt_refresh)
-                        .domain(&*DOMAIN)
-                        .http_only(true);
-                    &match *PROFILE {
-                        Profile::PRODUCTION => builder.secure(true).same_site(SameSite::Lax),
-                        Profile::DEV => builder.secure(false).same_site(SameSite::None),
-                    }
-                    .finish()
-                });
-                let _ = response.add_cookie({
-                    let builder = Cookie::build(&*JWT_UUID_COOKIE_KEY, result.token_uuid)
-                        .domain(&*DOMAIN)
-                        .http_only(true);
-                    &match *PROFILE {
-                        Profile::PRODUCTION => builder.secure(true).same_site(SameSite::Lax),
-                        Profile::DEV => builder.secure(false).same_site(SameSite::None),
-                    }
-                    .finish()
-                });
-                response
-            } else {
-                http_util::get_err_response::<String>(
-                    StatusCode::UNAUTHORIZED,
-                    &format!("{}", ApiGatewayError::JwtAccessTokenSettingFailure),
-                )
-            }
-        } else {
-            http_util::get_err_response::<String>(
-                StatusCode::INTERNAL_SERVER_ERROR,
-                &format!("{}", ApiGatewayError::ServiceResponseParsingFailure),
-            )
+        let result = http_util::parse_data_from_service_response::<SetJwtRefreshDTO>(response)
+            .await?
+            .ok_or(Error::Unauthorized)?;
+
+        let jwt_access = encode(
+            &Header::default(),
+            &Claims::new(result.user_id, JwtType::ACCESS),
+            &EncodingKey::from_secret(JWT_ACCESS_SECRET.as_ref()),
+        )?;
+
+        Ok((jwt_access, result.jwt_refresh, result.token_uuid))
+    }
+
+    match resolve(args).await {
+        Ok((jwt_access, jwt_refresh, token_uuid)) => {
+            let mut response = http_util::get_ok_response::<String>(jwt_access);
+            let _ = response.add_cookie(&cookie(&*JWT_COOKIE_KEY, &jwt_refresh).finish());
+            let _ = response.add_cookie(&cookie(&*JWT_UUID_COOKIE_KEY, &token_uuid).finish());
+            response
         }
-    } else {
-        http_util::pass_response::<String>(response).await
+        Err(res) => http_util::get_err_response::<String>((&res).to_http_status(), &res.message()),
     }
 }
 
@@ -196,13 +172,15 @@ pub async fn set_jwt_tokens(request: HttpRequest, args: web::Json<LoginArgs>) ->
 /// ```json
 /// {
 ///     "data": true,
-///     "error": null
-/// }
+///     "error": null }
 /// ```
 #[delete("/auth/token/me")]
 pub async fn remove_jwt_token(request: HttpRequest) -> impl Responder {
-    if let Ok(claims) = Claims::from_cookie_by_refresh(&request) {
-        let jwt_uuid_cookie = request.cookie(&*JWT_UUID_COOKIE_KEY).unwrap();
+    async fn resolve(request: HttpRequest) -> Result<bool, Error> {
+        let claims = Claims::from_cookie_by_refresh(&request)?;
+        let jwt_uuid_cookie = request
+            .cookie(&*JWT_UUID_COOKIE_KEY)
+            .ok_or(Error::Unauthorized)?;
         let response = Client::new()
             .delete(&http_util::get_url(&format!(
                 "/auth/token/refresh/{}",
@@ -212,39 +190,31 @@ pub async fn remove_jwt_token(request: HttpRequest) -> impl Responder {
                 token_uuid: jwt_uuid_cookie.value().to_string(),
             })
             .send()
-            .await;
+            .await?;
 
-        let mut response = http_util::pass_response::<bool>(response).await;
-        let _ = response.add_cookie({
-            let builder = Cookie::build(&*JWT_COOKIE_KEY, "deleted")
-                .domain(&*DOMAIN)
-                .http_only(true)
-                .max_age(Duration::seconds(0));
-            &match *PROFILE {
-                Profile::PRODUCTION => builder.secure(true).same_site(SameSite::Lax),
-                Profile::DEV => builder.secure(false).same_site(SameSite::None),
-            }
-            .finish()
-        });
+        let result = http_util::parse_data_from_service_response::<bool>(response)
+            .await?
+            .ok_or(Error::Unauthorized)?;
 
-        let _ = response.add_cookie({
-            let builder = Cookie::build(&*JWT_UUID_COOKIE_KEY, "deleted")
-                .domain(&*DOMAIN)
-                .http_only(true)
-                .max_age(Duration::seconds(0));
-            &match *PROFILE {
-                Profile::PRODUCTION => builder.secure(true).same_site(SameSite::Lax),
-                Profile::DEV => builder.secure(false).same_site(SameSite::None),
-            }
-            .finish()
-        });
+        Ok(result)
+    }
 
-        response
-    } else {
-        http_util::get_err_response::<bool>(
-            StatusCode::INTERNAL_SERVER_ERROR,
-            &format!("{}", ApiGatewayError::Unauthorized),
-        )
+    match resolve(request).await {
+        Ok(res) => {
+            let mut response = http_util::get_ok_response::<bool>(res);
+            let _ = response.add_cookie(
+                &cookie(&*JWT_COOKIE_KEY, "deleted")
+                    .max_age(Duration::seconds(0))
+                    .finish(),
+            );
+            let _ = response.add_cookie(
+                &cookie(&*JWT_UUID_COOKIE_KEY, "deleted")
+                    .max_age(Duration::seconds(0))
+                    .finish(),
+            );
+            response
+        }
+        Err(res) => http_util::get_err_response::<String>((&res).to_http_status(), &res.message()),
     }
 }
 
@@ -269,24 +239,29 @@ pub async fn remove_jwt_token_by_uuid(
     uuid: web::Path<String>,
     request: HttpRequest,
 ) -> impl Responder {
-    if let Ok(claims) = Claims::from_cookie_by_refresh(&request) {
+    async fn resolve(uuid: &str, request: HttpRequest) -> Result<bool, Error> {
+        let claims = Claims::from_cookie_by_refresh(&request)?;
         let response = Client::new()
             .delete(&http_util::get_url(&format!(
                 "/auth/token/refresh/{}",
                 claims.user_id,
             )))
             .json(&RemoveJwtRefreshArgs {
-                token_uuid: uuid.into_inner(),
+                token_uuid: uuid.to_string(),
             })
             .send()
-            .await;
+            .await?;
 
-        http_util::pass_response::<bool>(response).await
-    } else {
-        http_util::get_err_response::<bool>(
-            StatusCode::INTERNAL_SERVER_ERROR,
-            &format!("{}", ApiGatewayError::Unauthorized),
-        )
+        let result = http_util::parse_data_from_service_response::<bool>(response)
+            .await?
+            .ok_or(Error::Unauthorized)?;
+
+        Ok(result)
+    }
+
+    match resolve(&uuid.into_inner(), request).await {
+        Ok(res) => http_util::get_ok_response::<bool>(res),
+        Err(res) => http_util::get_err_response::<String>((&res).to_http_status(), &res.message()),
     }
 }
 
@@ -308,9 +283,14 @@ pub async fn remove_jwt_token_by_uuid(
 /// ```
 #[post("/auth/token/access")]
 pub async fn set_jwt_access_token(request: HttpRequest) -> impl Responder {
-    if let Ok(claims) = Claims::from_cookie_by_refresh(&request) {
-        let jwt_cookie = request.cookie(&*JWT_COOKIE_KEY).unwrap();
-        let jwt_uuid_cookie = request.cookie(&*JWT_UUID_COOKIE_KEY).unwrap();
+    async fn resolve(request: HttpRequest) -> Result<String, Error> {
+        let claims = Claims::from_cookie_by_refresh(&request)?;
+        let jwt_cookie = request
+            .cookie(&*JWT_COOKIE_KEY)
+            .ok_or(Error::Unauthorized)?;
+        let jwt_uuid_cookie = request
+            .cookie(&*JWT_UUID_COOKIE_KEY)
+            .ok_or(Error::Unauthorized)?;
 
         let response = Client::new()
             .post(&http_util::get_url(&format!(
@@ -323,49 +303,26 @@ pub async fn set_jwt_access_token(request: HttpRequest) -> impl Responder {
                 user_agent: http_util::extract_user_agent(&request),
             })
             .send()
-            .await;
+            .await?;
 
-        // FIXME: Resolve `if let` hell.
-        if let Ok(response) = response {
-            if let Ok(Some(is_valid_token)) =
-                http_util::parse_data_from_service_response::<bool>(response).await
-            {
-                if is_valid_token {
-                    if let Ok(jwt_access) = encode(
-                        &Header::default(),
-                        &Claims::new(claims.user_id, JwtType::ACCESS),
-                        &EncodingKey::from_secret(JWT_ACCESS_SECRET.as_ref()),
-                    ) {
-                        http_util::get_ok_response::<String>(jwt_access)
-                    } else {
-                        http_util::get_err_response::<bool>(
-                            StatusCode::UNAUTHORIZED,
-                            &format!("{}", ApiGatewayError::Unauthorized),
-                        )
-                    }
-                } else {
-                    http_util::get_err_response::<bool>(
-                        StatusCode::UNAUTHORIZED,
-                        &format!("{}", ApiGatewayError::Unauthorized),
-                    )
-                }
-            } else {
-                http_util::get_err_response::<bool>(
-                    StatusCode::UNAUTHORIZED,
-                    &format!("{}", ApiGatewayError::InternalServerError),
-                )
-            }
+        if http_util::parse_data_from_service_response::<bool>(response)
+            .await?
+            .unwrap_or(false)
+        {
+            let access_token = encode(
+                &Header::default(),
+                &Claims::new(claims.user_id, JwtType::ACCESS),
+                &EncodingKey::from_secret(JWT_ACCESS_SECRET.as_ref()),
+            )?;
+            Ok(access_token)
         } else {
-            http_util::get_err_response::<bool>(
-                StatusCode::UNAUTHORIZED,
-                &format!("{}", ApiGatewayError::InternalServerError),
-            )
+            Err(Error::Unauthorized)
         }
-    } else {
-        http_util::get_err_response::<bool>(
-            StatusCode::UNAUTHORIZED,
-            &format!("{}", ApiGatewayError::InternalServerError),
-        )
+    }
+
+    match resolve(request).await {
+        Ok(res) => http_util::get_ok_response(res),
+        Err(res) => http_util::get_err_response::<String>((&res).to_http_status(), &res.message()),
     }
 }
 
@@ -402,7 +359,7 @@ pub async fn get_session_list(request: HttpRequest) -> impl Responder {
     } else {
         http_util::get_err_response::<Vec<UserSessionDTO>>(
             StatusCode::UNAUTHORIZED,
-            &format!("{}", ApiGatewayError::Unauthorized),
+            &Error::Unauthorized.message(),
         )
     }
 }
@@ -416,4 +373,15 @@ pub fn init_routes(cfg: &mut web::ServiceConfig) {
     cfg.service(remove_jwt_token_by_uuid);
     cfg.service(set_jwt_access_token);
     cfg.service(get_session_list);
+}
+
+fn cookie<'a>(key: &'a str, value: &'a str) -> CookieBuilder<'a> {
+    let builder = Cookie::build(key, value).http_only(true);
+    match *PROFILE {
+        Profile::PRODUCTION => builder
+            .domain(&*DOMAIN)
+            .secure(true)
+            .same_site(SameSite::Lax),
+        Profile::DEV => builder.secure(false).same_site(SameSite::None),
+    }
 }
