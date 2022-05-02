@@ -84,7 +84,7 @@ pub async fn get_user(request: HttpRequest) -> impl Responder {
     } else {
         http_util::get_err_response::<UserDTO>(
             StatusCode::UNAUTHORIZED,
-            &get_api_error_message(ApiGatewayError::Unauthorized),
+            &Error::Unauthorized.message(),
         )
     }
 }
@@ -119,13 +119,13 @@ pub async fn delete_user(request: HttpRequest, id: web::Path<u64>) -> impl Respo
         } else {
             http_util::get_err_response::<bool>(
                 StatusCode::UNAUTHORIZED,
-                &get_api_error_message(ApiGatewayError::Unauthorized),
+                &Error::Unauthorized.message(),
             )
         }
     } else {
         http_util::get_err_response::<bool>(
             StatusCode::UNAUTHORIZED,
-            &get_api_error_message(ApiGatewayError::Unauthorized),
+            &Error::Unauthorized.message(),
         )
     }
 }
@@ -179,13 +179,13 @@ pub async fn update_user(
         } else {
             http_util::get_err_response::<bool>(
                 StatusCode::UNAUTHORIZED,
-                &get_api_error_message(ApiGatewayError::Unauthorized),
+                &Error::Unauthorized.message(),
             )
         }
     } else {
         http_util::get_err_response::<bool>(
             StatusCode::UNAUTHORIZED,
-            &get_api_error_message(ApiGatewayError::Unauthorized),
+            &Error::Unauthorized.message(),
         )
     }
 }

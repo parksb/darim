@@ -31,6 +31,7 @@ lazy_static! {
     pub static ref DOMAIN: String = env::var("DOMAIN").expect("DOMAIN not found");
 }
 
+#[derive(PartialEq)]
 pub enum Profile {
     DEV,
     PRODUCTION,
