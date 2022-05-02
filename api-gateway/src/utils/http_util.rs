@@ -1,3 +1,5 @@
+use std::any::type_name;
+
 use actix_web::{HttpRequest, HttpResponse};
 use http::header::USER_AGENT;
 use http::StatusCode;
@@ -5,7 +7,7 @@ use reqwest::Response;
 use serde::de::DeserializeOwned;
 use serde::{Deserialize, Serialize};
 
-use crate::models::error::ApiGatewayError;
+use crate::models::error::Error;
 use crate::utils::env_util::BACK_END_SERVICE_ADDRESS;
 
 /// HTTP response of the API.
@@ -60,10 +62,13 @@ fn get_response_by_status_code<T: DeserializeOwned + Serialize>(
 /// * `response` - A general HTTP response.
 pub async fn parse_data_from_service_response<T: DeserializeOwned + Serialize>(
     response: Response,
-) -> Result<Option<T>, ApiGatewayError> {
+) -> Result<Option<T>, Error> {
     match response.json::<ServiceResponse<T>>().await {
-        Ok(service_response) => Ok(service_response.data),
-        Err(_) => Err(ApiGatewayError::ServiceResponseParsingFailure),
+        Ok(service_res) => Ok(service_res.data),
+        Err(err) => Err(Error::ServiceResponseParsingFailure {
+            reason: err.to_string(),
+            to: type_name::<T>().to_string(),
+        }),
     }
 }
 
@@ -82,9 +87,13 @@ pub async fn pass_response<T: DeserializeOwned + Serialize>(
                 Ok(service_response) => {
                     get_response_by_status_code::<T>(status_code, service_response)
                 }
-                Err(_) => {
+                Err(err) => {
                     HttpResponse::InternalServerError().json(ServiceResponse::<T>::err(Some(
-                        format!("{}", ApiGatewayError::ServiceResponseParsingFailure),
+                        Error::ServiceResponseParsingFailure {
+                            reason: err.to_string(),
+                            to: type_name::<T>().to_string(),
+                        }
+                        .message(),
                     )))
                 }
             }
