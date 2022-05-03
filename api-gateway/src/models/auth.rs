@@ -59,6 +59,14 @@ pub struct UserSessionDTO {
     pub last_accessed_at: i64,
 }
 
+#[derive(Serialize, Deserialize)]
+pub struct ActiveUserSessionDTO {
+    pub is_mine: bool,
+    pub token_uuid: String,
+    pub user_agent: Option<String>,
+    pub last_accessed_at: i64,
+}
+
 pub enum JwtType {
     ACCESS,
     REFRESH,
@@ -87,7 +95,7 @@ impl Claims {
         }
     }
 
-    pub fn from_header_by_access(request: HttpRequest) -> Result<Claims, Error> {
+    pub fn from_header_by_access(request: &HttpRequest) -> Result<Claims, Error> {
         const BEARER_STRING: &str = "bearer";
         if let Some(authorization_value) = request.headers().get(AUTHORIZATION) {
             if let Ok(authorization_value) = authorization_value.to_str() {

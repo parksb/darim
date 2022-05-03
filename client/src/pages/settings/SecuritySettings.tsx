@@ -40,6 +40,7 @@ const NonBorderButton = styled(Button)`
 
 const RevokeButton = styled(Button)`
   align-self: flex-start;
+  margin-bottom: 5px;
 `;
 
 const SaveStatusText = styled.span`
@@ -215,12 +216,15 @@ const SecuritySettings: React.FC<Props> = ({ userId, userEmail, session }) => {
         <span>{i18n.text('revokeInfo')}</span>
       </Section>
       {activeUserSessions.map((activeUserSession) => <Section bottom={10} key={activeUserSession.token_uuid}>
-          <StrongText>{activeUserSession.user_agent ? activeUserSession.user_agent : i18n.text('unknownDevice')}</StrongText>
+          <StrongText>
+            <span>{activeUserSession.is_mine && '🟢 '}</span>
+            {activeUserSession.user_agent ? activeUserSession.user_agent : i18n.text('unknownDevice')}
+          </StrongText>
           <time>{`${i18n.text('lastAccessedAt')}: ${new Date(activeUserSession.last_accessed_at)}`}</time>
-          <RevokeButton onClick={async () => {
+          {!activeUserSession.is_mine && <RevokeButton onClick={async () => {
             await authApi.deleteActiveSession(activeUserSession.token_uuid);
             await fetchActiveUserSessions();
-          }}>{i18n.text('revoke')}</RevokeButton>
+          }}>{i18n.text('revoke')}</RevokeButton>}
         </Section>)}
     </Section>
   </Section>;

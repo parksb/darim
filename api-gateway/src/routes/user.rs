@@ -74,7 +74,7 @@ pub async fn create_user(args: web::Json<CreateArgs>) -> impl Responder {
 /// ```
 #[get("/users/me")]
 pub async fn get_user(request: HttpRequest) -> impl Responder {
-    if let Ok(claims) = Claims::from_header_by_access(request) {
+    if let Ok(claims) = Claims::from_header_by_access(&request) {
         let response = Client::new()
             .get(&http_util::get_url(&format!("/users/{}", claims.user_id)))
             .send()
@@ -107,7 +107,7 @@ pub async fn get_user(request: HttpRequest) -> impl Responder {
 /// ```
 #[delete("/users/{id}")]
 pub async fn delete_user(request: HttpRequest, id: web::Path<u64>) -> impl Responder {
-    if let Ok(claims) = Claims::from_header_by_access(request) {
+    if let Ok(claims) = Claims::from_header_by_access(&request) {
         let id_in_path = id.into_inner();
         if id_in_path == claims.user_id {
             let response = Client::new()
@@ -166,7 +166,7 @@ pub async fn update_user(
     id: web::Path<u64>,
     args: web::Json<UpdateArgs>,
 ) -> impl Responder {
-    if let Ok(claims) = Claims::from_header_by_access(request) {
+    if let Ok(claims) = Claims::from_header_by_access(&request) {
         let id_in_path = id.into_inner();
         if id_in_path == claims.user_id {
             let response = Client::new()

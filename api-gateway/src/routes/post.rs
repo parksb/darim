@@ -34,7 +34,7 @@ use crate::utils::http_util;
 /// ```
 #[get("/posts/{id}")]
 pub async fn get_post(request: HttpRequest, id: web::Path<u64>) -> impl Responder {
-    if let Ok(claims) = Claims::from_header_by_access(request) {
+    if let Ok(claims) = Claims::from_header_by_access(&request) {
         let response = reqwest::get(&http_util::get_url(&format!(
             "/posts/{}/{}",
             claims.user_id, id
@@ -84,7 +84,7 @@ pub async fn get_post(request: HttpRequest, id: web::Path<u64>) -> impl Responde
 /// ```
 #[get("/posts")]
 pub async fn get_posts(request: HttpRequest) -> impl Responder {
-    if let Ok(claims) = Claims::from_header_by_access(request) {
+    if let Ok(claims) = Claims::from_header_by_access(&request) {
         let response =
             reqwest::get(&http_util::get_url(&format!("/posts/{}", claims.user_id))).await;
         http_util::pass_response::<Vec<PostDTO>>(response).await
@@ -125,7 +125,7 @@ pub async fn get_posts(request: HttpRequest) -> impl Responder {
 /// ```
 #[get("/summarized_posts")]
 pub async fn get_summarized_posts(request: HttpRequest) -> impl Responder {
-    if let Ok(claims) = Claims::from_header_by_access(request) {
+    if let Ok(claims) = Claims::from_header_by_access(&request) {
         let response = reqwest::get(&http_util::get_url(&format!(
             "/summarized_posts/{}",
             claims.user_id
@@ -170,7 +170,7 @@ pub async fn get_summarized_posts(request: HttpRequest) -> impl Responder {
 /// ```
 #[post("/posts")]
 pub async fn create_post(request: HttpRequest, args: web::Json<CreateArgs>) -> impl Responder {
-    if let Ok(claims) = Claims::from_header_by_access(request) {
+    if let Ok(claims) = Claims::from_header_by_access(&request) {
         let args = {
             let CreateArgs {
                 title,
@@ -215,7 +215,7 @@ pub async fn create_post(request: HttpRequest, args: web::Json<CreateArgs>) -> i
 /// ```
 #[delete("/posts/{id}")]
 pub async fn delete_post(request: HttpRequest, id: web::Path<u64>) -> impl Responder {
-    if let Ok(claims) = Claims::from_header_by_access(request) {
+    if let Ok(claims) = Claims::from_header_by_access(&request) {
         let response = Client::new()
             .delete(&http_util::get_url(&format!(
                 "/posts/{}/{}",
@@ -261,7 +261,7 @@ pub async fn update_post(
     id: web::Path<u64>,
     args: web::Json<UpdateArgs>,
 ) -> impl Responder {
-    if let Ok(claims) = Claims::from_header_by_access(request) {
+    if let Ok(claims) = Claims::from_header_by_access(&request) {
         let args = {
             let UpdateArgs {
                 title,
