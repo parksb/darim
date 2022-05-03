@@ -8,7 +8,7 @@ use time::Duration;
 use crate::models::auth::*;
 use crate::models::error::Error;
 use crate::utils::env_util::{
-    Profile, DOMAIN, JWT_ACCESS_SECRET, JWT_COOKIE_KEY, JWT_UUID_COOKIE_KEY, PROFILE,
+    Profile, JWT_ACCESS_SECRET, JWT_COOKIE_KEY, JWT_UUID_COOKIE_KEY, PROFILE,
 };
 use crate::utils::http_util;
 
@@ -396,12 +396,11 @@ pub fn init_routes(cfg: &mut web::ServiceConfig) {
 }
 
 fn cookie<'a>(key: &'a str, value: &'a str) -> CookieBuilder<'a> {
-    let builder = Cookie::build(key, value).http_only(true);
+    let builder = Cookie::build(key, value)
+        .http_only(true)
+        .same_site(SameSite::None);
     match *PROFILE {
-        Profile::PRODUCTION => builder
-            .domain(&*DOMAIN)
-            .secure(true)
-            .same_site(SameSite::Lax),
-        Profile::DEV => builder.secure(false).same_site(SameSite::None),
+        Profile::PRODUCTION => builder.secure(true),
+        Profile::DEV => builder.secure(false),
     }
 }
