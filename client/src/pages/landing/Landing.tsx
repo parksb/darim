@@ -28,7 +28,7 @@ const SectionContent = styled.p`
 `;
 
 const SVG = styled.object`
-  width: 800px;
+  width: 900px;
   max-width: 100%;
 `;
 
