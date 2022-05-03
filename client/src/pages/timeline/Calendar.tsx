@@ -84,7 +84,7 @@ const Calendar: React.FC<Props> = ({ session }) => {
   const getInitialCursorDate = () => {
     const { year, month } = useParams<{ year?: string, month?: string }>();
     const initialYear = year ? Number(year) : dayjs().year();
-    const initialMonth = month ? Number(month) : (dayjs().month() + 1) - 1;
+    const initialMonth = (month ? Number(month) : (dayjs().month() + 1)) - 1;
     return dayjs().year(initialYear).month(initialMonth).date(1);
   };
 
