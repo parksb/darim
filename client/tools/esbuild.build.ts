@@ -6,7 +6,7 @@ const buildOptions: BuildOptions = {
   outdir: 'dist/build',
   loader: {
     '.svg': 'dataurl',
-    '.md': 'dataurl',
+    '.md': 'text',
   },
   target: 'es2020',
   bundle: true,
