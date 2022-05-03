@@ -1,7 +1,6 @@
 use actix_web::cookie::{CookieBuilder, SameSite};
 use actix_web::http::Cookie;
 use actix_web::{delete, get, post, web, HttpMessage, HttpRequest, Responder};
-use http::StatusCode;
 use jsonwebtoken::{encode, EncodingKey, Header};
 use reqwest::Client;
 use time::Duration;
@@ -349,18 +348,39 @@ pub async fn set_jwt_access_token(request: HttpRequest) -> impl Responder {
 /// ```
 #[get("/auth/token")]
 pub async fn get_session_list(request: HttpRequest) -> impl Responder {
-    if let Ok(claims) = Claims::from_header_by_access(request) {
+    async fn resolve(request: HttpRequest) -> Result<Vec<ActiveUserSessionDTO>, Error> {
+        let claims = Claims::from_header_by_access(&request)?;
+        let jwt_uuid = request
+            .cookie(&*JWT_UUID_COOKIE_KEY)
+            .ok_or(Error::Unauthorized)?
+            .value()
+            .to_string();
         let response = reqwest::get(&http_util::get_url(&format!(
             "/auth/token/{}",
             claims.user_id
         )))
-        .await;
-        http_util::pass_response::<Vec<UserSessionDTO>>(response).await
-    } else {
-        http_util::get_err_response::<Vec<UserSessionDTO>>(
-            StatusCode::UNAUTHORIZED,
-            &Error::Unauthorized.message(),
+        .await?;
+
+        Ok(
+            http_util::parse_data_from_service_response::<Vec<UserSessionDTO>>(response)
+                .await?
+                .unwrap_or_default()
+                .into_iter()
+                .map(|session| -> ActiveUserSessionDTO {
+                    ActiveUserSessionDTO {
+                        is_mine: jwt_uuid == session.token_uuid,
+                        token_uuid: session.token_uuid,
+                        user_agent: session.user_agent,
+                        last_accessed_at: session.last_accessed_at,
+                    }
+                })
+                .collect(),
         )
+    }
+
+    match resolve(request).await {
+        Ok(res) => http_util::get_ok_response(res),
+        Err(res) => http_util::get_err_response::<String>((&res).to_http_status(), &res.message()),
     }
 }
 
