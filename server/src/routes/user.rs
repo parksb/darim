@@ -1,8 +1,7 @@
 use actix_web::{delete, get, patch, post, web, Responder};
 use serde::{Deserialize, Serialize};
 
-use crate::models::user::UserDTO;
-use crate::services::user::UserService;
+use crate::services::user::{UserDTO, UserService};
 use crate::utils::http_util;
 
 /// Arguments for `POST /users` API.
@@ -35,7 +34,7 @@ pub struct ResetPasswordArgs {
 #[get("/users/{id}")]
 pub async fn get_user(id: web::Path<u64>) -> impl Responder {
     let user = UserService::new().get_one(id.into_inner());
-    http_util::get_response::<UserDTO>(user)
+    http_util::response::<UserDTO>(user)
 }
 
 /// Creates a new user
@@ -50,14 +49,14 @@ pub async fn create_user(args: web::Json<CreateArgs>) -> impl Responder {
     let result = UserService::new()
         .create(&user_public_key, &token_key, &token_pin, &recaptcha_token)
         .await;
-    http_util::get_response::<bool>(result)
+    http_util::response::<bool>(result)
 }
 
 /// Deletes a user
 #[delete("/users/{id}")]
 pub async fn delete_user(id: web::Path<u64>) -> impl Responder {
     let result = UserService::new().delete(id.into_inner());
-    http_util::get_response::<bool>(result)
+    http_util::response::<bool>(result)
 }
 
 /// Updates a user
@@ -69,7 +68,7 @@ pub async fn update_user(id: web::Path<u64>, args: web::Json<UpdateArgs>) -> imp
         avatar_url,
     } = args.into_inner();
     let result = UserService::new().update(id.into_inner(), &name, &password, &avatar_url);
-    http_util::get_response::<bool>(result)
+    http_util::response::<bool>(result)
 }
 
 /// Resets the password.
@@ -83,7 +82,7 @@ pub async fn reset_password(args: web::Json<ResetPasswordArgs>) -> impl Responde
     } = args.into_inner();
     let result =
         UserService::new().reset_password(&email, &token_id, &temporary_password, &new_password);
-    http_util::get_response::<bool>(result)
+    http_util::response::<bool>(result)
 }
 
 /// Initializes the user routes.

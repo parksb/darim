@@ -2,8 +2,7 @@ use actix_web::{delete, get, patch, post, web, Responder};
 use chrono::NaiveDateTime;
 use serde::{Deserialize, Serialize};
 
-use crate::models::post::*;
-use crate::services::post::PostService;
+use crate::services::post::{PostDTO, PostService, SummarizedPostDTO};
 use crate::utils::http_util;
 
 /// Arguments for `POST /posts` API.
@@ -28,21 +27,21 @@ pub struct UpdateArgs {
 #[get("/posts/{user_id}")]
 pub async fn get_posts(user_id: web::Path<u64>) -> impl Responder {
     let posts = PostService::new().get_list(user_id.into_inner());
-    http_util::get_response::<Vec<PostDTO>>(posts)
+    http_util::response::<Vec<PostDTO>>(posts)
 }
 
 /// Responds a summarized post written by logged-in user
 #[get("/summarized_posts/{user_id}")]
 pub async fn get_summarized_posts(user_id: web::Path<u64>) -> impl Responder {
     let posts = PostService::new().get_summarized_list(user_id.into_inner());
-    http_util::get_response::<Vec<SummarizedPostDTO>>(posts)
+    http_util::response::<Vec<SummarizedPostDTO>>(posts)
 }
 
 /// Lists posts written by logged-in user
 #[get("/posts/{user_id}/{id}")]
 pub async fn get_post(web::Path((user_id, id)): web::Path<(u64, u64)>) -> impl Responder {
     let post = PostService::new().get(user_id, id);
-    http_util::get_response::<PostDTO>(post)
+    http_util::response::<PostDTO>(post)
 }
 
 /// Creates a new post
@@ -55,14 +54,14 @@ pub async fn create_post(args: web::Json<CreateArgs>) -> impl Responder {
         date,
     } = args.into_inner();
     let result = PostService::new().create(user_id, &title, &content, &date);
-    http_util::get_response::<u64>(result)
+    http_util::response::<u64>(result)
 }
 
 /// Deletes a post
 #[delete("/posts/{user_id}/{id}")]
 pub async fn delete_post(web::Path((user_id, id)): web::Path<(u64, u64)>) -> impl Responder {
     let result = PostService::new().delete(id, user_id);
-    http_util::get_response::<bool>(result)
+    http_util::response::<bool>(result)
 }
 
 /// Updates a post
@@ -75,7 +74,7 @@ pub async fn update_post(id: web::Path<u64>, args: web::Json<UpdateArgs>) -> imp
         date,
     } = args.into_inner();
     let result = PostService::new().update(id.into_inner(), user_id, &title, &content, &date);
-    http_util::get_response::<bool>(result)
+    http_util::response::<bool>(result)
 }
 
 /// Initializes the post routes.

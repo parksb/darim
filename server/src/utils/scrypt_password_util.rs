@@ -1,6 +1,8 @@
 use cfg_if::cfg_if;
 use scrypt::{scrypt_check, scrypt_simple, ScryptParams};
 
+use crate::models::error::Result;
+
 /// Returns a password that is hashed by scrypt.
 ///
 /// # Arguments
@@ -18,9 +20,9 @@ use scrypt::{scrypt_check, scrypt_simple, ScryptParams};
 ///
 /// assert!(scrypt_check(&password, &hashed_password).is_ok());
 /// ```
-pub fn get_hashed_password(password: &str) -> String {
+pub fn get_hashed_password(password: &str) -> Result<String> {
     let params = get_params_for_password_hashing();
-    scrypt_simple(password, &params).unwrap()
+    Ok(scrypt_simple(password, &params)?)
 }
 
 cfg_if! {
@@ -67,7 +69,7 @@ mod tests {
     #[test]
     fn test_get_hashed_password() {
         let password = String::from("123");
-        let hashed_password = get_hashed_password(&password);
+        let hashed_password = get_hashed_password(&password).unwrap();
 
         assert!(scrypt_check(&password, &hashed_password).is_ok());
     }

@@ -1,11 +1,10 @@
 use chrono::{NaiveDateTime, Utc};
 use diesel::prelude::*;
-use diesel::result::Error;
 use mockall::automock;
 use serde::{Deserialize, Serialize};
 
 use crate::models::connection;
-use crate::models::error::{get_service_error, ServiceError};
+use crate::models::error::{Error, Result};
 use crate::schema::{users, users::dsl};
 
 /// User representing `users` table.
@@ -16,18 +15,6 @@ pub struct User {
     pub email: String,
     pub password: String,
     pub avatar_url: Option<String>,
-    pub created_at: NaiveDateTime,
-    pub updated_at: Option<NaiveDateTime>,
-}
-
-/// User DTO using between routes layer and service layer.
-#[derive(Serialize, Deserialize)]
-pub struct UserDTO {
-    pub id: u64,
-    pub name: String,
-    pub email: String,
-    pub avatar_url: Option<String>,
-    pub public_key: Option<String>,
     pub created_at: NaiveDateTime,
     pub updated_at: Option<NaiveDateTime>,
 }
@@ -56,25 +43,25 @@ pub struct UserRepository {
 
 #[automock]
 pub trait UserRepositoryTrait {
-    fn find_by_id(&self, id: u64) -> Result<User, ServiceError>;
-    fn find_by_email(&self, email: &str) -> Result<User, ServiceError>;
-    fn find_password_by_email(&self, email: &str) -> Result<String, ServiceError>;
-    fn find_all(&self) -> Result<Vec<User>, ServiceError>;
+    fn find_by_id(&self, id: u64) -> Result<User>;
+    fn find_by_email(&self, email: &str) -> Result<User>;
+    fn find_password_by_email(&self, email: &str) -> Result<String>;
+    fn find_all(&self) -> Result<Vec<User>>;
     fn create(
         &self,
         name: &str,
         email: &str,
         password: &str,
         avatar_url: &Option<String>,
-    ) -> Result<bool, ServiceError>;
+    ) -> Result<bool>;
     fn update(
         &self,
         id: u64,
         name: &Option<String>,
         password: &Option<String>,
         avatar_url: &Option<String>,
-    ) -> Result<bool, ServiceError>;
-    fn delete(&self, id: u64) -> Result<bool, ServiceError>;
+    ) -> Result<bool>;
+    fn delete(&self, id: u64) -> Result<bool>;
 }
 
 impl UserRepository {
@@ -86,61 +73,34 @@ impl UserRepository {
     }
 
     /// Finds a user by id.
-    pub fn find_by_id(&self, id: u64) -> Result<User, ServiceError> {
-        let user: Result<User, Error> = dsl::users.find(id).get_result::<User>(&self.conn);
-
-        match user {
-            Ok(user) => Ok(user),
-            Err(error) => match error {
-                Error::NotFound => Err(get_service_error(ServiceError::NotFound(id.to_string()))),
-                _ => Err(get_service_error(ServiceError::QueryExecutionFailure)),
-            },
-        }
+    pub fn find_by_id(&self, id: u64) -> Result<User> {
+        let user = dsl::users.find(id).get_result::<User>(&self.conn)?;
+        Ok(user)
     }
 
     /// Finds a user by email.
-    pub fn find_by_email(&self, email: &str) -> Result<User, ServiceError> {
-        let user: Result<User, Error> = dsl::users
+    pub fn find_by_email(&self, email: &str) -> Result<User> {
+        let user = dsl::users
             .filter(dsl::email.eq(email))
-            .get_result::<User>(&self.conn);
+            .get_result::<User>(&self.conn)?;
 
-        match user {
-            Ok(user) => Ok(user),
-            Err(error) => match error {
-                Error::NotFound => {
-                    Err(get_service_error(ServiceError::NotFound(email.to_string())))
-                }
-                _ => Err(get_service_error(ServiceError::QueryExecutionFailure)),
-            },
-        }
+        Ok(user)
     }
 
     /// Finds a password of the user specified by email.
-    pub fn find_password_by_email(&self, email: &str) -> Result<String, ServiceError> {
-        let password: Result<String, Error> = dsl::users
+    pub fn find_password_by_email(&self, email: &str) -> Result<String> {
+        let password = dsl::users
             .select(dsl::password)
             .filter(dsl::email.eq(email))
-            .get_result::<String>(&self.conn);
+            .get_result::<String>(&self.conn)?;
 
-        match password {
-            Ok(password) => Ok(password),
-            Err(error) => match error {
-                Error::NotFound => {
-                    Err(get_service_error(ServiceError::NotFound(email.to_string())))
-                }
-                _ => Err(get_service_error(ServiceError::QueryExecutionFailure)),
-            },
-        }
+        Ok(password)
     }
 
     /// Finds all users.
-    pub fn find_all(&self) -> Result<Vec<User>, ServiceError> {
-        let user_list: Result<Vec<User>, Error> = dsl::users.load::<User>(&self.conn);
-
-        match user_list {
-            Ok(user_list) => Ok(user_list),
-            Err(_) => Err(get_service_error(ServiceError::QueryExecutionFailure)),
-        }
+    pub fn find_all(&self) -> Result<Vec<User>> {
+        let user_list = dsl::users.load::<User>(&self.conn)?;
+        Ok(user_list)
     }
 
     /// Creates a new user.
@@ -150,7 +110,7 @@ impl UserRepository {
         email: &str,
         password: &str,
         avatar_url: &Option<String>,
-    ) -> Result<bool, ServiceError> {
+    ) -> Result<bool> {
         let user_to_create = UserDAO {
             id: None,
             name: Some(name.to_string()),
@@ -162,16 +122,12 @@ impl UserRepository {
 
         let count = diesel::insert_into(dsl::users)
             .values(user_to_create)
-            .execute(&self.conn);
+            .execute(&self.conn)?;
 
-        if let Ok(count) = count {
-            if count > 0 {
-                Ok(true)
-            } else {
-                Err(get_service_error(ServiceError::QueryExecutionFailure))
-            }
+        if count > 0 {
+            Ok(true)
         } else {
-            Err(get_service_error(ServiceError::QueryExecutionFailure))
+            Err(Error::QueryExecutionFailure)
         }
     }
 
@@ -182,7 +138,7 @@ impl UserRepository {
         name: &Option<String>,
         password: &Option<String>,
         avatar_url: &Option<String>,
-    ) -> Result<bool, ServiceError> {
+    ) -> Result<bool> {
         let user_to_update = UserDAO {
             id: Some(id),
             name: name.clone(),
@@ -195,41 +151,25 @@ impl UserRepository {
         let target_user = dsl::users.find(id);
         let count = diesel::update(target_user)
             .set(user_to_update)
-            .execute(&self.conn);
+            .execute(&self.conn)?;
 
-        match count {
-            Ok(count) => {
-                if count > 0 {
-                    Ok(true)
-                } else {
-                    Err(get_service_error(ServiceError::QueryExecutionFailure))
-                }
-            }
-            Err(error) => match error {
-                Error::NotFound => Err(get_service_error(ServiceError::NotFound(id.to_string()))),
-                _ => Err(get_service_error(ServiceError::QueryExecutionFailure)),
-            },
+        if count > 0 {
+            Ok(true)
+        } else {
+            Err(Error::QueryExecutionFailure)
         }
     }
 
     /// Deletes a user.
-    pub fn delete(&self, id: u64) -> Result<bool, ServiceError> {
+    pub fn delete(&self, id: u64) -> Result<bool> {
         let target_user = dsl::users.find(id);
         // Consider also logical deletion
-        let count = diesel::delete(target_user).execute(&self.conn);
+        let count = diesel::delete(target_user).execute(&self.conn)?;
 
-        match count {
-            Ok(count) => {
-                if count > 0 {
-                    Ok(true)
-                } else {
-                    Err(get_service_error(ServiceError::QueryExecutionFailure))
-                }
-            }
-            Err(error) => match error {
-                Error::NotFound => Err(get_service_error(ServiceError::NotFound(id.to_string()))),
-                _ => Err(get_service_error(ServiceError::QueryExecutionFailure)),
-            },
+        if count > 0 {
+            Ok(true)
+        } else {
+            Err(Error::QueryExecutionFailure)
         }
     }
 }

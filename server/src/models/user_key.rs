@@ -1,11 +1,10 @@
 use chrono::NaiveDateTime;
 use diesel::prelude::*;
-use diesel::result::Error;
 use mockall::automock;
 use serde::{Deserialize, Serialize};
 
 use crate::models::connection;
-use crate::models::error::{get_service_error, ServiceError};
+use crate::models::error::{Error, Result};
 use crate::schema::{user_keys, user_keys::dsl};
 
 /// User key representing `user_keys` table.
@@ -23,7 +22,7 @@ pub struct UserKey {
 /// User DAO using between models layer and RDB.
 #[derive(Insertable, AsChangeset)]
 #[table_name = "user_keys"]
-pub struct UserKeyDAO {
+struct UserKeyDAO {
     pub user_id: u64,
     pub public_key: String,
     pub updated_at: Option<NaiveDateTime>,
@@ -36,8 +35,8 @@ pub struct UserKeyRepository {
 
 #[automock]
 pub trait UserKeyRepositoryTrait {
-    fn find_by_user_id(&self, user_id: u64) -> Result<UserKey, ServiceError>;
-    fn create(&self, user_id: u64, public_key: &str) -> Result<bool, ServiceError>;
+    fn find_by_user_id(&self, user_id: u64) -> Result<UserKey>;
+    fn create(&self, user_id: u64, public_key: &str) -> Result<bool>;
 }
 
 impl UserKeyRepository {
@@ -49,24 +48,16 @@ impl UserKeyRepository {
     }
 
     /// Finds a user key by user id.
-    pub fn find_by_user_id(&self, user_id: u64) -> Result<UserKey, ServiceError> {
+    pub fn find_by_user_id(&self, user_id: u64) -> Result<UserKey> {
         let user_key = dsl::user_keys
             .filter(dsl::user_id.eq(user_id))
-            .get_result::<UserKey>(&self.conn);
+            .get_result::<UserKey>(&self.conn)?;
 
-        match user_key {
-            Ok(user) => Ok(user),
-            Err(error) => match error {
-                Error::NotFound => Err(get_service_error(ServiceError::NotFound(
-                    user_id.to_string(),
-                ))),
-                _ => Err(get_service_error(ServiceError::QueryExecutionFailure)),
-            },
-        }
+        Ok(user_key)
     }
 
     /// Creates a new user key.
-    pub fn create(&self, user_id: u64, public_key: &str) -> Result<bool, ServiceError> {
+    pub fn create(&self, user_id: u64, public_key: &str) -> Result<bool> {
         let user_key_to_create = UserKeyDAO {
             user_id,
             public_key: public_key.to_string(),
@@ -75,16 +66,12 @@ impl UserKeyRepository {
 
         let count = diesel::insert_into(dsl::user_keys)
             .values(user_key_to_create)
-            .execute(&self.conn);
+            .execute(&self.conn)?;
 
-        if let Ok(count) = count {
-            if count > 0 {
-                Ok(true)
-            } else {
-                Err(get_service_error(ServiceError::QueryExecutionFailure))
-            }
+        if count > 0 {
+            Ok(true)
         } else {
-            Err(get_service_error(ServiceError::QueryExecutionFailure))
+            Err(Error::QueryExecutionFailure)
         }
     }
 }
