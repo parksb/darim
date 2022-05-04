@@ -1,37 +1,42 @@
 use chrono::NaiveDateTime;
+use serde::{Deserialize, Serialize};
 
-use crate::models::error::{get_service_error, ServiceError};
+use crate::models::error::{Error, Result};
 use crate::models::post::*;
 
+/// Post DTO using between routes layer and service layer.
+#[derive(Serialize, Deserialize)]
+pub struct PostDTO {
+    pub id: u64,
+    pub title: String,
+    pub content: String,
+    pub date: NaiveDateTime,
+    pub created_at: NaiveDateTime,
+    pub updated_at: Option<NaiveDateTime>,
+}
+
+/// Summarized post DTO using between routes layer and service layer.
+#[derive(Serialize, Deserialize)]
+pub struct SummarizedPostDTO {
+    pub id: u64,
+    pub title: String,
+    pub date: NaiveDateTime,
+}
+
 pub struct PostService {
-    post_repository: Option<PostRepository>,
+    post_repository: PostRepository,
 }
 
 impl PostService {
     pub fn new() -> Self {
         Self {
-            post_repository: None,
-        }
-    }
-
-    fn post_repository(&mut self, new_repository: Option<PostRepository>) -> &PostRepository {
-        match new_repository {
-            Some(_) => {
-                self.post_repository = new_repository;
-                self.post_repository.as_ref().unwrap()
-            }
-            None => self.post_repository.as_ref().unwrap(),
+            post_repository: PostRepository::new(),
         }
     }
 
     /// Finds a post by user id and post id.
-    pub fn get(&mut self, user_id: u64, id: u64) -> Result<PostDTO, ServiceError> {
-        let post = {
-            let fallback_repository =
-                some_if_true!(self.post_repository.is_none() => PostRepository::new());
-            self.post_repository(fallback_repository)
-                .find(user_id, id)?
-        };
+    pub fn get(&mut self, user_id: u64, id: u64) -> Result<PostDTO> {
+        let post = self.post_repository.find(user_id, id)?;
 
         Ok(PostDTO {
             id: post.id,
@@ -44,21 +49,16 @@ impl PostService {
     }
 
     /// Finds all post written by specific user.
-    pub fn get_list(&mut self, user_id: u64) -> Result<Vec<PostDTO>, ServiceError> {
-        let post_list = {
-            let fallback_repository =
-                some_if_true!(self.post_repository.is_none() => PostRepository::new());
-            self.post_repository(fallback_repository)
-                .find_all_in_desc_date_order(user_id)?
-        };
+    pub fn get_list(&mut self, user_id: u64) -> Result<Vec<PostDTO>> {
+        let post_list = self.post_repository.find_all_in_desc_date_order(user_id)?;
 
         Ok(post_list
-            .iter()
+            .into_iter()
             .map(|post| -> PostDTO {
                 PostDTO {
                     id: post.id,
-                    title: post.title.clone(),
-                    content: post.content.clone(),
+                    title: post.title,
+                    content: post.content,
                     date: post.date,
                     created_at: post.created_at,
                     updated_at: post.updated_at,
@@ -68,23 +68,15 @@ impl PostService {
     }
 
     /// Finds all summarized post written by specific user.
-    pub fn get_summarized_list(
-        &mut self,
-        user_id: u64,
-    ) -> Result<Vec<SummarizedPostDTO>, ServiceError> {
-        let post_list = {
-            let fallback_repository =
-                some_if_true!(self.post_repository.is_none() => PostRepository::new());
-            self.post_repository(fallback_repository)
-                .find_all_in_desc_date_order(user_id)?
-        };
+    pub fn get_summarized_list(&mut self, user_id: u64) -> Result<Vec<SummarizedPostDTO>> {
+        let post_list = self.post_repository.find_all_in_desc_date_order(user_id)?;
 
         Ok(post_list
-            .iter()
+            .into_iter()
             .map(|post| -> SummarizedPostDTO {
                 SummarizedPostDTO {
                     id: post.id,
-                    title: post.title.clone(),
+                    title: post.title,
                     date: post.date,
                 }
             })
@@ -98,28 +90,22 @@ impl PostService {
         title: &str,
         content: &str,
         date: &NaiveDateTime,
-    ) -> Result<u64, ServiceError> {
+    ) -> Result<u64> {
         if title.trim().is_empty() || content.trim().is_empty() {
-            return Err(get_service_error(ServiceError::InvalidArgument));
+            return Err(Error::InvalidArgument);
         }
 
         let post_list = {
-            let fallback_repository =
-                some_if_true!(self.post_repository.is_none() => PostRepository::new());
-            self.post_repository(fallback_repository)
-                .create(user_id, title, content, date)?;
-            self.post_repository(None).find_all(user_id)?
+            let _ = self.post_repository.create(user_id, title, content, date)?;
+            self.post_repository.find_all(user_id)?
         };
 
         Ok(post_list[post_list.len() - 1].id)
     }
 
     /// Deletes a post written by specific user.
-    pub fn delete(&mut self, id: u64, user_id: u64) -> Result<bool, ServiceError> {
-        let fallback_repository =
-            some_if_true!(self.post_repository.is_none() => PostRepository::new());
-        self.post_repository(fallback_repository)
-            .delete(user_id, id)
+    pub fn delete(&mut self, id: u64, user_id: u64) -> Result<bool> {
+        Ok(self.post_repository.delete(user_id, id)?)
     }
 
     /// Updates a post written by specific user.
@@ -130,27 +116,26 @@ impl PostService {
         title: &Option<String>,
         content: &Option<String>,
         date: &Option<NaiveDateTime>,
-    ) -> Result<bool, ServiceError> {
+    ) -> Result<bool> {
         if title.is_none() && content.is_none() && date.is_none() {
-            return Err(get_service_error(ServiceError::InvalidArgument));
+            return Err(Error::InvalidArgument);
         }
 
         if let Some(content) = content {
             if content.trim().is_empty() {
-                return Err(get_service_error(ServiceError::InvalidArgument));
+                return Err(Error::InvalidArgument);
             }
         }
 
         if let Some(title) = title {
             if title.trim().is_empty() {
-                return Err(get_service_error(ServiceError::InvalidArgument));
+                return Err(Error::InvalidArgument);
             }
         }
 
-        let fallback_repository =
-            some_if_true!(self.post_repository.is_none() => PostRepository::new());
-        self.post_repository(fallback_repository)
-            .update(user_id, id, title, content, date)
+        Ok(self
+            .post_repository
+            .update(user_id, id, title, content, date)?)
     }
 }
 
@@ -174,7 +159,7 @@ mod tests {
     impl PostService {
         pub fn new_with_repository(post_repository: PostRepository) -> Self {
             Self {
-                post_repository: Some(post_repository),
+                post_repository: post_repository,
             }
         }
     }

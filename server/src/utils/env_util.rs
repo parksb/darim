@@ -23,6 +23,7 @@ lazy_static! {
         .unwrap_or(Profile::DEV);
 }
 
+#[derive(PartialEq)]
 pub enum Profile {
     DEV,
     PRODUCTION,

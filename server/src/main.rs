@@ -2,15 +2,17 @@ use actix_web::{get, App, HttpResponse, HttpServer, Responder};
 use std::collections::HashMap;
 
 #[macro_use]
-mod macros;
-
-#[macro_use]
 extern crate diesel;
 
 /// A data layer that can access the database and define data structures.
 pub mod models {
     /// Model related to authentication.
-    pub mod auth;
+    pub mod auth {
+        pub mod jwt_claims;
+        pub mod jwt_refresh;
+        pub mod password_token;
+        pub mod sign_up_token;
+    }
     /// Model related to Database connection.
     pub mod connection;
     /// Model related to error.
@@ -36,7 +38,12 @@ pub mod routes {
 /// A business layer that processes the transaction.
 pub mod services {
     /// Service related to authentication.
-    pub mod auth;
+    pub mod auth {
+        pub mod jwt_refresh;
+        pub mod password_token;
+        pub mod sign_up_token;
+        pub mod user_session;
+    }
     /// Service related to post.
     pub mod post;
     /// Service related to user.
