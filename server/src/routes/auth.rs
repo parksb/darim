@@ -1,3 +1,4 @@
+use crate::models::connection::RdbPool;
 use actix_web::{delete, get, post, web, Responder};
 use serde::{Deserialize, Serialize};
 
@@ -66,27 +67,36 @@ pub async fn set_sign_up_token(args: web::Json<SetSignUpTokenArgs>) -> impl Resp
 
 /// Sets token for resetting password.
 #[post("/auth/token/password")]
-pub async fn set_password_token(args: web::Json<SetPasswordTokenArgs>) -> impl Responder {
+pub async fn set_password_token(
+    rdb_pool: web::Data<RdbPool>,
+    args: web::Json<SetPasswordTokenArgs>,
+) -> impl Responder {
     let SetPasswordTokenArgs { email } = args.into_inner();
-    let result = PasswordTokenService::new().set(&email);
+    let conn = rdb_pool.get().unwrap();
+    let result = PasswordTokenService::new(&conn).set(&email);
     http_util::response::<bool>(result)
 }
 
 /// Sets a JWT refresh token.
 #[post("/auth/token/refresh")]
-pub async fn set_jwt_refresh(args: web::Json<LoginArgs>) -> impl Responder {
+pub async fn set_jwt_refresh(
+    rdb_pool: web::Data<RdbPool>,
+    args: web::Json<LoginArgs>,
+) -> impl Responder {
     let LoginArgs {
         email,
         password,
         user_agent,
     } = args.into_inner();
-    let result = JwtRefreshService::new().set(&email, &password, user_agent);
+    let conn = rdb_pool.get().unwrap();
+    let result = JwtRefreshService::new(&conn).set(&email, &password, user_agent);
     http_util::response::<SetJwtRefreshDTO>(result)
 }
 
 /// Validates JWT refresh token.
 #[post("/auth/token/refresh/{id}")]
 pub async fn validate_jwt_refresh(
+    rdb_pool: web::Data<RdbPool>,
     id: web::Path<u64>,
     args: web::Json<ValidateJwtRefreshArgs>,
 ) -> impl Responder {
@@ -96,19 +106,23 @@ pub async fn validate_jwt_refresh(
         user_agent,
     } = args.into_inner();
     let user_id = id.into_inner();
-    let result = JwtRefreshService::new().validate(user_id, &token_uuid, &jwt_refresh, user_agent);
+    let conn = rdb_pool.get().unwrap();
+    let result =
+        JwtRefreshService::new(&conn).validate(user_id, &token_uuid, &jwt_refresh, user_agent);
     http_util::response::<bool>(result)
 }
 
 /// Removes JWT refresh and access tokens.
 #[delete("/auth/token/refresh/{id}")]
 pub async fn remove_jwt_refresh(
+    rdb_pool: web::Data<RdbPool>,
     id: web::Path<u64>,
     args: web::Json<RemoveJwtRefreshArgs>,
 ) -> impl Responder {
     let RemoveJwtRefreshArgs { token_uuid } = args.into_inner();
     let user_id = id.into_inner();
-    let result = JwtRefreshService::new().remove(user_id, &token_uuid);
+    let conn = rdb_pool.get().unwrap();
+    let result = JwtRefreshService::new(&conn).remove(user_id, &token_uuid);
     http_util::response::<bool>(result)
 }
 

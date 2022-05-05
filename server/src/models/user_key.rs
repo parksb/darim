@@ -3,7 +3,6 @@ use diesel::prelude::*;
 use mockall::automock;
 use serde::{Deserialize, Serialize};
 
-use crate::models::connection;
 use crate::models::error::{Error, Result};
 use crate::schema::{user_keys, user_keys::dsl};
 
@@ -29,8 +28,8 @@ struct UserKeyDAO {
 }
 
 /// A core data repository for user key.
-pub struct UserKeyRepository {
-    conn: MysqlConnection,
+pub struct UserKeyRepository<'a> {
+    conn: &'a MysqlConnection,
 }
 
 #[automock]
@@ -39,19 +38,17 @@ pub trait UserKeyRepositoryTrait {
     fn create(&self, user_id: u64, public_key: &str) -> Result<bool>;
 }
 
-impl UserKeyRepository {
+impl<'a> UserKeyRepository<'a> {
     /// Creates a new user key repository.
-    pub fn new() -> Self {
-        Self {
-            conn: connection::connect_rdb(),
-        }
+    pub fn new(conn: &'a MysqlConnection) -> Self {
+        Self { conn }
     }
 
     /// Finds a user key by user id.
     pub fn find_by_user_id(&self, user_id: u64) -> Result<UserKey> {
         let user_key = dsl::user_keys
             .filter(dsl::user_id.eq(user_id))
-            .get_result::<UserKey>(&self.conn)?;
+            .get_result::<UserKey>(self.conn)?;
 
         Ok(user_key)
     }
@@ -66,18 +63,12 @@ impl UserKeyRepository {
 
         let count = diesel::insert_into(dsl::user_keys)
             .values(user_key_to_create)
-            .execute(&self.conn)?;
+            .execute(self.conn)?;
 
         if count > 0 {
             Ok(true)
         } else {
             Err(Error::QueryExecutionFailure)
         }
-    }
-}
-
-impl Default for UserKeyRepository {
-    fn default() -> Self {
-        Self::new()
     }
 }

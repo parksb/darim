@@ -1,4 +1,5 @@
 use chrono::NaiveDateTime;
+use diesel::MysqlConnection;
 use serde::{Deserialize, Serialize};
 
 use crate::models::error::{Error, Result};
@@ -23,14 +24,14 @@ pub struct SummarizedPostDTO {
     pub date: NaiveDateTime,
 }
 
-pub struct PostService {
-    post_repository: PostRepository,
+pub struct PostService<'a> {
+    post_repository: PostRepository<'a>,
 }
 
-impl PostService {
-    pub fn new() -> Self {
+impl<'a> PostService<'a> {
+    pub fn new(conn: &'a MysqlConnection) -> Self {
         Self {
-            post_repository: PostRepository::new(),
+            post_repository: PostRepository::new(conn),
         }
     }
 
@@ -139,60 +140,13 @@ impl PostService {
     }
 }
 
-impl Default for PostService {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-
-#[cfg(test)]
-use crate::models::post::MockPostRepositoryTrait as PostRepository;
-
 #[cfg(test)]
 mod tests {
-    use chrono::Utc;
-    use mockall::predicate::*;
-
     use super::*;
-    use crate::models::post::MockPostRepositoryTrait;
 
-    impl PostService {
-        pub fn new_with_repository(post_repository: PostRepository) -> Self {
-            Self {
-                post_repository: post_repository,
-            }
+    impl<'a> PostService<'a> {
+        pub fn new_with_repository(post_repository: PostRepository<'a>) -> Self {
+            Self { post_repository }
         }
-    }
-
-    #[test]
-    fn test_get_list() {
-        let mut mocked_post_repository = MockPostRepositoryTrait::new();
-
-        let id = 3;
-        let user_id = 5;
-
-        mocked_post_repository
-            .expect_find_all_in_desc_date_order()
-            .with(eq(user_id))
-            .times(1)
-            .returning(move |passed_user_id| {
-                let now = Utc::now().naive_utc();
-                let post = Post {
-                    id,
-                    user_id: passed_user_id,
-                    title: String::from("Title"),
-                    content: String::from("Content"),
-                    date: now.clone(),
-                    created_at: now.clone(),
-                    updated_at: None,
-                };
-
-                Ok(vec![post])
-            });
-
-        let mut post_service = PostService::new_with_repository(mocked_post_repository);
-        let post_list: Vec<PostDTO> = post_service.get_list(user_id).unwrap();
-
-        assert_eq!(post_list.first().unwrap().id, id);
     }
 }
