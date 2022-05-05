@@ -3,7 +3,6 @@ use diesel::prelude::*;
 use mockall::automock;
 use serde::{Deserialize, Serialize};
 
-use crate::models::connection;
 use crate::models::error::{Error, Result};
 use crate::schema::{posts, posts::dsl};
 
@@ -32,8 +31,8 @@ struct PostDAO {
 }
 
 /// A core data repository for post.
-pub struct PostRepository {
-    conn: MysqlConnection,
+pub struct PostRepository<'a> {
+    conn: &'a MysqlConnection,
 }
 
 #[automock]
@@ -59,12 +58,10 @@ pub trait PostRepositoryTrait {
     fn delete(&self, user_id: u64, post_id: u64) -> Result<bool>;
 }
 
-impl PostRepository {
+impl<'a> PostRepository<'a> {
     /// Creates a new post repository.
-    pub fn new() -> Self {
-        Self {
-            conn: connection::connect_rdb(),
-        }
+    pub fn new(conn: &'a MysqlConnection) -> Self {
+        Self { conn }
     }
 
     /// Finds a post by user id and post id.
@@ -72,7 +69,7 @@ impl PostRepository {
         let post = dsl::posts
             .find(post_id)
             .filter(dsl::user_id.eq(user_id))
-            .get_result::<Post>(&self.conn)?;
+            .get_result::<Post>(self.conn)?;
 
         Ok(post)
     }
@@ -81,7 +78,7 @@ impl PostRepository {
     pub fn find_all(&self, user_id: u64) -> Result<Vec<Post>> {
         let post_list = dsl::posts
             .filter(dsl::user_id.eq(user_id))
-            .load::<Post>(&self.conn)?;
+            .load::<Post>(self.conn)?;
 
         Ok(post_list)
     }
@@ -91,7 +88,7 @@ impl PostRepository {
         let post_list: Vec<Post> = dsl::posts
             .filter(dsl::user_id.eq(user_id))
             .order((dsl::date.desc(), dsl::id.desc()))
-            .load::<Post>(&self.conn)?;
+            .load::<Post>(self.conn)?;
 
         Ok(post_list)
     }
@@ -115,7 +112,7 @@ impl PostRepository {
 
         let count = diesel::insert_into(dsl::posts)
             .values(post_to_create)
-            .execute(&self.conn)?;
+            .execute(self.conn)?;
 
         if count > 0 {
             Ok(true)
@@ -145,7 +142,7 @@ impl PostRepository {
         let target_post = dsl::posts.find(post_id).filter(dsl::user_id.eq(user_id));
         let count = diesel::update(target_post)
             .set(post_to_update)
-            .execute(&self.conn)?;
+            .execute(self.conn)?;
 
         if count > 0 {
             Ok(true)
@@ -157,18 +154,12 @@ impl PostRepository {
     /// Deletes a post written by specific user.
     pub fn delete(&self, user_id: u64, post_id: u64) -> Result<bool> {
         let target_post = dsl::posts.find(post_id).filter(dsl::user_id.eq(user_id));
-        let count = diesel::delete(target_post).execute(&self.conn)?;
+        let count = diesel::delete(target_post).execute(self.conn)?;
 
         if count > 0 {
             Ok(true)
         } else {
             Err(Error::QueryExecutionFailure)
         }
-    }
-}
-
-impl Default for PostRepository {
-    fn default() -> Self {
-        Self::new()
     }
 }

@@ -1,3 +1,4 @@
+use diesel::MysqlConnection;
 use rand::{distributions::Alphanumeric, thread_rng, Rng};
 
 use crate::models::auth::password_token::{PasswordToken, PasswordTokenRepository};
@@ -6,16 +7,16 @@ use crate::models::user::UserRepository;
 use crate::utils::email_util;
 use crate::utils::env_util::CLIENT_ADDRESS;
 
-pub struct PasswordTokenService {
+pub struct PasswordTokenService<'a> {
     password_token_repository: PasswordTokenRepository,
-    user_repository: UserRepository,
+    user_repository: UserRepository<'a>,
 }
 
-impl PasswordTokenService {
-    pub fn new() -> Self {
+impl<'a> PasswordTokenService<'a> {
+    pub fn new(conn: &'a MysqlConnection) -> Self {
         Self {
             password_token_repository: PasswordTokenRepository::new(),
-            user_repository: UserRepository::new(),
+            user_repository: UserRepository::new(conn),
         }
     }
 
@@ -51,11 +52,5 @@ impl PasswordTokenService {
             <a href=\"{}/password_reset/{}\">{}/password_reset/{}</a>",
             token.password, *CLIENT_ADDRESS, token.id, *CLIENT_ADDRESS, token.id,
         )
-    }
-}
-
-impl Default for PasswordTokenService {
-    fn default() -> Self {
-        Self::new()
     }
 }

@@ -1,4 +1,5 @@
 use chrono::NaiveDateTime;
+use diesel::MysqlConnection;
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
 
@@ -22,20 +23,20 @@ pub struct UserDTO {
     pub updated_at: Option<NaiveDateTime>,
 }
 
-pub struct UserService {
+pub struct UserService<'a> {
     sign_up_token_repository: SignUpTokenRepository,
     password_token_repository: PasswordTokenRepository,
-    user_key_repository: UserKeyRepository,
-    user_repository: UserRepository,
+    user_key_repository: UserKeyRepository<'a>,
+    user_repository: UserRepository<'a>,
 }
 
-impl UserService {
-    pub fn new() -> Self {
+impl<'a> UserService<'a> {
+    pub fn new(conn: &'a MysqlConnection) -> Self {
         Self {
             sign_up_token_repository: SignUpTokenRepository::new(),
             password_token_repository: PasswordTokenRepository::new(),
-            user_key_repository: UserKeyRepository::new(),
-            user_repository: UserRepository::new(),
+            user_key_repository: UserKeyRepository::new(conn),
+            user_repository: UserRepository::new(conn),
         }
     }
 
@@ -206,22 +207,16 @@ impl UserService {
     }
 }
 
-impl Default for UserService {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
 
-    impl UserService {
+    impl<'a> UserService<'a> {
         pub fn new_with_repository(
             sign_up_token_repository: SignUpTokenRepository,
             password_token_repository: PasswordTokenRepository,
-            user_key_repository: UserKeyRepository,
-            user_repository: UserRepository,
+            user_key_repository: UserKeyRepository<'a>,
+            user_repository: UserRepository<'a>,
         ) -> Self {
             Self {
                 sign_up_token_repository,

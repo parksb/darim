@@ -1,3 +1,4 @@
+use actix_web::web::Data;
 use actix_web::{get, App, HttpResponse, HttpServer, Responder};
 use std::collections::HashMap;
 
@@ -67,6 +68,7 @@ pub mod utils {
 /// A database schema.
 pub mod schema;
 
+use crate::models::connection::connect_rdb;
 use utils::env_util::{HOST, PORT};
 
 /// Health check
@@ -79,14 +81,16 @@ async fn health_check() -> impl Responder {
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
-    dotenv::dotenv().expect("Failed to read .env file");
+    let _ = dotenv::dotenv().expect("Failed to read .env file");
 
     let address = format!("{}:{}", *HOST, *PORT);
+    let rdb_pool = connect_rdb();
 
     println!("Server running at {}", address);
 
-    HttpServer::new(|| {
+    HttpServer::new(move || {
         App::new()
+            .app_data(Data::new(rdb_pool.clone()))
             .service(health_check)
             .configure(routes::post::init_routes)
             .configure(routes::user::init_routes)

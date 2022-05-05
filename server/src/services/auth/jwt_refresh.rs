@@ -1,4 +1,5 @@
 use chrono::Utc;
+use diesel::MysqlConnection;
 use jsonwebtoken::{encode, EncodingKey, Header};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
@@ -18,16 +19,16 @@ pub struct SetJwtRefreshDTO {
     pub jwt_refresh: String,
 }
 
-pub struct JwtRefreshService {
+pub struct JwtRefreshService<'a> {
     refresh_token_repository: RefreshTokenRepository,
-    user_repository: UserRepository,
+    user_repository: UserRepository<'a>,
 }
 
-impl JwtRefreshService {
-    pub fn new() -> Self {
+impl<'a> JwtRefreshService<'a> {
+    pub fn new(conn: &'a MysqlConnection) -> Self {
         Self {
             refresh_token_repository: RefreshTokenRepository::new(),
-            user_repository: UserRepository::new(),
+            user_repository: UserRepository::new(conn),
         }
     }
 
@@ -111,11 +112,5 @@ impl JwtRefreshService {
 
     pub fn remove(&mut self, user_id: u64, token_uuid: &str) -> Result<bool> {
         Ok(self.refresh_token_repository.delete(user_id, token_uuid)?)
-    }
-}
-
-impl Default for JwtRefreshService {
-    fn default() -> Self {
-        Self::new()
     }
 }

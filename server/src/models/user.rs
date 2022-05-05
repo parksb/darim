@@ -3,7 +3,6 @@ use diesel::prelude::*;
 use mockall::automock;
 use serde::{Deserialize, Serialize};
 
-use crate::models::connection;
 use crate::models::error::{Error, Result};
 use crate::schema::{users, users::dsl};
 
@@ -37,8 +36,8 @@ pub struct ReCaptchaResponse {
 }
 
 /// A core data repository for user.
-pub struct UserRepository {
-    conn: MysqlConnection,
+pub struct UserRepository<'a> {
+    conn: &'a MysqlConnection,
 }
 
 #[automock]
@@ -64,17 +63,15 @@ pub trait UserRepositoryTrait {
     fn delete(&self, id: u64) -> Result<bool>;
 }
 
-impl UserRepository {
+impl<'a> UserRepository<'a> {
     /// Creates a new user repository.
-    pub fn new() -> Self {
-        Self {
-            conn: connection::connect_rdb(),
-        }
+    pub fn new(conn: &'a MysqlConnection) -> Self {
+        Self { conn }
     }
 
     /// Finds a user by id.
     pub fn find_by_id(&self, id: u64) -> Result<User> {
-        let user = dsl::users.find(id).get_result::<User>(&self.conn)?;
+        let user = dsl::users.find(id).get_result::<User>(self.conn)?;
         Ok(user)
     }
 
@@ -82,7 +79,7 @@ impl UserRepository {
     pub fn find_by_email(&self, email: &str) -> Result<User> {
         let user = dsl::users
             .filter(dsl::email.eq(email))
-            .get_result::<User>(&self.conn)?;
+            .get_result::<User>(self.conn)?;
 
         Ok(user)
     }
@@ -92,14 +89,14 @@ impl UserRepository {
         let password = dsl::users
             .select(dsl::password)
             .filter(dsl::email.eq(email))
-            .get_result::<String>(&self.conn)?;
+            .get_result::<String>(self.conn)?;
 
         Ok(password)
     }
 
     /// Finds all users.
     pub fn find_all(&self) -> Result<Vec<User>> {
-        let user_list = dsl::users.load::<User>(&self.conn)?;
+        let user_list = dsl::users.load::<User>(self.conn)?;
         Ok(user_list)
     }
 
@@ -122,7 +119,7 @@ impl UserRepository {
 
         let count = diesel::insert_into(dsl::users)
             .values(user_to_create)
-            .execute(&self.conn)?;
+            .execute(self.conn)?;
 
         if count > 0 {
             Ok(true)
@@ -151,7 +148,7 @@ impl UserRepository {
         let target_user = dsl::users.find(id);
         let count = diesel::update(target_user)
             .set(user_to_update)
-            .execute(&self.conn)?;
+            .execute(self.conn)?;
 
         if count > 0 {
             Ok(true)
@@ -164,18 +161,12 @@ impl UserRepository {
     pub fn delete(&self, id: u64) -> Result<bool> {
         let target_user = dsl::users.find(id);
         // Consider also logical deletion
-        let count = diesel::delete(target_user).execute(&self.conn)?;
+        let count = diesel::delete(target_user).execute(self.conn)?;
 
         if count > 0 {
             Ok(true)
         } else {
             Err(Error::QueryExecutionFailure)
         }
-    }
-}
-
-impl Default for UserRepository {
-    fn default() -> Self {
-        Self::new()
     }
 }
