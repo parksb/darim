@@ -183,7 +183,7 @@ mod tests {
 
     impl<'a> UserService<'a> {
         pub fn new_with_repository(
-            sign_up_token_repository: SignUpTokenRepository,
+            sign_up_token_repository: SignUpTokenRepository<'a>,
             user_key_repository: UserKeyRepository<'a>,
             user_repository: UserRepository<'a>,
         ) -> Self {
