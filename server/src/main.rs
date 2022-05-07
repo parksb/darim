@@ -41,7 +41,7 @@ pub mod services {
     /// Service related to authentication.
     pub mod auth {
         pub mod jwt_refresh;
-        pub mod password_token;
+        pub mod password;
         pub mod sign_up_token;
         pub mod user_session;
     }
@@ -68,7 +68,7 @@ pub mod utils {
 /// A database schema.
 pub mod schema;
 
-use crate::models::connection::connect_rdb;
+use crate::models::connection::{connect_rdb, connect_redis};
 use utils::env_util::{HOST, PORT};
 
 /// Health check
@@ -85,12 +85,14 @@ async fn main() -> std::io::Result<()> {
 
     let address = format!("{}:{}", *HOST, *PORT);
     let rdb_pool = connect_rdb();
+    let redis_pool = connect_redis();
 
     println!("Server running at {}", address);
 
     HttpServer::new(move || {
         App::new()
             .app_data(Data::new(rdb_pool.clone()))
+            .app_data(Data::new(redis_pool.clone()))
             .service(health_check)
             .configure(routes::post::init_routes)
             .configure(routes::user::init_routes)

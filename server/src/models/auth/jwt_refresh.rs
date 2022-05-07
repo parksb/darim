@@ -3,7 +3,7 @@ use redis::Commands;
 use serde::{Deserialize, Serialize};
 use time::Duration;
 
-use crate::models::connection;
+use crate::models::connection::RedisConnection;
 use crate::models::error::Result;
 
 #[derive(Serialize, Deserialize)]
@@ -14,24 +14,22 @@ pub struct UserSession {
 }
 
 /// A core data repository for refresh token.
-pub struct RefreshTokenRepository {
-    redis: redis::Connection,
+pub struct RefreshTokenRepository<'a> {
+    redis: &'a mut RedisConnection,
 }
 
 #[automock]
 pub trait RefreshTokenRepositoryTrait {
-    fn is_exist(&mut self, user_id: u64, token: &str) -> Result<bool>;
-    fn find_all_by_user_id(&mut self, user_id: u64) -> Result<Vec<(String, UserSession)>>;
-    fn delete(&mut self, user_id: u64, token: &str) -> Result<bool>;
-    fn save(&mut self, user_id: u64, token: &str) -> Result<bool>;
+    fn is_exist(&self, user_id: u64, token: &str) -> Result<bool>;
+    fn find_all_by_user_id(&self, user_id: u64) -> Result<Vec<(String, UserSession)>>;
+    fn delete(&self, user_id: u64, token: &str) -> Result<bool>;
+    fn save(&self, user_id: u64, token: &str) -> Result<bool>;
 }
 
-impl RefreshTokenRepository {
+impl<'a> RefreshTokenRepository<'a> {
     /// Creates a new token repository.
-    pub fn new() -> Self {
-        Self {
-            redis: connection::connect_redis(),
-        }
+    pub fn new(conn: &'a mut RedisConnection) -> Self {
+        Self { redis: conn }
     }
 
     /// Check a token is exist by user id and token.
@@ -71,11 +69,5 @@ impl RefreshTokenRepository {
         let _ = self.redis.expire::<u64, bool>(user_id, ttl_seconds)?;
 
         Ok(user_id.to_string())
-    }
-}
-
-impl Default for RefreshTokenRepository {
-    fn default() -> Self {
-        Self::new()
     }
 }
