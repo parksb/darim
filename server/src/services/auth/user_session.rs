@@ -40,8 +40,8 @@ impl<'a> UserSessionService<'a> {
 mod tests {
     use super::*;
 
-    impl UserSessionService {
-        pub fn new_with_repository(refresh_token_repository: RefreshTokenRepository) -> Self {
+    impl<'a> UserSessionService<'a> {
+        pub fn new_with_repository(refresh_token_repository: RefreshTokenRepository<'a>) -> Self {
             Self {
                 refresh_token_repository,
             }
