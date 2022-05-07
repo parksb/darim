@@ -1,17 +1,18 @@
 use rand::{distributions::Alphanumeric, thread_rng, Rng};
 
 use crate::models::auth::sign_up_token::{SignUpToken, SignUpTokenRepository};
+use crate::models::connection::RedisConnection;
 use crate::models::error::{Error, Result};
 use crate::utils::{argon2_password_util, email_util};
 
-pub struct SignUpTokenService {
-    sign_up_token_repository: SignUpTokenRepository,
+pub struct SignUpTokenService<'a> {
+    sign_up_token_repository: SignUpTokenRepository<'a>,
 }
 
-impl SignUpTokenService {
-    pub fn new() -> Self {
+impl<'a> SignUpTokenService<'a> {
+    pub fn new(conn: &'a mut RedisConnection) -> Self {
         Self {
-            sign_up_token_repository: SignUpTokenRepository::new(),
+            sign_up_token_repository: SignUpTokenRepository::new(conn),
         }
     }
 
@@ -64,11 +65,5 @@ impl SignUpTokenService {
             <div style=\"background-color: #f0f0f0; padding: 10px; font-size: 20px; font-weight: bold\">{}</div>",
             token.name, token.pin,
         )
-    }
-}
-
-impl Default for SignUpTokenService {
-    fn default() -> Self {
-        Self::new()
     }
 }

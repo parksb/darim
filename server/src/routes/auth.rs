@@ -1,9 +1,9 @@
-use crate::models::connection::RdbPool;
 use actix_web::{delete, get, post, web, Responder};
 use serde::{Deserialize, Serialize};
 
+use crate::models::connection::{RdbPool, RedisPool};
 use crate::services::auth::jwt_refresh::{JwtRefreshService, SetJwtRefreshDTO};
-use crate::services::auth::password_token::PasswordTokenService;
+use crate::services::auth::password::PasswordService;
 use crate::services::auth::sign_up_token::SignUpTokenService;
 use crate::services::auth::user_session::{UserSessionDTO, UserSessionService};
 use crate::utils::http_util;
@@ -54,14 +54,19 @@ pub struct RemoveJwtRefreshArgs {
 
 /// Sets token for creating user.
 #[post("/auth/token/sign_up")]
-pub async fn set_sign_up_token(args: web::Json<SetSignUpTokenArgs>) -> impl Responder {
+pub async fn set_sign_up_token(
+    redis_pool: web::Data<RedisPool>,
+    args: web::Json<SetSignUpTokenArgs>,
+) -> impl Responder {
     let SetSignUpTokenArgs {
         name,
         email,
         password,
         avatar_url,
     } = args.into_inner();
-    let result = SignUpTokenService::new().set(&name, &email, &password, &avatar_url);
+    let mut redis_conn = redis_pool.get().unwrap();
+    let result =
+        SignUpTokenService::new(&mut redis_conn).set(&name, &email, &password, &avatar_url);
     http_util::response::<String>(result)
 }
 
@@ -69,11 +74,13 @@ pub async fn set_sign_up_token(args: web::Json<SetSignUpTokenArgs>) -> impl Resp
 #[post("/auth/token/password")]
 pub async fn set_password_token(
     rdb_pool: web::Data<RdbPool>,
+    redis_pool: web::Data<RedisPool>,
     args: web::Json<SetPasswordTokenArgs>,
 ) -> impl Responder {
     let SetPasswordTokenArgs { email } = args.into_inner();
-    let conn = rdb_pool.get().unwrap();
-    let result = PasswordTokenService::new(&conn).set(&email);
+    let rdb_conn = rdb_pool.get().unwrap();
+    let mut redis_conn = redis_pool.get().unwrap();
+    let result = PasswordService::new(&rdb_conn, &mut redis_conn).set(&email);
     http_util::response::<bool>(result)
 }
 
@@ -81,6 +88,7 @@ pub async fn set_password_token(
 #[post("/auth/token/refresh")]
 pub async fn set_jwt_refresh(
     rdb_pool: web::Data<RdbPool>,
+    redis_pool: web::Data<RedisPool>,
     args: web::Json<LoginArgs>,
 ) -> impl Responder {
     let LoginArgs {
@@ -88,8 +96,10 @@ pub async fn set_jwt_refresh(
         password,
         user_agent,
     } = args.into_inner();
-    let conn = rdb_pool.get().unwrap();
-    let result = JwtRefreshService::new(&conn).set(&email, &password, user_agent);
+    let rdb_conn = rdb_pool.get().unwrap();
+    let mut redis_conn = redis_pool.get().unwrap();
+    let result =
+        JwtRefreshService::new(&rdb_conn, &mut redis_conn).set(&email, &password, user_agent);
     http_util::response::<SetJwtRefreshDTO>(result)
 }
 
@@ -97,6 +107,7 @@ pub async fn set_jwt_refresh(
 #[post("/auth/token/refresh/{id}")]
 pub async fn validate_jwt_refresh(
     rdb_pool: web::Data<RdbPool>,
+    redis_pool: web::Data<RedisPool>,
     id: web::Path<u64>,
     args: web::Json<ValidateJwtRefreshArgs>,
 ) -> impl Responder {
@@ -106,9 +117,14 @@ pub async fn validate_jwt_refresh(
         user_agent,
     } = args.into_inner();
     let user_id = id.into_inner();
-    let conn = rdb_pool.get().unwrap();
-    let result =
-        JwtRefreshService::new(&conn).validate(user_id, &token_uuid, &jwt_refresh, user_agent);
+    let rdb_conn = rdb_pool.get().unwrap();
+    let mut redis_conn = redis_pool.get().unwrap();
+    let result = JwtRefreshService::new(&rdb_conn, &mut redis_conn).validate(
+        user_id,
+        &token_uuid,
+        &jwt_refresh,
+        user_agent,
+    );
     http_util::response::<bool>(result)
 }
 
@@ -116,21 +132,27 @@ pub async fn validate_jwt_refresh(
 #[delete("/auth/token/refresh/{id}")]
 pub async fn remove_jwt_refresh(
     rdb_pool: web::Data<RdbPool>,
+    redis_pool: web::Data<RedisPool>,
     id: web::Path<u64>,
     args: web::Json<RemoveJwtRefreshArgs>,
 ) -> impl Responder {
     let RemoveJwtRefreshArgs { token_uuid } = args.into_inner();
     let user_id = id.into_inner();
-    let conn = rdb_pool.get().unwrap();
-    let result = JwtRefreshService::new(&conn).remove(user_id, &token_uuid);
+    let rdb_conn = rdb_pool.get().unwrap();
+    let mut redis_conn = redis_pool.get().unwrap();
+    let result = JwtRefreshService::new(&rdb_conn, &mut redis_conn).remove(user_id, &token_uuid);
     http_util::response::<bool>(result)
 }
 
 /// Get active tokens as session.
 #[get("/auth/token/{id}")]
-pub async fn get_session_list(id: web::Path<u64>) -> impl Responder {
+pub async fn get_session_list(
+    redis_pool: web::Data<RedisPool>,
+    id: web::Path<u64>,
+) -> impl Responder {
     let user_id = id.into_inner();
-    let result = UserSessionService::new().get_all(user_id);
+    let mut redis_conn = redis_pool.get().unwrap();
+    let result = UserSessionService::new(&mut redis_conn).get_all(user_id);
     http_util::response::<Vec<UserSessionDTO>>(result)
 }
 

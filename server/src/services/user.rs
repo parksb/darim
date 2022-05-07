@@ -3,8 +3,8 @@ use diesel::MysqlConnection;
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
 
-use crate::models::auth::password_token::{PasswordToken, PasswordTokenRepository};
 use crate::models::auth::sign_up_token::{SignUpToken, SignUpTokenRepository};
+use crate::models::connection::RedisConnection;
 use crate::models::error::{Error, Result};
 use crate::models::user::*;
 use crate::models::user_key::UserKeyRepository;
@@ -24,19 +24,17 @@ pub struct UserDTO {
 }
 
 pub struct UserService<'a> {
-    sign_up_token_repository: SignUpTokenRepository,
-    password_token_repository: PasswordTokenRepository,
+    sign_up_token_repository: SignUpTokenRepository<'a>,
     user_key_repository: UserKeyRepository<'a>,
     user_repository: UserRepository<'a>,
 }
 
 impl<'a> UserService<'a> {
-    pub fn new(conn: &'a MysqlConnection) -> Self {
+    pub fn new(rdb_conn: &'a MysqlConnection, redis_conn: &'a mut RedisConnection) -> Self {
         Self {
-            sign_up_token_repository: SignUpTokenRepository::new(),
-            password_token_repository: PasswordTokenRepository::new(),
-            user_key_repository: UserKeyRepository::new(conn),
-            user_repository: UserRepository::new(conn),
+            sign_up_token_repository: SignUpTokenRepository::new(redis_conn),
+            user_key_repository: UserKeyRepository::new(rdb_conn),
+            user_repository: UserRepository::new(rdb_conn),
         }
     }
 
@@ -177,34 +175,6 @@ impl<'a> UserService<'a> {
         self.user_repository
             .update(id, name, &hashed_password, avatar_url)
     }
-
-    // Reset the password.
-    pub fn reset_password(
-        &mut self,
-        email: &str,
-        token_id: &str,
-        temporary_password: &str,
-        new_password: &str,
-    ) -> Result<bool> {
-        let user = self.user_repository.find_by_email(email)?;
-
-        let token: PasswordToken = {
-            let serialized_token = self.password_token_repository.find(user.id)?;
-
-            serde_json::from_str(&serialized_token)?
-        };
-
-        if token.id == token_id && token.password == temporary_password {
-            let password_salt: String = argon2_password_util::generate_password_salt();
-            let hashed_password =
-                argon2_password_util::hash_password(new_password, &password_salt)?;
-            self.user_repository
-                .update(user.id, &None, &Some(hashed_password), &None)?;
-            self.password_token_repository.delete(user.id)
-        } else {
-            Err(Error::UserNotFound(email.to_string()))
-        }
-    }
 }
 
 #[cfg(test)]
@@ -214,13 +184,11 @@ mod tests {
     impl<'a> UserService<'a> {
         pub fn new_with_repository(
             sign_up_token_repository: SignUpTokenRepository,
-            password_token_repository: PasswordTokenRepository,
             user_key_repository: UserKeyRepository<'a>,
             user_repository: UserRepository<'a>,
         ) -> Self {
             Self {
                 sign_up_token_repository,
-                password_token_repository,
                 user_key_repository,
                 user_repository,
             }

@@ -1,6 +1,7 @@
 use serde::{Deserialize, Serialize};
 
 use crate::models::auth::jwt_refresh::RefreshTokenRepository;
+use crate::models::connection::RedisConnection;
 use crate::models::error::Result;
 
 #[derive(Serialize, Deserialize)]
@@ -10,14 +11,14 @@ pub struct UserSessionDTO {
     pub last_accessed_at: i64,
 }
 
-pub struct UserSessionService {
-    refresh_token_repository: RefreshTokenRepository,
+pub struct UserSessionService<'a> {
+    refresh_token_repository: RefreshTokenRepository<'a>,
 }
 
-impl UserSessionService {
-    pub fn new() -> Self {
+impl<'a> UserSessionService<'a> {
+    pub fn new(conn: &'a mut RedisConnection) -> Self {
         Self {
-            refresh_token_repository: RefreshTokenRepository::new(),
+            refresh_token_repository: RefreshTokenRepository::new(conn),
         }
     }
 
@@ -32,12 +33,6 @@ impl UserSessionService {
                 last_accessed_at: session.last_accessed_at,
             })
             .collect())
-    }
-}
-
-impl Default for UserSessionService {
-    fn default() -> Self {
-        Self::new()
     }
 }
 

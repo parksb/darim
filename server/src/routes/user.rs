@@ -1,7 +1,8 @@
-use crate::models::connection::RdbPool;
 use actix_web::{delete, get, patch, post, web, Responder};
 use serde::{Deserialize, Serialize};
 
+use crate::models::connection::{RdbPool, RedisPool};
+use crate::services::auth::password::PasswordService;
 use crate::services::user::{UserDTO, UserService};
 use crate::utils::http_util;
 
@@ -33,9 +34,14 @@ pub struct ResetPasswordArgs {
 
 /// Responds a user information
 #[get("/users/{id}")]
-pub async fn get_user(rdb_pool: web::Data<RdbPool>, id: web::Path<u64>) -> impl Responder {
-    let conn = rdb_pool.get().unwrap();
-    let user = UserService::new(&conn).get_one(id.into_inner());
+pub async fn get_user(
+    rdb_pool: web::Data<RdbPool>,
+    redis_pool: web::Data<RedisPool>,
+    id: web::Path<u64>,
+) -> impl Responder {
+    let rdb_conn = rdb_pool.get().unwrap();
+    let mut redis_conn = redis_pool.get().unwrap();
+    let user = UserService::new(&rdb_conn, &mut redis_conn).get_one(id.into_inner());
     http_util::response::<UserDTO>(user)
 }
 
@@ -43,6 +49,7 @@ pub async fn get_user(rdb_pool: web::Data<RdbPool>, id: web::Path<u64>) -> impl 
 #[post("/users")]
 pub async fn create_user(
     rdb_pool: web::Data<RdbPool>,
+    redis_pool: web::Data<RedisPool>,
     args: web::Json<CreateArgs>,
 ) -> impl Responder {
     let CreateArgs {
@@ -51,8 +58,9 @@ pub async fn create_user(
         token_pin,
         recaptcha_token,
     } = args.into_inner();
-    let conn = rdb_pool.get().unwrap();
-    let result = UserService::new(&conn)
+    let rdb_conn = rdb_pool.get().unwrap();
+    let mut redis_conn = redis_pool.get().unwrap();
+    let result = UserService::new(&rdb_conn, &mut redis_conn)
         .create(&user_public_key, &token_key, &token_pin, &recaptcha_token)
         .await;
     http_util::response::<bool>(result)
@@ -60,9 +68,14 @@ pub async fn create_user(
 
 /// Deletes a user
 #[delete("/users/{id}")]
-pub async fn delete_user(rdb_pool: web::Data<RdbPool>, id: web::Path<u64>) -> impl Responder {
-    let conn = rdb_pool.get().unwrap();
-    let result = UserService::new(&conn).delete(id.into_inner());
+pub async fn delete_user(
+    rdb_pool: web::Data<RdbPool>,
+    redis_pool: web::Data<RedisPool>,
+    id: web::Path<u64>,
+) -> impl Responder {
+    let rdb_conn = rdb_pool.get().unwrap();
+    let mut redis_conn = redis_pool.get().unwrap();
+    let result = UserService::new(&rdb_conn, &mut redis_conn).delete(id.into_inner());
     http_util::response::<bool>(result)
 }
 
@@ -70,6 +83,7 @@ pub async fn delete_user(rdb_pool: web::Data<RdbPool>, id: web::Path<u64>) -> im
 #[patch("/users/{id}")]
 pub async fn update_user(
     rdb_pool: web::Data<RdbPool>,
+    redis_pool: web::Data<RedisPool>,
     id: web::Path<u64>,
     args: web::Json<UpdateArgs>,
 ) -> impl Responder {
@@ -78,8 +92,14 @@ pub async fn update_user(
         password,
         avatar_url,
     } = args.into_inner();
-    let conn = rdb_pool.get().unwrap();
-    let result = UserService::new(&conn).update(id.into_inner(), &name, &password, &avatar_url);
+    let rdb_conn = rdb_pool.get().unwrap();
+    let mut redis_conn = redis_pool.get().unwrap();
+    let result = UserService::new(&rdb_conn, &mut redis_conn).update(
+        id.into_inner(),
+        &name,
+        &password,
+        &avatar_url,
+    );
     http_util::response::<bool>(result)
 }
 
@@ -87,6 +107,7 @@ pub async fn update_user(
 #[post("/users/password")]
 pub async fn reset_password(
     rdb_pool: web::Data<RdbPool>,
+    redis_pool: web::Data<RedisPool>,
     args: web::Json<ResetPasswordArgs>,
 ) -> impl Responder {
     let ResetPasswordArgs {
@@ -95,8 +116,9 @@ pub async fn reset_password(
         temporary_password,
         new_password,
     } = args.into_inner();
-    let conn = rdb_pool.get().unwrap();
-    let result = UserService::new(&conn).reset_password(
+    let rdb_conn = rdb_pool.get().unwrap();
+    let mut redis_conn = redis_pool.get().unwrap();
+    let result = PasswordService::new(&rdb_conn, &mut redis_conn).reset(
         &email,
         &token_id,
         &temporary_password,

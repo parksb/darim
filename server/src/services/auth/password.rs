@@ -2,21 +2,22 @@ use diesel::MysqlConnection;
 use rand::{distributions::Alphanumeric, thread_rng, Rng};
 
 use crate::models::auth::password_token::{PasswordToken, PasswordTokenRepository};
-use crate::models::error::Result;
+use crate::models::connection::RedisConnection;
+use crate::models::error::{Error, Result};
 use crate::models::user::UserRepository;
-use crate::utils::email_util;
 use crate::utils::env_util::CLIENT_ADDRESS;
+use crate::utils::{argon2_password_util, email_util};
 
-pub struct PasswordTokenService<'a> {
-    password_token_repository: PasswordTokenRepository,
+pub struct PasswordService<'a> {
+    password_token_repository: PasswordTokenRepository<'a>,
     user_repository: UserRepository<'a>,
 }
 
-impl<'a> PasswordTokenService<'a> {
-    pub fn new(conn: &'a MysqlConnection) -> Self {
+impl<'a> PasswordService<'a> {
+    pub fn new(rdb_conn: &'a MysqlConnection, redis_conn: &'a mut RedisConnection) -> Self {
         Self {
-            password_token_repository: PasswordTokenRepository::new(),
-            user_repository: UserRepository::new(conn),
+            password_token_repository: PasswordTokenRepository::new(redis_conn),
+            user_repository: UserRepository::new(rdb_conn),
         }
     }
 
@@ -41,6 +42,33 @@ impl<'a> PasswordTokenService<'a> {
         );
 
         Ok(result)
+    }
+
+    // Reset the password.
+    pub fn reset(
+        &mut self,
+        email: &str,
+        token_id: &str,
+        temporary_password: &str,
+        new_password: &str,
+    ) -> Result<bool> {
+        let user = self.user_repository.find_by_email(email)?;
+
+        let token: PasswordToken = {
+            let serialized_token = self.password_token_repository.find(user.id)?;
+            serde_json::from_str(&serialized_token)?
+        };
+
+        if token.id == token_id && token.password == temporary_password {
+            let password_salt: String = argon2_password_util::generate_password_salt();
+            let hashed_password =
+                argon2_password_util::hash_password(new_password, &password_salt)?;
+            self.user_repository
+                .update(user.id, &None, &Some(hashed_password), &None)?;
+            self.password_token_repository.delete(user.id)
+        } else {
+            Err(Error::UserNotFound(email.to_string()))
+        }
     }
 
     fn email_content(&self, token: &PasswordToken) -> String {

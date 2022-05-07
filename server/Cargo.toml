@@ -16,7 +16,8 @@ diesel = { version = "^1.4.8", features = ["mysql", "chrono", "r2d2"] }
 thiserror = "^1.0"
 scrypt = { version = "^0.3" }
 rust-argon2 = "^0.8"
-redis = "^0.16.0"
+redis = { version = "^0.16.0", features = ["r2d2"] }
+r2d2 = "^0.8.9"
 rand = "^0.7.3"
 cfg-if = "^0.1.10"
 lettre = { version = "0.10.0-rc.1", features = ["sendmail-transport"] }

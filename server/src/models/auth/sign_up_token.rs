@@ -4,7 +4,7 @@ use redis::Commands;
 use serde::{Deserialize, Serialize};
 use time::Duration;
 
-use crate::models::connection;
+use crate::models::connection::RedisConnection;
 use crate::models::error::Result;
 
 /// Sign up token that represents data in redis.
@@ -20,8 +20,8 @@ pub struct SignUpToken {
 }
 
 /// A core data repository for token.
-pub struct SignUpTokenRepository {
-    redis: redis::Connection,
+pub struct SignUpTokenRepository<'a> {
+    redis: &'a mut RedisConnection,
 }
 
 #[automock]
@@ -31,12 +31,10 @@ pub trait SignUpTokenRepositoryTrait {
     fn save(&mut self, serialized_token: &str) -> Result<bool>;
 }
 
-impl SignUpTokenRepository {
+impl<'a> SignUpTokenRepository<'a> {
     /// Creates a new token repository.
-    pub fn new() -> Self {
-        Self {
-            redis: connection::connect_redis(),
-        }
+    pub fn new(conn: &'a mut RedisConnection) -> Self {
+        Self { redis: conn }
     }
 
     /// Finds a token by key.
@@ -62,11 +60,5 @@ impl SignUpTokenRepository {
         let _ = self.redis.expire::<&str, bool>(&key, ttl_seconds)?;
 
         Ok(key)
-    }
-}
-
-impl Default for SignUpTokenRepository {
-    fn default() -> Self {
-        Self::new()
     }
 }

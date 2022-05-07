@@ -6,6 +6,7 @@ use uuid::Uuid;
 
 use crate::models::auth::jwt_claims::Claims;
 use crate::models::auth::jwt_refresh::*;
+use crate::models::connection::RedisConnection;
 use crate::models::error::{Error, Result};
 use crate::models::user::UserRepository;
 use crate::utils::env_util::JWT_REFRESH_SECRET;
@@ -20,15 +21,15 @@ pub struct SetJwtRefreshDTO {
 }
 
 pub struct JwtRefreshService<'a> {
-    refresh_token_repository: RefreshTokenRepository,
+    refresh_token_repository: RefreshTokenRepository<'a>,
     user_repository: UserRepository<'a>,
 }
 
 impl<'a> JwtRefreshService<'a> {
-    pub fn new(conn: &'a MysqlConnection) -> Self {
+    pub fn new(rdb_conn: &'a MysqlConnection, redis_conn: &'a mut RedisConnection) -> Self {
         Self {
-            refresh_token_repository: RefreshTokenRepository::new(),
-            user_repository: UserRepository::new(conn),
+            refresh_token_repository: RefreshTokenRepository::new(redis_conn),
+            user_repository: UserRepository::new(rdb_conn),
         }
     }
 
