@@ -71,7 +71,7 @@ impl<'a> UserRepository<'a> {
 
     /// Finds a user by id.
     pub fn find_by_id(&self, id: u64) -> Result<User> {
-        let user = dsl::users.find(id).get_result::<User>(self.conn)?;
+        let user = dsl::users.find(id).first::<User>(self.conn)?;
         Ok(user)
     }
 
@@ -79,7 +79,7 @@ impl<'a> UserRepository<'a> {
     pub fn find_by_email(&self, email: &str) -> Result<User> {
         let user = dsl::users
             .filter(dsl::email.eq(email))
-            .get_result::<User>(self.conn)?;
+            .first::<User>(self.conn)?;
 
         Ok(user)
     }
@@ -89,7 +89,7 @@ impl<'a> UserRepository<'a> {
         let password = dsl::users
             .select(dsl::password)
             .filter(dsl::email.eq(email))
-            .get_result::<String>(self.conn)?;
+            .first::<String>(self.conn)?;
 
         Ok(password)
     }
