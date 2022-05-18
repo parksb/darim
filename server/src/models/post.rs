@@ -69,7 +69,7 @@ impl<'a> PostRepository<'a> {
         let post = dsl::posts
             .find(post_id)
             .filter(dsl::user_id.eq(user_id))
-            .get_result::<Post>(self.conn)?;
+            .first::<Post>(self.conn)?;
 
         Ok(post)
     }

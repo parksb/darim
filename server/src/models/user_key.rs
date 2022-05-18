@@ -48,7 +48,7 @@ impl<'a> UserKeyRepository<'a> {
     pub fn find_by_user_id(&self, user_id: u64) -> Result<UserKey> {
         let user_key = dsl::user_keys
             .filter(dsl::user_id.eq(user_id))
-            .get_result::<UserKey>(self.conn)?;
+            .first::<UserKey>(self.conn)?;
 
         Ok(user_key)
     }
