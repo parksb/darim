@@ -37,7 +37,7 @@ class Http {
 
   static async get<T>(url: string, accessToken: string): Promise<T> {
     try {
-      return Http.request(HttpMethods.GET, url, undefined, accessToken);
+      return await Http.request(HttpMethods.GET, url, undefined, accessToken);
     } catch (e) {
       if (e instanceof Error && e.message === '401') {
         const refreshedAccessToken = await Http.refreshAccessToken();
@@ -50,7 +50,7 @@ class Http {
   static async post<T, S>(url: string, body?: T, accessToken?: string): Promise<S> {
     try {
       const jsonBody = body ? JSON.stringify(body) : undefined;
-      return Http.request(HttpMethods.POST, url, jsonBody, accessToken);
+      return await Http.request(HttpMethods.POST, url, jsonBody, accessToken);
     } catch (e) {
       if (accessToken && e instanceof Error && e.message === '401') {
         const refreshedAccessToken = await Http.refreshAccessToken();
@@ -63,7 +63,7 @@ class Http {
   static async patch<T, S>(url: string, body: T, accessToken: string): Promise<S> {
     try {
       const jsonBody = JSON.stringify(body);
-      return Http.request(HttpMethods.PATCH, url, jsonBody, accessToken);
+      return await Http.request(HttpMethods.PATCH, url, jsonBody, accessToken);
     } catch (e) {
       if (accessToken && e instanceof Error && e.message === '401') {
         const refreshedAccessToken = await Http.refreshAccessToken();
@@ -75,7 +75,7 @@ class Http {
 
   static async delete<T>(url: string, accessToken?: string): Promise<T> {
     try {
-      return Http.request(HttpMethods.DELETE, url, undefined, accessToken);
+      return await Http.request(HttpMethods.DELETE, url, undefined, accessToken);
     } catch (e) {
       if (accessToken && e instanceof Error && e.message === '401') {
         const refreshedAccessToken = await Http.refreshAccessToken();
