@@ -138,7 +138,7 @@ const Calendar: React.FC<Props> = ({ session }) => {
 
     const startWeek = cursorDate.startOf('month').week();
     let endWeek = cursorDate.endOf('month').week();
-    if (cursorDate.month() === 11) {
+    if (endWeek < startWeek) {
       endWeek = cursorDate.endOf('month').subtract(7, 'day').week() + endWeek;
     }
 
