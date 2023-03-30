@@ -1,12 +1,8 @@
 use actix_cors::Cors;
 use actix_ratelimit::{MemoryStore, MemoryStoreActor, RateLimiter};
 use actix_web::{get, App, HttpResponse, HttpServer, Responder};
-use rustls::internal::pemfile::{certs, pkcs8_private_keys};
-use rustls::{NoClientAuth, ServerConfig};
 use std::collections::HashMap;
 use std::env;
-use std::fs::File;
-use std::io::BufReader;
 use std::time::Duration;
 
 /// A layer that defines data structure.
@@ -39,9 +35,7 @@ pub mod utils {
     pub mod http_util;
 }
 
-use utils::env_util::{
-    Profile, CLIENT_ADDRESS, HOST, PORT, PROFILE, TLS_CERT_FILE_PATH, TLS_KEY_FILE_PATH,
-};
+use utils::env_util::{CLIENT_ADDRESS, HOST, PORT};
 
 /// Health check
 #[get("/")]
@@ -91,19 +85,5 @@ async fn main() -> std::io::Result<()> {
 
     println!("Server running at {}", address);
 
-    match *PROFILE {
-        Profile::PRODUCTION => {
-            let mut config = ServerConfig::new(NoClientAuth::new());
-            let cert_file = &mut BufReader::new(File::open(&*TLS_CERT_FILE_PATH).unwrap());
-            let key_file = &mut BufReader::new(File::open(&*TLS_KEY_FILE_PATH).unwrap());
-            let cert_chain = certs(cert_file).unwrap();
-            let mut keys = pkcs8_private_keys(key_file).unwrap();
-
-            config.set_single_cert(cert_chain, keys.remove(0)).unwrap();
-            server.bind_rustls(address, config)
-        }
-        Profile::DEV => server.bind(address),
-    }?
-    .run()
-    .await
+    server.bind(address)?.run().await
 }
