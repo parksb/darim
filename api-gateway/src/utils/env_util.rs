@@ -5,10 +5,6 @@ lazy_static! {
     pub static ref ENV: String = env::var("ENV").expect("ENV not found");
     pub static ref HOST: String = env::var("HOST").expect("HOST not found");
     pub static ref PORT: String = env::var("PORT").expect("PORT not found");
-    pub static ref TLS_CERT_FILE_PATH: String =
-        env::var("TLS_CERT_FILE_PATH").expect("TLS_CERT_FILE_PATH not found");
-    pub static ref TLS_KEY_FILE_PATH: String =
-        env::var("TLS_KEY_FILE_PATH").expect("TLS_KEY_FILE_PATH not found");
     pub static ref CLIENT_ADDRESS: String =
         env::var("CLIENT_ADDRESS").expect("CLIENT_ADDRESS not found");
     pub static ref BACK_END_SERVICE_ADDRESS: String =
