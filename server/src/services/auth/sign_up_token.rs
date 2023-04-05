@@ -51,7 +51,8 @@ impl<'a> SignUpTokenService<'a> {
             &format!("{} <{}>", &token.name, &token.email),
             &String::from("Welcome to Darim 🎉"),
             &self.email_content(&token),
-        ).await?;
+        )
+        .await?;
 
         Ok(result)
     }

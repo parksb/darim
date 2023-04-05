@@ -40,7 +40,7 @@ mod tests {
             "$argon2i$v=19$m=4096,t=3,p=1$c3R1dnd4eXo$S7DKb2Tp9pVInTXuo8w/Bg7bg5oselzKHrogjd/bB8c";
 
         let actual = true;
-        let expected = verify_hashed_password(&hashed_password, password).unwrap();
+        let expected = verify_hashed_password(hashed_password, password).unwrap();
 
         assert_eq!(actual, expected);
     }
