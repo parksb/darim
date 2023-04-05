@@ -1,29 +1,34 @@
-use lettre::message::header::ContentType;
-use lettre::message::{Message, SinglePart};
-use lettre::transport::sendmail::SendmailTransport;
-use lettre::Transport;
+use mailjet_rs::common::Recipient;
+use mailjet_rs::v3::Message;
+use mailjet_rs::{Client, SendAPIVersion};
 
-use crate::models::error::Result;
+use crate::models::error::{Result, Error};
 use crate::utils::env_util::{Profile, EMAIL_ADDRESS, PROFILE};
 
-pub fn send_email(to: &str, subject: &str, body: &str) -> Result<bool> {
+use super::env_util::{MAILJET_API_SECRET_KEY, MAILJET_API_KEY};
+
+pub async fn send_email(to: &str, subject: &str, body: &str) -> Result<bool> {
     match *PROFILE {
         Profile::PRODUCTION => {
-            let parsed_email_address = (*EMAIL_ADDRESS).parse()?;
-            let email = Message::builder()
-                .from(parsed_email_address)
-                .to(to.parse().unwrap())
-                .subject(subject)
-                .singlepart(
-                    SinglePart::builder()
-                        .content_type(ContentType::TEXT_HTML)
-                        .body(body.to_string()),
-                )?;
+            let client = Client::new(
+                SendAPIVersion::V3,
+                &*MAILJET_API_KEY,
+                &*MAILJET_API_SECRET_KEY,
+            );
 
-            let sender = SendmailTransport::new();
-            let _ = sender.send(&email)?;
+            let mut message = Message::new(
+                &*EMAIL_ADDRESS,
+                "Darim",
+                Some(subject.to_string()),
+                None,
+            );
+            message.push_recipient(Recipient::new(to));
+            message.html_part = Some(body.to_string());
 
-            Ok(true)
+            match client.send(message).await {
+                Ok(_) => Ok(true),
+                Err(_) => Err(Error::MailError),
+            }
         }
         Profile::DEV => {
             println!("to: {}\nsubject: {}\nbody: {}", to, subject, body);

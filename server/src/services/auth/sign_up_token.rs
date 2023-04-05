@@ -21,7 +21,7 @@ impl<'a> SignUpTokenService<'a> {
     /// 1. Generates a random string called pin.
     /// 2. Creates a new token containing the pin and information of the user from arguments.
     /// 3. Serializes the token and inserts it to redis.
-    pub fn set(
+    pub async fn set(
         &mut self,
         name: &str,
         email: &str,
@@ -51,7 +51,7 @@ impl<'a> SignUpTokenService<'a> {
             &format!("{} <{}>", &token.name, &token.email),
             &String::from("Welcome to Darim 🎉"),
             &self.email_content(&token),
-        )?;
+        ).await?;
 
         Ok(result)
     }

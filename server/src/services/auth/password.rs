@@ -22,7 +22,7 @@ impl<'a> PasswordService<'a> {
     }
 
     /// Sets token for temporary password deposition in password finding process.
-    pub fn set(&mut self, email: &str) -> Result<bool> {
+    pub async fn set(&mut self, email: &str) -> Result<bool> {
         let user = self.user_repository.find_by_email(email)?;
 
         let token = PasswordToken {
@@ -39,7 +39,7 @@ impl<'a> PasswordService<'a> {
             &format!("{} <{}>", user.name, email),
             &String::from("Please reset your password 🔒"),
             &self.email_content(&token),
-        );
+        ).await;
 
         Ok(result)
     }

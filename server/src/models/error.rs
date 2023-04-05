@@ -35,6 +35,9 @@ pub enum Error {
     #[error("expired token")]
     ExpiredToken,
 
+    #[error("mail error")]
+    MailError,
+
     #[error("diesel error")]
     Diesel {
         #[from]
@@ -63,24 +66,6 @@ pub enum Error {
     SerdeJson {
         #[from]
         source: serde_json::Error,
-    },
-
-    #[error("lettre error")]
-    Lettre {
-        #[from]
-        source: lettre::error::Error,
-    },
-
-    #[error("lettre sendmail error")]
-    LettreSendmail {
-        #[from]
-        source: lettre::transport::sendmail::Error,
-    },
-
-    #[error("lettre address error")]
-    LettreAddress {
-        #[from]
-        source: lettre::address::AddressError,
     },
 
     #[error("argon2 error")]
@@ -112,9 +97,6 @@ impl Error {
                 Error::Redis { source } => self.print(source),
                 Error::Reqwest { source } => self.print(source),
                 Error::JsonWebToken { source } => self.print(source),
-                Error::Lettre { source } => self.print(source),
-                Error::LettreSendmail { source } => self.print(source),
-                Error::LettreAddress { source } => self.print(source),
                 Error::Rand { source } => self.print(source),
                 _ => println!("[{}] {}", Utc::now(), self),
             };
