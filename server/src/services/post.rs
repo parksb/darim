@@ -106,7 +106,7 @@ impl<'a> PostService<'a> {
 
     /// Deletes a post written by specific user.
     pub fn delete(&mut self, id: u64, user_id: u64) -> Result<bool> {
-        Ok(self.post_repository.delete(user_id, id)?)
+        self.post_repository.delete(user_id, id)
     }
 
     /// Updates a post written by specific user.
@@ -134,9 +134,8 @@ impl<'a> PostService<'a> {
             }
         }
 
-        Ok(self
-            .post_repository
-            .update(user_id, id, title, content, date)?)
+        self.post_repository
+            .update(user_id, id, title, content, date)
     }
 }
 

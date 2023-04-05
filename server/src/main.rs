@@ -87,7 +87,7 @@ async fn main() -> std::io::Result<()> {
     let rdb_pool = connect_rdb();
     let redis_pool = connect_redis();
 
-    println!("Server running at {}", address);
+    println!("Server running at {address}");
 
     HttpServer::new(move || {
         App::new()

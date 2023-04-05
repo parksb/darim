@@ -107,7 +107,7 @@ impl<'a> UserService<'a> {
         token_pin: &str,
         recaptcha_token: &str,
     ) -> Result<bool> {
-        let has_recaptcha_verified = self.verify_recaptcha(&recaptcha_token).await?;
+        let has_recaptcha_verified = self.verify_recaptcha(recaptcha_token).await?;
         if has_recaptcha_verified {
             let token: SignUpToken = {
                 let serialized_token = self.sign_up_token_repository.find(token_key)?;
@@ -165,7 +165,7 @@ impl<'a> UserService<'a> {
         let hashed_password = if let Some(password) = password {
             let password_salt: String = argon2_password_util::generate_password_salt();
             Some(argon2_password_util::hash_password(
-                &password,
+                password,
                 &password_salt,
             )?)
         } else {

@@ -51,7 +51,7 @@ impl<'a> JwtRefreshService<'a> {
         let user = {
             let found_password = self.user_repository.find_password_by_email(email)?;
             if found_password.starts_with("$argon2i") {
-                if argon2_password_util::verify_hashed_password(&found_password, &password)? {
+                if argon2_password_util::verify_hashed_password(&found_password, password)? {
                     self.user_repository.find_by_email(email)?
                 } else {
                     return Err(Error::Unauthorized);
@@ -112,6 +112,6 @@ impl<'a> JwtRefreshService<'a> {
     }
 
     pub fn remove(&mut self, user_id: u64, token_uuid: &str) -> Result<bool> {
-        Ok(self.refresh_token_repository.delete(user_id, token_uuid)?)
+        self.refresh_token_repository.delete(user_id, token_uuid)
     }
 }

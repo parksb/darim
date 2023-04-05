@@ -54,7 +54,7 @@ impl<'a> RefreshTokenRepository<'a> {
 
     /// Deletes a token by key.
     pub fn delete(&mut self, user_id: u64, uuid: &str) -> Result<bool> {
-        let _ = self.redis.hdel::<u64, &str, _>(user_id, uuid)?;
+        self.redis.hdel::<u64, &str, _>(user_id, uuid)?;
         Ok(true)
     }
 

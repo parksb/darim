@@ -45,7 +45,7 @@ impl<'a> SignUpTokenRepository<'a> {
 
     /// Deletes a token by key.
     pub fn delete(&mut self, key: &str) -> Result<bool> {
-        let _ = self.redis.del::<&str, _>(key)?;
+        self.redis.del::<&str, _>(key)?;
         Ok(true)
     }
 
@@ -54,9 +54,7 @@ impl<'a> SignUpTokenRepository<'a> {
         let key: String = thread_rng().sample_iter(&Alphanumeric).take(32).collect();
         let ttl_seconds = Duration::minutes(3).whole_seconds() as usize;
 
-        let _ = self
-            .redis
-            .set::<&str, &str, bool>(&key, &serialized_token)?;
+        let _ = self.redis.set::<&str, &str, bool>(&key, serialized_token)?;
         let _ = self.redis.expire::<&str, bool>(&key, ttl_seconds)?;
 
         Ok(key)

@@ -102,7 +102,7 @@ impl Error {
             };
         }
 
-        format!("{}", self)
+        format!("{self}")
     }
 
     fn print<T: Display>(&self, data: T) {

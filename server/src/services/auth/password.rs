@@ -39,7 +39,8 @@ impl<'a> PasswordService<'a> {
             &format!("{} <{}>", user.name, email),
             &String::from("Please reset your password 🔒"),
             &self.email_content(&token),
-        ).await;
+        )
+        .await;
 
         Ok(result)
     }

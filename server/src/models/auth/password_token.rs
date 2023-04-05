@@ -44,19 +44,19 @@ impl<'a> PasswordTokenRepository<'a> {
         let ttl_seconds = Duration::minutes(3).whole_seconds() as usize;
         let key = &key(user_id);
 
-        let _ = self.redis.set::<&str, &str, bool>(key, &serialized_token)?;
-        let _ = self.redis.expire::<&str, _>(key, ttl_seconds)?;
+        let _ = self.redis.set::<&str, &str, bool>(key, serialized_token)?;
+        self.redis.expire::<&str, _>(key, ttl_seconds)?;
 
         Ok(true)
     }
 
     /// Deletes a token by key.
     pub fn delete(&mut self, user_id: u64) -> Result<bool> {
-        let _ = self.redis.del::<&str, _>(&key(user_id))?;
+        self.redis.del::<&str, _>(&key(user_id))?;
         Ok(true)
     }
 }
 
 fn key(user_id: u64) -> String {
-    format!("password_token:{}", user_id)
+    format!("password_token:{user_id}")
 }
