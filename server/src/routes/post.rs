@@ -45,10 +45,8 @@ pub async fn get_summarized_posts(
 
 /// Lists posts written by logged-in user
 #[get("/posts/{user_id}/{id}")]
-pub async fn get_post(
-    rdb_pool: web::Data<RdbPool>,
-    web::Path((user_id, id)): web::Path<(u64, u64)>,
-) -> impl Responder {
+pub async fn get_post(rdb_pool: web::Data<RdbPool>, path: web::Path<(u64, u64)>) -> impl Responder {
+    let (user_id, id) = path.into_inner();
     let conn = rdb_pool.get().unwrap();
     let post = PostService::new(&conn).get(user_id, id);
     http_util::response::<PostDTO>(post)
@@ -75,8 +73,9 @@ pub async fn create_post(
 #[delete("/posts/{user_id}/{id}")]
 pub async fn delete_post(
     rdb_pool: web::Data<RdbPool>,
-    web::Path((user_id, id)): web::Path<(u64, u64)>,
+    path: web::Path<(u64, u64)>,
 ) -> impl Responder {
+    let (user_id, id) = path.into_inner();
     let conn = rdb_pool.get().unwrap();
     let result = PostService::new(&conn).delete(id, user_id);
     http_util::response::<bool>(result)
