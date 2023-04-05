@@ -8,6 +8,10 @@ lazy_static! {
     pub static ref REDIS_URL: String = env::var("REDIS_URL").expect("REDIS_URL not found");
     pub static ref EMAIL_ADDRESS: String =
         env::var("EMAIL_ADDRESS").expect("EMAIL_ADDRESS not found");
+    pub static ref MAILJET_API_KEY: String =
+        env::var("MAILJET_API_KEY").expect("MAILJET_API_KEY not found");
+    pub static ref MAILJET_API_SECRET_KEY: String =
+        env::var("MAILJET_API_SECRET_KEY").expect("MAILJET_API_SECRET_KEY not found");
     pub static ref CLIENT_ADDRESS: String =
         env::var("CLIENT_ADDRESS").expect("CLIENT_ADDRESS not found");
     pub static ref RECAPTCHA_SECRET_KEY: String =

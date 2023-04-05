@@ -66,7 +66,7 @@ pub async fn set_sign_up_token(
     } = args.into_inner();
     let mut redis_conn = redis_pool.get().unwrap();
     let result =
-        SignUpTokenService::new(&mut redis_conn).set(&name, &email, &password, &avatar_url);
+        SignUpTokenService::new(&mut redis_conn).set(&name, &email, &password, &avatar_url).await;
     http_util::response::<String>(result)
 }
 
@@ -80,7 +80,7 @@ pub async fn set_password_token(
     let SetPasswordTokenArgs { email } = args.into_inner();
     let rdb_conn = rdb_pool.get().unwrap();
     let mut redis_conn = redis_pool.get().unwrap();
-    let result = PasswordService::new(&rdb_conn, &mut redis_conn).set(&email);
+    let result = PasswordService::new(&rdb_conn, &mut redis_conn).set(&email).await;
     http_util::response::<bool>(result)
 }
 
