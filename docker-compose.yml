@@ -1,0 +1,50 @@
+version: '3.9'
+services:
+  darim-mariadb10:
+    image: mariadb:10
+    container_name: darim-mariadb10
+    ports:
+      - 3306:3306
+    environment:
+      - MARIADB_ROOT_PASSWORD_HASH=
+    volumes:
+      - darim-mariadb10:/var/lib/mysql
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+    networks:
+      - darim_net
+  darim-redis7:
+    image: redis:7
+    container_name: darim-redis7
+    ports:
+      - 6379:6379
+    volumes:
+      - darim-redis7:/data
+    networks:
+      - darim_net
+  darim-server:
+    build: server
+    image: darim-server:latest
+    container_name: darim-server
+    ports:
+      - 9150:9150
+    depends_on:
+      - darim-mariadb10
+      - darim-redis7
+    networks:
+      - darim_net
+  darim-api-gateway:
+    build: api-gateway
+    image: darim-api-gateway:latest
+    container_name: darim-api-gateway
+    ports:
+      - 80:80
+      - 443:443
+    depends_on:
+      - darim-server
+    networks:
+      - darim_net
+networks:
+  darim_net:
+    driver: bridge
